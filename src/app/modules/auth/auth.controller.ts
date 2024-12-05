@@ -12,4 +12,21 @@ const loginUser = catchAsync(async (req, res) => {
   });
 });
 
-export const AuthControllers = { loginUser };
+const logOutUser = catchAsync(async (req, res) => {
+  const token = req.headers['Authorization'];
+  if (token) {
+    req.header('Authorization'); 
+  };
+  
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'User Successfully logged out',
+    data: null,
+  });
+});
+
+
+
+export const AuthControllers = { loginUser, logOutUser };

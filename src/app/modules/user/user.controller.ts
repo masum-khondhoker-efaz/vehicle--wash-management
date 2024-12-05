@@ -14,14 +14,21 @@ const registerUser = catchAsync(async (req, res) => {
 });
 
 const getAllUsers = catchAsync(async (req, res) => {
-  const result = await UserServices.getAllUsersFromDB();
+  // Extract the search term from the query parameters
+  const searchTerm = req.query.searchTerm
+    ? String(req.query.searchTerm)
+    : undefined;
+
+  // Call the service with the optional search term
+  const result = await UserServices.getAllUsersFromDB(searchTerm);
 
   sendResponse(res, {
-    statusCode: httpStatus.CREATED,
-    message: 'Users Retrieve successfully',
+    statusCode: httpStatus.OK, 
+    message: 'Users retrieved successfully',
     data: result,
   });
 });
+
 
 const getMyProfile = catchAsync(async (req, res) => {
   const id = req.user.id;
@@ -78,6 +85,27 @@ const changePassword = catchAsync(async (req, res) => {
   });
 });
 
+const forgotPassword = catchAsync(async (req, res) => {
+  const result = await UserServices.forgotPassword(req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: 'Please check your email to get the otp!',
+    data: result,
+  });
+});
+
+const verifyOtp = catchAsync(async (req, res) => {
+  const result = await UserServices.verifyOtpInDB(req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'OTP verified successfully!',
+    data: result
+  });
+});
+
 export const UserControllers = {
   registerUser,
   getAllUsers,
@@ -86,4 +114,6 @@ export const UserControllers = {
   updateMyProfile,
   updateUserRoleStatus,
   changePassword,
+  forgotPassword,
+  verifyOtp,
 };

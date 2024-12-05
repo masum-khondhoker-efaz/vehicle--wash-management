@@ -11,27 +11,48 @@ router.post(
   UserControllers.registerUser,
 );
 
-router.get('/', UserControllers.getAllUsers);
+router.get(
+  '/',
+  auth('ADMIN', 'SUPER_ADMIN', 'CUSTOMER'),
+  UserControllers.getAllUsers,
+);
 
-router.get('/me', auth('USER', 'ADMIN'), UserControllers.getMyProfile);
+router.get('/me', auth('CUSTOMER', 'ADMIN', 'SUPER_ADMIN', 'DRIVER'), UserControllers.getMyProfile);
 
-router.get('/:id', UserControllers.getUserDetails);
+router.get(
+  '/:id',
+  auth('ADMIN', 'SUPER_ADMIN'),
+  UserControllers.getUserDetails,
+);
 router.put(
   '/update-profile',
-  auth('USER', 'ADMIN'),
+  auth('CUSTOMER', 'ADMIN', 'CUSTOMER', 'DRIVER'),
   UserControllers.updateMyProfile,
 );
 
 router.put(
   '/update-user/:id',
-  auth('ADMIN'),
+  validateRequest(UserValidations.updateProfileSchema),
+  auth(),
   UserControllers.updateUserRoleStatus,
 );
 
-router.post(
+router.patch(
   '/change-password',
-  auth('USER', 'ADMIN'),
+  auth(),
   UserControllers.changePassword,
+);
+
+router.post(
+  '/forgot-password',
+  validateRequest(UserValidations.forgetPasswordSchema),
+  UserControllers.forgotPassword,
+);
+
+router.put(
+  '/verify-otp',
+  validateRequest(UserValidations.verifyOtpSchema),
+  UserControllers.verifyOtp,
 );
 
 export const UserRouters = router;

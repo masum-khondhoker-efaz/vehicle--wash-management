@@ -4,10 +4,11 @@ import config from '../../config';
 import prisma from '../utils/prisma';
 
 const superAdminData = {
-  name: 'Super Admin',
+  fullName: 'Super Admin',
   email: 'admin@gmail.com',
   password: '',
-  role: UserRoleEnum.SUPERADMIN,
+  phoneNumber: '1234567890',
+  role: UserRoleEnum.SUPER_ADMIN,
 };
 
 const seedSuperAdmin = async () => {
@@ -15,7 +16,7 @@ const seedSuperAdmin = async () => {
     // Check if a super admin already exists
     const isSuperAdminExists = await prisma.user.findFirst({
       where: {
-        role: UserRoleEnum.SUPERADMIN,
+        role: UserRoleEnum.SUPER_ADMIN,
       },
     });
 
@@ -25,8 +26,13 @@ const seedSuperAdmin = async () => {
         config.super_admin_password as string,
         Number(config.bcrypt_salt_rounds) || 12,
       );
-      await prisma.user.create({
+      const superAdmin = await prisma.user.create({
         data: superAdminData,
+      });
+      await prisma.admin.create({
+        data: {
+          userId: superAdmin.id,
+        },
       });
       console.log('Super Admin created successfully.');
     } else {

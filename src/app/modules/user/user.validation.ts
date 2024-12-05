@@ -1,7 +1,7 @@
 import z from "zod";
 const registerUser = z.object({
   body: z.object({
-    name: z.string({
+    fullName: z.string({
       required_error: "Name is required!",
     }),
     email: z
@@ -15,34 +15,56 @@ const registerUser = z.object({
       required_error: "Password is required!",
     }),
 
-    age: z.number().int({
-      message: "Age must be an integer!",
-    }),
-    bio: z.string({
-      required_error: "Bio is required!",
-    }),
+    phoneNumber: z.string({
+      required_error: "Phone number is required!",
+    }).min(9, {  message: "Phone number must be at least 9 characters!" }),
+
   }),
 });
 
 const updateProfileSchema = z.object({
   body: z.object({
-    age: z
-      .number()
-      .int({
-        message: "Age must be an integer!",
-      })
-      .optional(),
-    bio: z
+    fullName: z
       .string({
-        required_error: "Bio is required!",
+        required_error: 'Name is required!',
       })
       .optional(),
-    lastDonationDate: z
+    password: z
       .string({
-        required_error: "Last donation date is required!",
+        required_error: 'Password is required!',
       })
       .optional(),
+    phoneNumber: z
+      .string({
+        required_error: 'Phone number is required!',
+      }).optional(),
   }),
 });
 
-export const UserValidations = { registerUser, updateProfileSchema };
+const forgetPasswordSchema = z.object({
+  body: z.object({
+    email: z
+      .string({
+        required_error: 'Email is required!',
+      })
+      .email({
+        message: 'Invalid email format!',
+      }),
+  }),
+});
+
+const verifyOtpSchema = z.object({
+  body: z.object({
+    otp: z.number({
+      required_error: 'OTP is required!',
+    })
+  })
+});
+
+
+export const UserValidations = {
+  registerUser,
+  updateProfileSchema,
+  forgetPasswordSchema,
+  verifyOtpSchema,
+};

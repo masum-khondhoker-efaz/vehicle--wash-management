@@ -27,7 +27,7 @@ const loginUserFromDB = async (payload: {
   const accessToken = await generateToken(
     {
       id: userData.id,
-      name: userData.name,
+      fullName: userData.fullName,
       email: userData.email,
       role: userData.role,
     },
@@ -36,9 +36,11 @@ const loginUserFromDB = async (payload: {
   );
   return {
     id: userData.id,
-    name: userData.name,
+    fullName: userData.fullName,
     email: userData.email,
     role: userData.role,
+    phoneNumber: userData.phoneNumber,
+    profileImage: userData.profileImage,
     accessToken: accessToken,
   };
 };
