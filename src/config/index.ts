@@ -18,4 +18,10 @@ export default {
     email: process.env.EMAIL,
     app_pass: process.env.APP_PASS,
   },
+  s3: {
+    do_space_endpoint: process.env.DO_SPACE_ENDPOINT,
+    do_space_accesskey: process.env.DO_SPACE_ACCESS_KEY,
+    do_space_secret_key: process.env.DO_SPACE_SECRET_KEY,
+    do_space_bucket: process.env.DO_SPACE_BUCKET,
+  },
 };

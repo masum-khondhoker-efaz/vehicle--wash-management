@@ -15,8 +15,10 @@ model User {
   email           String         @unique
   password        String
   fullName        String
-  phoneNumber     String
+  dateOfBirth     String
+  phoneNumber     String?
   profileImage    String?
+  gender          String?
   otp             Int?
   otpExpiresAt    DateTime?
   role            UserRoleEnum   @default(CUSTOMER)
@@ -27,6 +29,7 @@ model User {
   garageOwner     GarageOwner[]
   driver          Driver[]
   admin           Admin[]
+  garage          Garages[]
 
 
   @@map("users")
@@ -43,37 +46,166 @@ model Admin {
 
 model Customer{
   id           String         @id @default(auto()) @map("_id") @db.ObjectId
-  userId       String         @db.ObjectId
+  userId       String         @db.ObjectId @unique
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
+  location     String?
+  latitude     Float?
+  longitude    Float?
   user         User           @relation(fields: [userId], references: [id])
+  bookings     Bookings[]
+  reviews      Review[]
+  driver       Driver[]
+  cars         Car[]
+  payments     Payment[]
   @@map("customers")
 }
 
 model GarageOwner {
   id              String         @id @default(auto()) @map("_id") @db.ObjectId
-  userId          String         @db.ObjectId
+  userId          String         @db.ObjectId @unique
   description     String?
   location        String?
   latitude        Float?
   longitude       Float?
-  services        String[]
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   user            User           @relation(fields: [userId], references: [id])
+  service         Service[]
   @@map("garage_owners")
+}
+
+model Garages {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String         @db.ObjectId
+  garageName      String
+  garageImage     String?
+  description     String
+  location        String
+  latitude        Float?
+  longitude       Float?
+  minimumPrice    Float
+  availableTimes  String[]
+  serviceIds      String[]       @db.ObjectId
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  user            User           @relation(fields: [userId], references: [id])
+  bookings        Bookings[]
+  service         Service[]
+  payment         Payment[]
+  @@map("garages")
+}
+
+
+model Service {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  serviceName     String
+  servicePrice    Float
+  serviceStatus   String?
+  garageId        String         @db.ObjectId
+  userId          String         @db.ObjectId
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  garage          Garages        @relation(fields: [garageId], references: [id])
+  garageOwner     GarageOwner    @relation(fields: [userId], references: [userId])
+  reviews         Review[]
+  @@map("services")
+}
+
+
+
+model Bookings{
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  garageId        String         @db.ObjectId
+  customerId      String         @db.ObjectId
+  services        String[]       
+  totalAmount     Float
+  bookingStatus   String
+  ownerNumber     String
+  carName         String
+  carNumber       String
+  serviceDate     DateTime
+  location        String
+  latitude        Float?
+  longitude       Float?
+  estimatedTime   String
+  driverId        String         @db.ObjectId
+  driverName      String
+  driverNumber    String
+  driverImage     String
+  serviceStatus   String
+  paymentStatus   String
+  paymentId       String         @db.ObjectId
+  bookingDate     DateTime
+  bookingTime     String
+  status          String
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  garage          Garages        @relation(fields: [garageId], references: [id])
+  customer        Customer       @relation(fields: [customerId], references: [id])
+  driver          Driver         @relation(fields: [driverId], references: [id])
+  
+  @@map("bookings")
 }
 
 
 model Driver {
   id              String         @id @default(auto()) @map("_id") @db.ObjectId
-  userId          String         @db.ObjectId
+  userId          String         @db.ObjectId @unique
+  customerId      String         @db.ObjectId 
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   user            User           @relation(fields: [userId], references: [id])
+  customer        Customer       @relation(fields: [customerId], references: [userId])
+  bookings        Bookings[]
+  cars            Car[]
   @@map("drivers")
 }
 
+model Car {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String         @db.ObjectId
+  carName         String
+  carNumber       String?
+  carModel        String?
+  carImage        String?
+  driverId        String         @db.ObjectId 
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  driver          Driver         @relation(fields: [driverId], references: [userId])
+  customer        Customer       @relation(fields: [userId], references: [userId])
+  @@map("cars")
+}
+
+model Review {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  serviceId       String         @db.ObjectId
+  userId          String         @db.ObjectId
+  rating          Int
+  comment         String
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  service         Service        @relation(fields: [serviceId], references: [id])
+  customer        Customer       @relation(fields: [userId], references: [userId])
+ 
+  @@map("reviews")
+}
+
+model Payment {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  paymentId       String
+  paymentStatus   String
+  paymentAmount   Float
+  paymentDate     DateTime
+  services        String[]       
+  garageId        String         @db.ObjectId
+  customerId      String         @db.ObjectId
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  customer        Customer       @relation(fields: [customerId], references: [userId])
+  garage          Garages        @relation(fields: [garageId], references: [id])
+  @@map("payments")
+}
 
 
 

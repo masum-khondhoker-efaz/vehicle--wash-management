@@ -2,23 +2,24 @@ import z from "zod";
 const registerUser = z.object({
   body: z.object({
     fullName: z.string({
-      required_error: "Name is required!",
+      required_error: 'Name is required!',
     }),
     email: z
       .string({
-        required_error: "Email is required!",
+        required_error: 'Email is required!',
       })
       .email({
-        message: "Invalid email format!",
+        message: 'Invalid email format!',
       }),
     password: z.string({
-      required_error: "Password is required!",
+      required_error: 'Password is required!',
     }),
 
-    phoneNumber: z.string({
-      required_error: "Phone number is required!",
-    }).min(9, {  message: "Phone number must be at least 9 characters!" }),
-
+    dateOfBirth: z
+      .string({
+        required_error: 'Date of birth is required!',
+      })
+      ,
   }),
 });
 

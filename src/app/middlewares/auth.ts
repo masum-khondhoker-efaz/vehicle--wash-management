@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
-import { Secret } from 'jsonwebtoken';
+import { JwtPayload, Secret } from 'jsonwebtoken';
 import config from '../../config';
 import AppError from '../errors/AppError';
 import prisma from '../utils/prisma';
@@ -26,12 +26,13 @@ const auth = (...roles: string[]) => {
           id: verifyUserToken.id,
         },
       });
+     
 
       if (!user) {
         throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized!');
       }
 
-      req.user = verifyUserToken;
+      req.user = verifyUserToken as JwtPayload;
       if (roles.length && !roles.includes(verifyUserToken.role)) {
         throw new AppError(httpStatus.FORBIDDEN, 'Forbidden!');
       }

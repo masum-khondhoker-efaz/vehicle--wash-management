@@ -7,7 +7,7 @@ const superAdminData = {
   fullName: 'Super Admin',
   email: 'admin@gmail.com',
   password: '',
-  phoneNumber: '1234567890',
+  dateOfBirth: '01-09-2000',
   role: UserRoleEnum.SUPER_ADMIN,
 };
 

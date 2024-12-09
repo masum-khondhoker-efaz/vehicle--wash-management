@@ -31,19 +31,19 @@ const registerUserIntoDB = async (payload: any) => {
       data: userData,
     });
     if (!user) {
-      throw new Error('User not created!');
+      throw Error('User not created!');
     }
 
     const data = {
       userId: user.id,
     };
 
-    if (payload.role === 'ADMIN' || payload.role === 'SUPER_ADMIN') {
+    if (payload.role === 'ADMIN') {
       const admin = await transactionClient.admin.create({
         data: data,
       });
       if (!admin) {
-        throw new Error('Admin not created!');
+        throw Error('Admin not created!');
       }
     }
 
@@ -52,7 +52,7 @@ const registerUserIntoDB = async (payload: any) => {
         data: data,
       });
       if (!customer) {
-        throw new Error('Customer not created!');
+        throw Error('Customer not created!');
       }
     }
 
@@ -61,7 +61,7 @@ const registerUserIntoDB = async (payload: any) => {
         data: data,
       });
       if (!driver) {
-        throw new Error('Driver not created!');
+        throw Error('Driver not created!');
       }
     }
     if (payload.role === 'GARAGE_OWNER') {
@@ -69,7 +69,7 @@ const registerUserIntoDB = async (payload: any) => {
         data: data,
       });
       if (!garageOwner) {
-        throw new Error('Garage Owner not created!');
+        throw Error('Garage Owner not created!');
       }
     }
     return { userId: user.id };
@@ -172,13 +172,7 @@ const updateMyProfileIntoDB = async (id: string, payload: any) => {
       data: userData,
     });
 
-    // Update user profile data
-    const updatedUserProfile = await transactionClient.Profile.update({
-      where: { userId: id },
-      data: userProfileData,
-    });
-
-    return { updatedUser, updatedUserProfile };
+    return { updatedUser };
   });
 
   // Fetch and return the updated user including the profile
