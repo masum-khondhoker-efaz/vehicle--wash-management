@@ -5,6 +5,8 @@ import path from 'path';
 import { GarageRouters } from '../modules/garage/garage.routes';
 import { driverRoutes } from '../modules/driver/driver.routes';
 import { carRoutes } from '../modules/car/car.routes';
+import { reviewRoutes } from '../modules/review/review.routes';
+import { bookingRoutes } from '../modules/bookings/bookings.routes';
 const router = express.Router();
 
 const moduleRoutes = [
@@ -27,6 +29,14 @@ const moduleRoutes = [
   {
     path: '/cars',
     route: carRoutes
+  },
+  {
+    path: '/reviews',
+    route: reviewRoutes  
+  },
+  {
+    path: '/bookings',
+    route: bookingRoutes
   }
 ];
 

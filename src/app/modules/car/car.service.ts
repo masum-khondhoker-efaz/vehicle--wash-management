@@ -32,6 +32,14 @@ const getCarListFromDB = async (userId: string) => {
         where: {
         userId: userId,
         },
+        select: {
+        id: true,
+        carName: true,
+        carImage: true,
+        driverId: true,
+        createdAt: true,
+        updatedAt: true,
+        },
     });
     
     return cars;
