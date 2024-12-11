@@ -15,7 +15,15 @@ const loginUserFromDB = async (payload: {
       email: payload.email,
     },
   });
-  const isCorrectPassword: Boolean = await bcrypt.compare(
+  if(!userData.fullName){
+    throw new AppError(httpStatus.BAD_REQUEST, 'Full Name not set for this user');
+  }
+
+  if (!userData.password) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Password not set for this user');
+  }
+
+  const isCorrectPassword: boolean = await bcrypt.compare(
     payload.password,
     userData.password,
   );

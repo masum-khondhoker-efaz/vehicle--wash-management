@@ -9,7 +9,7 @@ import { uploadFileToSpaceForUpdate } from '../../utils/updateMulterUpload';
 
 
 const registerGarage = catchAsync(async (req, res) => {
-    const userId  = req.user.id;
+    const user = req.user as any;
     const data = req.body;
     const file = req.file;
     // console.log(file, 'check file');
@@ -25,7 +25,8 @@ const registerGarage = catchAsync(async (req, res) => {
       garageImage: fileUrl,
     };
     
-    const result = await garageService.registerGarageIntoDB(userId, garageData);
+    const result = await garageService.registerGarageIntoDB(user.id
+, garageData);
     
     sendResponse(res, {
         statusCode: httpStatus.CREATED,
@@ -57,7 +58,7 @@ const getGarageById = catchAsync(async (req, res) => {
 
 const updateGarage = catchAsync(async (req, res) => {
     const garageId = req.params.garageId;
-    const userId = req.user.id;
+    const user = req.user as any;
     const data = req.body;
     const file = req.file;
   
@@ -72,7 +73,7 @@ const updateGarage = catchAsync(async (req, res) => {
    }
   
 
-    const result = await garageService.updateGarageIntoDB(userId, garageId, garageData);
+    const result = await garageService.updateGarageIntoDB(user.id, garageId, garageData);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         message: 'Garage updated successfully',
@@ -82,8 +83,8 @@ const updateGarage = catchAsync(async (req, res) => {
 
 const deleteGarage = catchAsync(async (req, res) => {
     const garageId = req.params.garageId;
-    const userId = req.user.id;
-    const result = await garageService.deleteGarageFromDB(userId, garageId);
+    const user = req.user as any;
+    const result = await garageService.deleteGarageFromDB(user.id, garageId);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         message: 'Garage deleted successfully',
@@ -93,10 +94,10 @@ const deleteGarage = catchAsync(async (req, res) => {
 
 
 const addService = catchAsync(async (req, res) => {
-    const userId = req.user.id;
+    const user = req.user as any;
     const garageId = req.params.garageId;
     const data = req.body;
-    const result = await garageService.addServiceIntoDB(userId, garageId, data);
+    const result = await garageService.addServiceIntoDB(user.id, garageId, data);
     sendResponse(res, {
         statusCode: httpStatus.CREATED,
         message: 'Service added successfully',
@@ -106,9 +107,9 @@ const addService = catchAsync(async (req, res) => {
 
 
 const getServices = catchAsync(async (req, res) => {
-  const userId = req.user.id;
+  const user = req.user as any;
     const garageId = req.params.garageId;
-    const services = await garageService.getServicesFromDB(userId, garageId);
+    const services = await garageService.getServicesFromDB(user.id, garageId);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         message: 'Service list',
@@ -117,9 +118,9 @@ const getServices = catchAsync(async (req, res) => {
 });
 
 const getServiceById = catchAsync(async (req, res) => {
-    const userId = req.user.id;
+    const user = req.user as any;
     const serviceId = req.params.serviceId;
-    const service = await garageService.getServiceByIdFromDB(userId, serviceId);
+    const service = await garageService.getServiceByIdFromDB(user.id, serviceId);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         message: 'Service details',
@@ -128,10 +129,10 @@ const getServiceById = catchAsync(async (req, res) => {
 });
 
 const updateService = catchAsync(async (req, res) => {
-    const userId = req.user.id;
+    const user = req.user as any;
     const serviceId = req.params.serviceId;
     const data = req.body;
-    const result = await garageService.updateServiceIntoDB(userId, serviceId, data);
+    const result = await garageService.updateServiceIntoDB(user.id, serviceId, data);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         message: 'Service updated successfully',
@@ -140,11 +141,11 @@ const updateService = catchAsync(async (req, res) => {
 }); 
 
 const deleteService = catchAsync(async (req, res) => {
-    const userId = req.user.id;
+    const user = req.user as any;
     const garageId = req.params.garageId;
     const serviceId = req.params.serviceId;
     const result = await garageService.deleteServiceFromDB(
-      userId,
+      user.id,
       garageId, 
       serviceId,
     );

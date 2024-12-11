@@ -8,7 +8,7 @@ import { carService } from './car.service';
 import { uploadFileToSpaceForUpdate } from '../../utils/updateMulterUpload';
 
 const addCar = catchAsync(async (req, res) => {
-  const userId = req.user.id;
+  const user = req.user as any;
   const data = req.body;
   const file = req.file;
 
@@ -21,7 +21,7 @@ const addCar = catchAsync(async (req, res) => {
     data,
     carImage: fileUrl,
   };
-  const result = await carService.addCarIntoDB(userId, carData);
+  const result = await carService.addCarIntoDB(user.id, carData);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -31,8 +31,8 @@ const addCar = catchAsync(async (req, res) => {
 });
 
 const getCarList = catchAsync(async (req, res) => {
-  const userId = req.user.id;
-  const cars = await carService.getCarListFromDB(userId);
+  const user = req.user as any;
+  const cars = await carService.getCarListFromDB(user.id);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     message: 'Car list',
@@ -52,7 +52,7 @@ const getCarById = catchAsync(async (req, res) => {
 
 const updateCar = catchAsync(async (req, res) => {
   const carId = req.params.carId;
-  const userId = req.user.id;
+  const user = req.user as any;
   const data = req.body;
   const file = req.file;
 
@@ -66,7 +66,7 @@ const updateCar = catchAsync(async (req, res) => {
     carData.carImage = fileUrl;
   }
 
-  const result = await carService.updateCarIntoDB(userId, carId, carData);
+  const result = await carService.updateCarIntoDB(user.id, carId, carData);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     message: 'Car updated successfully',
@@ -75,9 +75,10 @@ const updateCar = catchAsync(async (req, res) => {
 });
 
 const deleteCar = catchAsync(async (req, res) => {
-  const userId = req.user.id;
+  
+  const user = req.user as any;
   const carId = req.params.carId;
-  const result = await carService.deleteCarFromDB(userId, carId);
+  const result = await carService.deleteCarFromDB(user.id, carId);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     message: 'Car deleted successfully',

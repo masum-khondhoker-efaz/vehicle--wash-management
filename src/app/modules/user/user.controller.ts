@@ -31,8 +31,8 @@ const getAllUsers = catchAsync(async (req, res) => {
 
 
 const getMyProfile = catchAsync(async (req, res) => {
-  const id = req.user.id;
-  const result = await UserServices.getMyProfileFromDB(id);
+  const user = req.user as any;
+  const result = await UserServices.getMyProfileFromDB(user.id);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -53,8 +53,8 @@ const getUserDetails = catchAsync(async (req, res) => {
 });
 
 const updateMyProfile = catchAsync(async (req, res) => {
-  const id = req.user.id;
-  const result = await UserServices.updateMyProfileIntoDB(id, req.body);
+  const user = req.user as any;
+  const result = await UserServices.updateMyProfileIntoDB(user.id, req.body);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

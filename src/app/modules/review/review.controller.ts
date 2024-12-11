@@ -5,9 +5,9 @@ import { reviewService } from './review.service';
 
 
 const addReview = catchAsync(async (req, res) => {
-    const userId = req.user.id;
+    const user = req.user as any;
    
-    const result = await reviewService.addReviewIntoDB(userId, req.body);
+    const result = await reviewService.addReviewIntoDB(user.id, req.body);
 
     sendResponse(res, {
         statusCode: httpStatus.CREATED,
@@ -18,8 +18,8 @@ const addReview = catchAsync(async (req, res) => {
 
 
 const getReviewList = catchAsync(async (req, res) => {
-    const userId = req.user.id;
-    const reviews = await reviewService.getReviewListFromDB(userId);
+    const user = req.user as any;
+    const reviews = await reviewService.getReviewListFromDB(user.id);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         message: 'Review list',
@@ -28,9 +28,9 @@ const getReviewList = catchAsync(async (req, res) => {
 });
 
 const getReviewById = catchAsync(async (req, res) => {
-    const userId = req.user.id;
+    const user = req.user as any;
     const reviewId = req.params.reviewId;
-    const review = await reviewService.getReviewByIdFromDB(userId, reviewId);
+    const review = await reviewService.getReviewByIdFromDB(user.id, reviewId);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         message: 'Review details',
@@ -40,10 +40,10 @@ const getReviewById = catchAsync(async (req, res) => {
 
 const updateReview = catchAsync(async (req, res) => {
     const reviewId = req.params.reviewId;
-    const userId = req.user.id;
+    const user = req.user as any;
     const data = req.body;
 
-    const result = await reviewService.updateReviewIntoDB(userId, reviewId, data);
+    const result = await reviewService.updateReviewIntoDB(user.id, reviewId, data);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -54,9 +54,9 @@ const updateReview = catchAsync(async (req, res) => {
 
 const deleteReview = catchAsync(async (req, res) => {
     const reviewId = req.params.reviewId;
-    const userId = req.user.id;
+    const user = req.user as any;
 
-    const result = await reviewService.deleteReviewFromDB(userId, reviewId);
+    const result = await reviewService.deleteReviewFromDB(user.id, reviewId);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,

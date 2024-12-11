@@ -7,10 +7,10 @@ import exp from 'constants';
 import { bookingService } from './bookings.service';
 
 const addBooking = catchAsync(async (req, res) => {
-  const userId = req.user.id;
+  const user = req.user as any;
   const data = req.body;
 
-  const result = await bookingService.addBookingIntoDB(userId, data);
+  const result = await bookingService.addBookingIntoDB(user.id, data);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -20,8 +20,8 @@ const addBooking = catchAsync(async (req, res) => {
 });
 
 const getBookingList = catchAsync(async (req, res) => {
-  const userId = req.user.id;
-  const bookings = await bookingService.getBookingListFromDB(userId);
+  const user = req.user as any;
+  const bookings = await bookingService.getBookingListFromDB(user.id);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     message: 'Booking list',
@@ -30,9 +30,9 @@ const getBookingList = catchAsync(async (req, res) => {
 });
 
 const getBookingById = catchAsync(async (req, res) => {
-  const userId = req.user.id;
+  const user = req.user as any;
   const bookingId = req.params.bookingId;
-  const booking = await bookingService.getBookingByIdFromDB(userId, bookingId);
+  const booking = await bookingService.getBookingByIdFromDB(user.id, bookingId);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     message: 'Booking details',
@@ -41,12 +41,12 @@ const getBookingById = catchAsync(async (req, res) => {
 });
 
 const updateBooking = catchAsync(async (req, res) => {
-  const userId = req.user.id;
+  const user = req.user as any;
   const bookingId = req.params.bookingId;
   const data = req.body;
 
   const result = await bookingService.updateBookingIntoDB(
-    userId,
+    user.id,
     bookingId,
     data,
   );
@@ -59,10 +59,10 @@ const updateBooking = catchAsync(async (req, res) => {
 });
 
 const cancelBookingStatus = catchAsync(async (req, res) => {
-    const userId = req.user.id;
+    const user = req.user as any;
     const bookingId = req.params.bookingId;
     
-    const result = await bookingService.cancelBookingIntoDB(userId, bookingId);
+    const result = await bookingService.cancelBookingIntoDB(user.id, bookingId);
     
     sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -73,10 +73,10 @@ const cancelBookingStatus = catchAsync(async (req, res) => {
 
 
 const deleteBooking = catchAsync(async (req, res) => {
-  const userId = req.user.id;
+  const user = req.user as any;
   const bookingId = req.params.bookingId;
 
-  const result = await bookingService.deleteBookingFromDB(userId, bookingId);
+  const result = await bookingService.deleteBookingFromDB(user.id, bookingId);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

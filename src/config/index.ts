@@ -24,4 +24,16 @@ export default {
     do_space_secret_key: process.env.DO_SPACE_SECRET_KEY,
     do_space_bucket: process.env.DO_SPACE_BUCKET,
   },
+  sosial_login: {
+    google: {
+      client_id: process.env.GOOGLE_CLIENT_ID,
+      client_secret: process.env.GOOGLE_CLIENT_SECRET,
+      redirect_uri: process.env.GOOGLE_CALLBACK_URL,
+    },
+    facebook: {
+      client_id: process.env.FACEBOOK_CLIENT_ID,
+      client_secret: process.env.FACEBOOK_CLIENT_SECRET,
+      redirect_uri: process.env.FACEBOOK_CALLBACK_URL,
+    },
+  },
 };

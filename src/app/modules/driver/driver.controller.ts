@@ -8,7 +8,7 @@ import { uploadFileToSpaceForUpdate } from '../../utils/updateMulterUpload';
 
 
 const addDriver = catchAsync(async (req, res) => {
-    const userId = req.user.id;
+    const user = req.user as any;
     const data = req.body;
     const file = req.file;
 
@@ -22,7 +22,7 @@ const addDriver = catchAsync(async (req, res) => {
       driverImage: fileUrl,
     };
 
-    const result = await driverService.addDriverIntoDB(userId, driverData);
+    const result = await driverService.addDriverIntoDB(user.id, driverData);
 
     sendResponse(res, {
         statusCode: httpStatus.CREATED,
@@ -32,8 +32,8 @@ const addDriver = catchAsync(async (req, res) => {
 });
 
 const getDriverList = catchAsync(async (req, res) => {
-    const userId = req.user.id;
-    const drivers = await driverService.getDriverListFromDB(userId);
+    const user = req.user as any;
+    const drivers = await driverService.getDriverListFromDB(user.id);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         message: 'Driver list',
@@ -53,7 +53,7 @@ const getDriverById = catchAsync(async (req, res) => {
 
 const updateDriver = catchAsync(async (req, res) => {
     const driverId = req.params.driverId;
-    const userId = req.user.id;
+    const user = req.user as any;
     const data = req.body;
     const file = req.file;
 
@@ -67,7 +67,7 @@ const updateDriver = catchAsync(async (req, res) => {
       driverData.driverImage = fileUrl;
     }
 
-    const result = await driverService.updateDriverIntoDB(userId, driverId,  driverData);
+    const result = await driverService.updateDriverIntoDB(user.id, driverId,  driverData);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
@@ -78,9 +78,9 @@ const updateDriver = catchAsync(async (req, res) => {
 
 const deleteDriver = catchAsync(async (req, res) => {
     const driverId = req.params.driverId;
-    const userId = req.user.id;
+    const user = req.user as any;
 
-    const result = await driverService.deleteDriverFromDB(userId, driverId);
+    const result = await driverService.deleteDriverFromDB(user.id, driverId);
 
     sendResponse(res, {
         statusCode: httpStatus.OK,
