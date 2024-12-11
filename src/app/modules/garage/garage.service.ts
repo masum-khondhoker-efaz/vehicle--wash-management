@@ -276,6 +276,10 @@ const deleteServiceFromDB = async (userId: string, garageId: string, serviceId: 
   return transaction;
 }
 
+const getGarageServicesFromDB = async (userId: string, garageId: string) => {
+  
+
+}
 
 
 export const garageService = {
@@ -288,5 +292,6 @@ export const garageService = {
      getServicesFromDB,
      getServiceByIdFromDB,
      updateServiceIntoDB,
-     deleteServiceFromDB
+     deleteServiceFromDB,
+    getGarageServicesFromDB,
     };

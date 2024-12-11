@@ -79,4 +79,10 @@ router.delete(
   garageController.deleteService,
 );
 
+router.post(
+  '/nearby-garages',
+  auth(),
+  garageController.getGarageServices,
+);
+
 export const GarageRouters = router;

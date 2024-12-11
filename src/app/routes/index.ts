@@ -7,6 +7,7 @@ import { driverRoutes } from '../modules/driver/driver.routes';
 import { carRoutes } from '../modules/car/car.routes';
 import { reviewRoutes } from '../modules/review/review.routes';
 import { bookingRoutes } from '../modules/bookings/bookings.routes';
+import { MapRoutes } from '../modules/Map/map.routes';
 const router = express.Router();
 
 const moduleRoutes = [
@@ -37,6 +38,10 @@ const moduleRoutes = [
   {
     path: '/bookings',
     route: bookingRoutes
+  },
+  {
+    path: '/map',
+    route: MapRoutes
   }
 ];
 

@@ -156,6 +156,16 @@ const deleteService = catchAsync(async (req, res) => {
     });
 });
 
+const getGarageServices = catchAsync(async (req, res) => {
+    const user = req.user as any;
+    const services = await garageService.getGarageServicesFromDB(user.id, req.body);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        message: 'Garage services',
+        data: services,
+    });
+});
+
 
 export const garageController = {
     registerGarage,
@@ -168,4 +178,5 @@ export const garageController = {
     getServiceById,
     updateService,
     deleteService,
+    getGarageServices,
 };
