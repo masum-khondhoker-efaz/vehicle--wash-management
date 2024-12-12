@@ -15,14 +15,14 @@ model User {
   email           String         @unique
   password        String?
   fullName        String?
-  dateOfBirth     String
+  dateOfBirth     String?
   phoneNumber     String?
   profileImage    String?
   gender          String?
   otp             Int?
   otpExpiresAt    DateTime?
-  googleId        String?
-  facebookId      String?
+  googleId        String? 
+  facebookId      String? 
   appleId         String?
   role            UserRoleEnum   @default(CUSTOMER)
   status          UserStatus     @default(ACTIVE)

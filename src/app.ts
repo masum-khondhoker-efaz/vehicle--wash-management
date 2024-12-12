@@ -1,34 +1,32 @@
-import cors from "cors";
-import express, { Application, NextFunction, Request, Response } from "express";
+import express, { Application, Request, Response } from "express";
 import httpStatus from "http-status";
-import globalErrorHandler from "./app/middlewares/globalErrorHandler";
+import cors from "cors";
+import cookieParser from "cookie-parser";
+import session from "express-session";
+import passport from "passport";
+import dotenv from "dotenv";
+import GlobalErrorHandler from "./app/middlewares/globalErrorHandler";
 import router from "./app/routes";
 import { socialLoginRoutes } from "./app/modules/SocialLogin/socialLogin.route";
-import passport from "passport";
-import session from 'express-session';
+
+dotenv.config();
 
 const app: Application = express();
-app.use(
-  cors({
-    origin: [
-      "http://localhost:3001",
-      "http://localhost:3000",
-      "http://localhost:5000",
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-    credentials: true,
-  })
-);
 
-//parser
+export const corsOptions = {
+  origin: ["http://localhost:3001", "http://localhost:3000"],
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
+
+// Middleware setup
+app.use(cors(corsOptions));
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static("public"));
 
-app.get("/", (req: Request, res: Response) => {
-  res.send({
-    Message: "The server is running. . .",
-  });
-});
 // Session setup for OAuth
 app.use(
   session({
@@ -41,11 +39,23 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(socialLoginRoutes);
+
+
+// Route handler for root endpoint
+app.get("/", (req: Request, res: Response) => {
+  res.send({
+    message: "Martnica Server is Running",
+  });
+});
+
+// API routes
 app.use("/api/v1", router);
 
-app.use(globalErrorHandler);
+// Global error handling
+app.use(GlobalErrorHandler);
 
-app.use((req: Request, res: Response, next: NextFunction) => {
+// Not found handler
+app.use((req: Request, res: Response) => {
   res.status(httpStatus.NOT_FOUND).json({
     success: false,
     message: "API NOT FOUND!",

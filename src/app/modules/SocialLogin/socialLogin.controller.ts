@@ -1,8 +1,9 @@
-import { Request, Response } from "express";
-import { SocialLoginService } from "./socialLogin.service";
-import catchAsync from "../../utils/catchAsync";
-import sendResponse from "../../utils/sendResponse";
-import httpStatus from "http-status";
+import { Request, Response } from 'express';
+import { SocialLoginService } from './socialLogin.service';
+
+import httpStatus from 'http-status';
+import catchAsync from '../../utils/catchAsync';
+import sendResponse from '../../utils/sendResponse';
 
 // login all user form db googleCallbacks
 const googleLogin = catchAsync(
@@ -12,15 +13,15 @@ const googleLogin = catchAsync(
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: "user loggedin  successfully!",
+      message: 'user loggedin  successfully!',
       data: result,
     });
-  }
+  },
 );
 
-export const googleCallback = async (req: Request, res: Response) => {
+const googleCallback = async (req: Request, res: Response) => {
   const token = await SocialLoginService.googleLoginIntoDb(req.user);
-  res.redirect(`http://localhost:3011/?token=${token}`);
+  res.redirect(`http://localhost:3000/?token=${token}`);
 };
 
 // login all user form db facebookCallback
@@ -31,17 +32,17 @@ const facebookLogin = catchAsync(
     sendResponse(res, {
       statusCode: httpStatus.OK,
       success: true,
-      message: "user loggedin  successfully!",
+      message: 'user loggedin  successfully!',
       data: result,
     });
-  }
+  },
 );
 
 // Facebook callback route
 const facebookCallback = async (req: Request, res: Response) => {
   const token = await SocialLoginService.facebookLoginIntoDb(req.user);
 
-  res.redirect(`http://localhost:3011/?token=${token}`);
+  res.redirect(`http://localhost:3000/?token=${token}`);
   // res.status(200).send(token);
 };
 
