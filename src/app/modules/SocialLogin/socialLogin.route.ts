@@ -1,5 +1,5 @@
 import express from "express";
-import passport from "../../utils/passportSetup";
+import passport from "../../../config/passportSetup";
 import { SocialLoginController } from "./socialLogin.controller";
 
 const router = express.Router();
@@ -12,9 +12,9 @@ router.get(
 );
 
 router.get(
-  "/google/callback",
+  "/api/auth/google/callback",
   passport.authenticate("google", { failureRedirect: "/" }),
-  SocialLoginController.googleCallback
+  SocialLoginController.googleLogin
 );
 
 router.get(
@@ -24,7 +24,7 @@ router.get(
   })
 );
 router.get(
-  "/facebook/callback",
+  "/api/auth/facebook/callback",
   passport.authenticate("facebook", { failureRedirect: "/" }),
   SocialLoginController.facebookCallback
 );

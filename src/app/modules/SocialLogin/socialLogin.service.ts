@@ -1,40 +1,38 @@
-import jwt, { Secret } from "jsonwebtoken";
-import prisma from "../../utils/prisma";
-import { generateToken } from '../../utils/generateToken';
-import config from "../../../config";
+import jwt, { Secret } from 'jsonwebtoken';
 
+import config from '../../../config';
+import prisma from '../../utils/prisma';
+import { generateToken } from '../../utils/generateToken';
 
 // google login into db
 const googleLoginIntoDb = async (user: any) => {
-  const isUserExist = await prisma.user.findUnique({
+  // console.log(user);
+
+  const isUserExist = await prisma.user.findFirst({
     where: {
-      id: user.id,
+      googleId: user.id,
     },
   });
 
   if (isUserExist) {
-    const token =  generateToken(
+    const token = generateToken(
       {
-        id: isUserExist?.id,
-        email: isUserExist?.email,
-        role: isUserExist?.role,
-        fullName: user?.fullName,
+        id: isUserExist.id,
+        email: isUserExist.email,
+        role: isUserExist.role,
       },
       config.jwt.access_secret as Secret,
-      config.jwt.access_expires_in as string
+      config.jwt.access_expires_in as string,
     );
-    return token;
+    return { token };
   }
-
   if (!isUserExist) {
     const newUser = await prisma.user.create({
       data: {
         googleId: user.id,
-        email: user?.emails,
-        fullName: user?.fullName,
-        dateOfBirth: user?.dateOfBirth ,
-        profileImage: user?.profileImage ,
-        
+        fullName: user.displayName,
+        email: user.emails ? user.emails[0].value : '',
+        profileImage: user.photos[0].value,
       },
     });
 
@@ -43,60 +41,51 @@ const googleLoginIntoDb = async (user: any) => {
         id: newUser?.id,
         email: newUser?.email,
         role: newUser?.role,
-        fullName: user?.fullName,
       },
       config.jwt.access_secret as Secret,
       config.jwt.access_expires_in as string,
     );
-    return token;
+    return { token };
   }
 };
 
 // facebook login into db
 const facebookLoginIntoDb = async (user: any) => {
-  const isUserExist = await prisma.user.findUnique({
-    where: {
-      id: user.id,
-    },
-  });
-
-  if (isUserExist) {
-    const token = generateToken(
-      {
-        id: isUserExist?.id,
-        email: isUserExist?.email,
-        role: isUserExist?.role,
-        fullName: user?.fullName,
-      },
-      config.jwt.access_secret as Secret,
-      config.jwt.access_expires_in as string,
-    );
-    return token;
-  }
-
-  if (!isUserExist) {
-    const newUser = await prisma.user.create({
-      data: {
-        facebookId: user.id,
-        email: user?.emails,
-        fullName: user?.fullName ,
-        dateOfBirth: user?.dateOfBirth ,
-        profileImage: user?.profileImage ,
-      },
-    });
-
-    const token = generateToken(
-      {
-        id: newUser?.id,
-        email: newUser?.email,
-        role: newUser?.role,
-        fullName: user.fullName,
-      },
-      config.jwt.access_secret as Secret,
-      config.jwt.access_expires_in as string,
-    );
-    return token;
-  }
+  // const isUserExist = await prisma.user.findUnique({
+  //   where: {
+  //     facebookId: user.id,
+  //   },
+  // });
+  // if (isUserExist) {
+  //   const token = jwtHelpers.generateToken(
+  //     {
+  //       id: isUserExist?.id,
+  //       email: isUserExist?.email,
+  //       role: isUserExist?.role,
+  //     },
+  //     config.jwt.jwt_secret as Secret,
+  //     config.jwt.expires_in as string
+  //   );
+  //   return token;
+  // }
+  // if (!isUserExist) {
+  //   const newUser = await prisma.user.create({
+  //     data: {
+  //       facebookId: user.id,
+  //       email: user.emails ? user.emails[0].value : "",
+  //     },
+  //   });
+  //   const token = jwtHelpers.generateToken(
+  //     {
+  //       id: newUser?.id,
+  //       email: newUser?.email,
+  //       role: newUser?.role,
+  //     },
+  //     config.jwt.jwt_secret as Secret,
+  //     config.jwt.expires_in as string
+  //   );
+  //   return token;
+  // }
 };
 export const SocialLoginService = {
   googleLoginIntoDb,
