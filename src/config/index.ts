@@ -36,4 +36,8 @@ export default {
       redirect_uri: process.env.FACEBOOK_CALLBACK_URL,
     },
   },
+  stripe :{
+    stripe_secret_key : process.env.STRIPE_SECRET_KEY,
+    stripe_publishable_key : process.env.STRIPE_PUBLISHABLE_KEY,
+  }
 };

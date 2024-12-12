@@ -61,7 +61,6 @@ const getCompaniesFromDb = async (
 };
 
 
-
 // distance between two location
 const getDistanceFromGarageFromDb = async (
   latitude: number,

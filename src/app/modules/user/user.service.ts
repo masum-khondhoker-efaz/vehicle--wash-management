@@ -2,6 +2,7 @@ import { User } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import prisma from '../../utils/prisma';
 import emailSender from '../../utils/emailSender';
+import { AuthServices } from '../auth/auth.service';
 
 interface UserWithOptionalPassword extends Omit<User, 'password'> {
   password?: string;
@@ -80,11 +81,11 @@ const registerUserIntoDB = async (payload: any) => {
       id: result.userId,
     },
   });
-
+  const login = await  AuthServices.loginUserFromDB({email: payload.email, password: payload.password})
   const userWithOptionalPassword = user as UserWithOptionalPassword;
   delete userWithOptionalPassword.password;
 
-  return user;
+  return login;
 };
 
 const getAllUsersFromDB = async (searchTerm?: string) => {
@@ -204,7 +205,10 @@ const changePassword = async (user: any, payload: any) => {
     },
   });
 
-  const isCorrectPassword: boolean = await bcrypt.compare(
+  if (!userData.password) {
+    throw new Error('Password not set for user!');
+  }
+  const isCorrectPassword = await bcrypt.compare(
     payload.oldPassword,
     userData.password,
   );

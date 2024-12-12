@@ -40,7 +40,8 @@ app.use(
 );
 app.use(passport.initialize());
 app.use(passport.session());
-app.use(socialLoginRoutes);
+app.use('/api/v1', socialLoginRoutes);
+
 app.use("/api/v1", router);
 
 app.use(globalErrorHandler);

@@ -8,6 +8,7 @@ import { carRoutes } from '../modules/car/car.routes';
 import { reviewRoutes } from '../modules/review/review.routes';
 import { bookingRoutes } from '../modules/bookings/bookings.routes';
 import { MapRoutes } from '../modules/Map/map.routes';
+import { PaymentRoutes } from '../modules/payment/payment.routes';
 const router = express.Router();
 
 const moduleRoutes = [
@@ -25,24 +26,28 @@ const moduleRoutes = [
   },
   {
     path: '/drivers',
-    route: driverRoutes
+    route: driverRoutes,
   },
   {
     path: '/cars',
-    route: carRoutes
+    route: carRoutes,
   },
   {
     path: '/reviews',
-    route: reviewRoutes  
+    route: reviewRoutes,
   },
   {
     path: '/bookings',
-    route: bookingRoutes
+    route: bookingRoutes,
   },
   {
     path: '/map',
-    route: MapRoutes
-  }
+    route: MapRoutes,
+  },
+  {
+    path: '/payment',
+    route: PaymentRoutes,
+  },
 ];
 
 moduleRoutes.forEach(route => router.use(route.path, route.route));

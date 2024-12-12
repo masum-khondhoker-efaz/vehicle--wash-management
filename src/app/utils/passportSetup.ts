@@ -16,8 +16,8 @@ passport.use(
     },
     (accessToken, refreshToken, profile, done) => {
       done(null, profile);
-    }
-  )
+    },
+  ),
 );
 
 // Facebook OAuth setup
