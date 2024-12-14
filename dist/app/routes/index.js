@@ -12,6 +12,7 @@ const car_routes_1 = require("../modules/car/car.routes");
 const review_routes_1 = require("../modules/review/review.routes");
 const bookings_routes_1 = require("../modules/bookings/bookings.routes");
 const map_routes_1 = require("../modules/Map/map.routes");
+const payment_routes_1 = require("../modules/payment/payment.routes");
 const router = express_1.default.Router();
 const moduleRoutes = [
     {
@@ -28,24 +29,28 @@ const moduleRoutes = [
     },
     {
         path: '/drivers',
-        route: driver_routes_1.driverRoutes
+        route: driver_routes_1.driverRoutes,
     },
     {
         path: '/cars',
-        route: car_routes_1.carRoutes
+        route: car_routes_1.carRoutes,
     },
     {
         path: '/reviews',
-        route: review_routes_1.reviewRoutes
+        route: review_routes_1.reviewRoutes,
     },
     {
         path: '/bookings',
-        route: bookings_routes_1.bookingRoutes
+        route: bookings_routes_1.bookingRoutes,
     },
     {
         path: '/map',
-        route: map_routes_1.MapRoutes
-    }
+        route: map_routes_1.MapRoutes,
+    },
+    {
+        path: '/payment',
+        route: payment_routes_1.PaymentRoutes,
+    },
 ];
 moduleRoutes.forEach(route => router.use(route.path, route.route));
 exports.default = router;

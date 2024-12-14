@@ -3,20 +3,27 @@ import * as bcrypt from 'bcrypt';
 import prisma from '../../utils/prisma';
 import emailSender from '../../utils/emailSender';
 import { AuthServices } from '../auth/auth.service';
+import AppError from '../../errors/AppError';
+import httpStatus from 'http-status';
 
 interface UserWithOptionalPassword extends Omit<User, 'password'> {
   password?: string;
 }
 
 const registerUserIntoDB = async (payload: any) => {
-  if(payload.email) {
+  if (payload.email) {
     const existingUser = await prisma.user.findUnique({
       where: {
         email: payload.email,
       },
     });
     if (existingUser) {
-      throw new Error('Email already exists!');
+      const login = await AuthServices.loginUserFromDB({
+        email: payload.email,
+        password: payload.password,
+      });
+      return login;
+      // throw new Error('Email already exists!');
     }
   }
 
@@ -81,7 +88,10 @@ const registerUserIntoDB = async (payload: any) => {
       id: result.userId,
     },
   });
-  const login = await  AuthServices.loginUserFromDB({email: payload.email, password: payload.password})
+  const login = await AuthServices.loginUserFromDB({
+    email: payload.email,
+    password: payload.password,
+  });
   const userWithOptionalPassword = user as UserWithOptionalPassword;
   delete userWithOptionalPassword.password;
 
@@ -111,13 +121,12 @@ const getAllUsersFromDB = async (searchTerm?: string) => {
       updatedAt: true,
     },
   });
-  if(!result) {
+  if (!result) {
     throw new Error('Users not found!');
   }
 
   return result;
 };
-
 
 const getMyProfileFromDB = async (id: string) => {
   const Profile = await prisma.user.findUniqueOrThrow({
@@ -233,7 +242,6 @@ const changePassword = async (user: any, payload: any) => {
   };
 };
 
-
 const forgotPassword = async (payload: { email: string }) => {
   const userData = await prisma.user.findUnique({
     where: {
@@ -245,7 +253,7 @@ const forgotPassword = async (payload: { email: string }) => {
     throw new Error('User not found!');
   }
 
-  const otp = Math.floor(1000+ Math.random() * 9000);
+  const otp = Math.floor(1000 + Math.random() * 9000);
   const otpExpiresAt = new Date();
   otpExpiresAt.setMinutes(otpExpiresAt.getMinutes() + 5);
   const otpExpiresAtString = otpExpiresAt.toISOString();
@@ -314,6 +322,29 @@ const verifyOtpInDB = async (bodyData: { email: string; otp: number }) => {
 
   return;
 };
+
+const updatePassword = async (payload: any) => {
+  const userData = await prisma.user.findUnique({
+    where: { email: payload.email },
+  });
+
+  if (!userData) {
+    throw new AppError(httpStatus.NOT_FOUND, 'User not found!');
+  }
+  const hashedPassword: string = await bcrypt.hash(payload.password, 12);
+  const result = await prisma.user.update({
+    where: {
+      email: payload.email,
+    },
+    data: {
+      password: hashedPassword,
+    },
+  });
+  return {
+    message: 'Password updated successfully!',
+  };
+};
+
 export const UserServices = {
   registerUserIntoDB,
   getAllUsersFromDB,
@@ -324,4 +355,5 @@ export const UserServices = {
   changePassword,
   forgotPassword,
   verifyOtpInDB,
+  updatePassword,
 };

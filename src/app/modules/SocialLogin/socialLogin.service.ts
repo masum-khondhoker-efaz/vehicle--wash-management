@@ -30,9 +30,11 @@ const googleLoginIntoDb = async (user: any) => {
     const newUser = await prisma.user.create({
       data: {
         googleId: user.id,
-        fullName: user.displayName,
+        fullName: user?.displayName,
         email: user.emails ? user.emails[0].value : '',
         profileImage: user.photos[0].value,
+        phoneNumber: user?.phoneNumber,
+        dateOfBirth: user?.dateOfBirth || new Date().toISOString(), 
       },
     });
 

@@ -13,78 +13,81 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SocialLoginService = void 0;
+const config_1 = __importDefault(require("../../../config"));
 const prisma_1 = __importDefault(require("../../utils/prisma"));
 const generateToken_1 = require("../../utils/generateToken");
-const config_1 = __importDefault(require("../../../config"));
 // google login into db
 const googleLoginIntoDb = (user) => __awaiter(void 0, void 0, void 0, function* () {
-    const isUserExist = yield prisma_1.default.user.findUnique({
+    // console.log(user);
+    const isUserExist = yield prisma_1.default.user.findFirst({
         where: {
-            id: user.id,
+            googleId: user.id,
         },
     });
     if (isUserExist) {
         const token = (0, generateToken_1.generateToken)({
-            id: isUserExist === null || isUserExist === void 0 ? void 0 : isUserExist.id,
-            email: isUserExist === null || isUserExist === void 0 ? void 0 : isUserExist.email,
-            role: isUserExist === null || isUserExist === void 0 ? void 0 : isUserExist.role,
-            fullName: user === null || user === void 0 ? void 0 : user.fullName,
+            id: isUserExist.id,
+            email: isUserExist.email,
+            role: isUserExist.role,
         }, config_1.default.jwt.access_secret, config_1.default.jwt.access_expires_in);
-        return token;
+        return { token };
     }
     if (!isUserExist) {
         const newUser = yield prisma_1.default.user.create({
             data: {
                 googleId: user.id,
-                email: user === null || user === void 0 ? void 0 : user.emails,
-                fullName: user === null || user === void 0 ? void 0 : user.fullName,
-                dateOfBirth: user === null || user === void 0 ? void 0 : user.dateOfBirth,
-                profileImage: user === null || user === void 0 ? void 0 : user.profileImage,
+                fullName: user === null || user === void 0 ? void 0 : user.displayName,
+                email: user.emails ? user.emails[0].value : '',
+                profileImage: user.photos[0].value,
+                phoneNumber: user === null || user === void 0 ? void 0 : user.phoneNumber,
+                dateOfBirth: (user === null || user === void 0 ? void 0 : user.dateOfBirth) || new Date().toISOString(),
             },
         });
         const token = (0, generateToken_1.generateToken)({
             id: newUser === null || newUser === void 0 ? void 0 : newUser.id,
             email: newUser === null || newUser === void 0 ? void 0 : newUser.email,
             role: newUser === null || newUser === void 0 ? void 0 : newUser.role,
-            fullName: user === null || user === void 0 ? void 0 : user.fullName,
         }, config_1.default.jwt.access_secret, config_1.default.jwt.access_expires_in);
-        return token;
+        return { token };
     }
 });
 // facebook login into db
 const facebookLoginIntoDb = (user) => __awaiter(void 0, void 0, void 0, function* () {
-    const isUserExist = yield prisma_1.default.user.findUnique({
-        where: {
-            id: user.id,
-        },
-    });
-    if (isUserExist) {
-        const token = (0, generateToken_1.generateToken)({
-            id: isUserExist === null || isUserExist === void 0 ? void 0 : isUserExist.id,
-            email: isUserExist === null || isUserExist === void 0 ? void 0 : isUserExist.email,
-            role: isUserExist === null || isUserExist === void 0 ? void 0 : isUserExist.role,
-            fullName: user === null || user === void 0 ? void 0 : user.fullName,
-        }, config_1.default.jwt.access_secret, config_1.default.jwt.access_expires_in);
-        return token;
-    }
-    if (!isUserExist) {
-        const newUser = yield prisma_1.default.user.create({
-            data: {
-                facebookId: user.id,
-                email: user === null || user === void 0 ? void 0 : user.emails,
-                fullName: user === null || user === void 0 ? void 0 : user.fullName,
-                dateOfBirth: user === null || user === void 0 ? void 0 : user.dateOfBirth,
-                profileImage: user === null || user === void 0 ? void 0 : user.profileImage,
-            },
-        });
-        const token = (0, generateToken_1.generateToken)({
-            id: newUser === null || newUser === void 0 ? void 0 : newUser.id,
-            email: newUser === null || newUser === void 0 ? void 0 : newUser.email,
-            role: newUser === null || newUser === void 0 ? void 0 : newUser.role,
-            fullName: user.fullName,
-        }, config_1.default.jwt.access_secret, config_1.default.jwt.access_expires_in);
-        return token;
-    }
+    // const isUserExist = await prisma.user.findUnique({
+    //   where: {
+    //     facebookId: user.id,
+    //   },
+    // });
+    // if (isUserExist) {
+    //   const token = jwtHelpers.generateToken(
+    //     {
+    //       id: isUserExist?.id,
+    //       email: isUserExist?.email,
+    //       role: isUserExist?.role,
+    //     },
+    //     config.jwt.jwt_secret as Secret,
+    //     config.jwt.expires_in as string
+    //   );
+    //   return token;
+    // }
+    // if (!isUserExist) {
+    //   const newUser = await prisma.user.create({
+    //     data: {
+    //       facebookId: user.id,
+    //       email: user.emails ? user.emails[0].value : "",
+    //     },
+    //   });
+    //   const token = jwtHelpers.generateToken(
+    //     {
+    //       id: newUser?.id,
+    //       email: newUser?.email,
+    //       role: newUser?.role,
+    //     },
+    //     config.jwt.jwt_secret as Secret,
+    //     config.jwt.expires_in as string
+    //   );
+    //   return token;
+    // }
 });
 exports.SocialLoginService = {
     googleLoginIntoDb,

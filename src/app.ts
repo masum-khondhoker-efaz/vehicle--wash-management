@@ -44,7 +44,7 @@ app.use(socialLoginRoutes);
 // Route handler for root endpoint
 app.get("/", (req: Request, res: Response) => {
   res.send({
-    message: "Martnica Server is Running",
+    message: "Demos Server is Running",
   });
 });
 

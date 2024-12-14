@@ -61,7 +61,6 @@ model Customer{
   reviews      Review[]
   driver       Driver[]
   cars         Car[]
-  payments     Payment[]
   @@map("customers")
 }
 
@@ -96,7 +95,6 @@ model Garages {
   user            User           @relation(fields: [userId], references: [id])
   bookings        Bookings[]
   service         Service[]
-  payment         Payment[]
   reviews         Review[]
   @@map("garages")
 }
@@ -129,7 +127,7 @@ model Bookings{
   carId           String         @db.ObjectId
   ownerNumber     String
   carName         String
-  serviceDate     DateTime
+  serviceDate     DateTime?
   location        String
   latitude        Float?
   longitude       Float?
@@ -195,13 +193,11 @@ model Payment {
   paymentId       String
   paymentAmount   Float
   paymentDate     DateTime       @default(now())
-  services        String[]       
-  garageId        String         @db.ObjectId
-  customerId      String         @db.ObjectId
+  customerId      String        
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
-  customer        Customer       @relation(fields: [customerId], references: [userId])
-  garage          Garages        @relation(fields: [garageId], references: [id])
+  
+
   @@map("payments")
 }
 

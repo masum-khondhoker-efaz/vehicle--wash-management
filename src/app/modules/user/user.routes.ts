@@ -55,4 +55,11 @@ router.put(
   UserControllers.verifyOtp,
 );
 
+
+router.put(
+  '/update-password',
+  // auth(),
+  // validateRequest(UserValidations.verifyOtpSchema),
+  UserControllers.updatePassword,
+);
 export const UserRouters = router;

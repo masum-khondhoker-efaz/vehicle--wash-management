@@ -39,6 +39,7 @@ exports.UserServices = void 0;
 const bcrypt = __importStar(require("bcrypt"));
 const prisma_1 = __importDefault(require("../../utils/prisma"));
 const emailSender_1 = __importDefault(require("../../utils/emailSender"));
+const auth_service_1 = require("../auth/auth.service");
 const registerUserIntoDB = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     if (payload.email) {
         const existingUser = yield prisma_1.default.user.findUnique({
@@ -47,7 +48,12 @@ const registerUserIntoDB = (payload) => __awaiter(void 0, void 0, void 0, functi
             },
         });
         if (existingUser) {
-            throw new Error('Email already exists!');
+            const login = yield auth_service_1.AuthServices.loginUserFromDB({
+                email: payload.email,
+                password: payload.password,
+            });
+            return login;
+            // throw new Error('Email already exists!');
         }
     }
     const hashedPassword = yield bcrypt.hash(payload.password, 12);
@@ -101,9 +107,10 @@ const registerUserIntoDB = (payload) => __awaiter(void 0, void 0, void 0, functi
             id: result.userId,
         },
     });
+    const login = yield auth_service_1.AuthServices.loginUserFromDB({ email: payload.email, password: payload.password });
     const userWithOptionalPassword = user;
     delete userWithOptionalPassword.password;
-    return user;
+    return login;
 });
 const getAllUsersFromDB = (searchTerm) => __awaiter(void 0, void 0, void 0, function* () {
     const where = {};

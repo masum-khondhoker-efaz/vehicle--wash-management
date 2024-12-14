@@ -4,9 +4,10 @@ import config from '../../../config';
 import { isValidAmount } from '../../utils/isValidAmount';
 import { TStripeSaveWithCustomerInfo } from './payment.interface';
 import prisma from '../../utils/prisma';
+import { BookingStatus, PaymentStatus, ServiceStatus } from '@prisma/client';
 
 // Initialize Stripe with your secret API key
-const stripe = new Stripe(config.stripe.stripe_publishable_key as string, {
+const stripe = new Stripe(config.stripe.stripe_secret_key as string, {
   apiVersion: '2024-11-20.acacia',
 });
 
@@ -30,29 +31,26 @@ const saveCardWithCustomerInfoIntoStripe = async (
     });
 
 
-    console.log({ paymentMethodId });
-
     // Attach PaymentMethod to the Customer
     const attach = await stripe.paymentMethods.attach(paymentMethodId, {
       customer: customer.id,
     });
 
-    console.log({attach})
-
+   
 
     // Set PaymentMethod as Default
-    const udpateCustomer = await stripe.customers.update(customer.id, {
+    const updateCustomer = await stripe.customers.update(customer.id, {
       invoice_settings: {
         default_payment_method: paymentMethodId,
       },
     });
 
-    console.log({ udpateCustomer });
+    console.log({ updateCustomer });
 
     // update profile with customerId
     await prisma.customer.update({
       where: {
-        id: userId,
+        userId: userId,
       },
       data: {
         customerId: customer.id,
@@ -73,9 +71,10 @@ const authorizedPaymentWithSaveCardFromStripe = async (payload: {
   customerId: string;
   amount: number;
   paymentMethodId: string;
+  bookingId: string;
 }) => {
   try {
-    const { customerId, amount, paymentMethodId } = payload;
+    const { customerId, paymentMethodId, amount, bookingId } = payload;
 
     if (!isValidAmount(amount)) {
       throw new Error(
@@ -91,8 +90,32 @@ const authorizedPaymentWithSaveCardFromStripe = async (payload: {
       payment_method: paymentMethodId,
       off_session: true,
       confirm: true,
-      capture_method: 'manual', // Authorize the payment without capturing
+      capture_method: 'automatic', // Authorize the payment with capturing
     });
+
+    if (paymentIntent.status === 'succeeded') {
+      const payment = await prisma.payment.create({
+        data: {
+          paymentId: paymentIntent.id,
+          customerId: customerId,
+          paymentAmount: amount,
+          paymentDate: new Date(),
+        },
+      });
+      const booking = await prisma.bookings.update({
+        where: {
+          id: bookingId,
+        },
+        data: {
+          paymentId: payment.id,
+          paymentStatus: PaymentStatus.COMPLETED,
+          serviceStatus: ServiceStatus.IN_ROUTE,
+          bookingStatus: BookingStatus.ACCEPTED,
+          serviceDate: new Date(),
+        },
+      });
+    }
+
 
     return paymentIntent;
   } catch (error: any) {

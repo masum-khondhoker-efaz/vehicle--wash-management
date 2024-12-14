@@ -19,7 +19,6 @@ const addBookingIntoDB = async (userId: string, bookingData: any) => {
         latitude: bookingData.latitude,
         longitude: bookingData.longitude,
         serviceStatus: ServiceStatus.IN_ROUTE,
-        serviceDate: bookingData.serviceDate,
         bookingTime: bookingData.bookingTime,
         bookingStatus: BookingStatus.PENDING,
         totalAmount: bookingData.totalAmount,

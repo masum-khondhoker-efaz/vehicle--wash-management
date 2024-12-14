@@ -60,7 +60,6 @@ const loginUserFromDB = (payload) => __awaiter(void 0, void 0, void 0, function*
     }
     const accessToken = yield (0, generateToken_1.generateToken)({
         id: userData.id,
-        fullName: userData.fullName,
         email: userData.email,
         role: userData.role,
     }, config_1.default.jwt.access_secret, config_1.default.jwt.access_expires_in);

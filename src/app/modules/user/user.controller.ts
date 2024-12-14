@@ -23,12 +23,11 @@ const getAllUsers = catchAsync(async (req, res) => {
   const result = await UserServices.getAllUsersFromDB(searchTerm);
 
   sendResponse(res, {
-    statusCode: httpStatus.OK, 
+    statusCode: httpStatus.OK,
     message: 'Users retrieved successfully',
     data: result,
   });
 });
-
 
 const getMyProfile = catchAsync(async (req, res) => {
   const user = req.user as any;
@@ -102,7 +101,18 @@ const verifyOtp = catchAsync(async (req, res) => {
     statusCode: httpStatus.OK,
     success: true,
     message: 'OTP verified successfully!',
-    data: result
+    data: result,
+  });
+});
+
+const updatePassword = catchAsync(async (req, res) => {
+  const result = await UserServices.updatePassword(req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: result.message,
+    data: null,
   });
 });
 
@@ -116,4 +126,5 @@ export const UserControllers = {
   changePassword,
   forgotPassword,
   verifyOtp,
+  updatePassword,
 };

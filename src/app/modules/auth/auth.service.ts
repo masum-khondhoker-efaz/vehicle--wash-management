@@ -6,6 +6,8 @@ import AppError from '../../errors/AppError';
 import { generateToken } from '../../utils/generateToken';
 import prisma from '../../utils/prisma';
 
+
+
 const loginUserFromDB = async (payload: {
   email: string;
   password: string;
@@ -35,7 +37,6 @@ const loginUserFromDB = async (payload: {
   const accessToken = await generateToken(
     {
       id: userData.id,
-      fullName: userData.fullName,
       email: userData.email,
       role: userData.role,
     },

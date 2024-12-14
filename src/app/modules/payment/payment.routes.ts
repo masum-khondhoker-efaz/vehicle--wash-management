@@ -46,7 +46,7 @@ router.post(
 );
 
 // Get all save cards for customer
-router.get('/get-cards/:customerId', PaymentController.getCustomerSavedCards);
+router.get('/:customerId', PaymentController.getCustomerSavedCards);
 
 // Delete card from customer
 router.delete(

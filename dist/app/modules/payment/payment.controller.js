@@ -18,8 +18,8 @@ const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
 const payment_service_1 = require("./payment.service");
 // create a new customer with card
 const saveCardWithCustomerInfo = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const userId = req.user.id;
-    const result = yield payment_service_1.StripeServices.saveCardWithCustomerInfoIntoStripe(req.body, userId);
+    const user = req.user;
+    const result = yield payment_service_1.StripeServices.saveCardWithCustomerInfoIntoStripe(req.body, user.id);
     (0, sendResponse_1.default)(res, {
         statusCode: 200,
         success: true,

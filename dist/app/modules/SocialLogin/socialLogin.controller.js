@@ -12,18 +12,18 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.SocialLoginController = exports.googleCallback = void 0;
+exports.SocialLoginController = void 0;
 const socialLogin_service_1 = require("./socialLogin.service");
+const http_status_1 = __importDefault(require("http-status"));
 const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
 const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
-const http_status_1 = __importDefault(require("http-status"));
 // login all user form db googleCallbacks
 const googleLogin = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield socialLogin_service_1.SocialLoginService.googleLoginIntoDb(req.user);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
         success: true,
-        message: "user loggedin  successfully!",
+        message: 'user loggedin  successfully!',
         data: result,
     });
 }));
@@ -31,25 +31,24 @@ const googleCallback = (req, res) => __awaiter(void 0, void 0, void 0, function*
     const token = yield socialLogin_service_1.SocialLoginService.googleLoginIntoDb(req.user);
     res.redirect(`http://localhost:5000/?token=${token}`);
 });
-exports.googleCallback = googleCallback;
 // login all user form db facebookCallback
 const facebookLogin = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield socialLogin_service_1.SocialLoginService.facebookLoginIntoDb(req.user);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
         success: true,
-        message: "user loggedin  successfully!",
+        message: 'user loggedin  successfully!',
         data: result,
     });
 }));
 // Facebook callback route
 const facebookCallback = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const token = yield socialLogin_service_1.SocialLoginService.facebookLoginIntoDb(req.user);
-    res.redirect(`http://localhost:3011/?token=${token}`);
+    res.redirect(`http://localhost:3000/?token=${token}`);
     // res.status(200).send(token);
 });
 exports.SocialLoginController = {
-    googleCallback: exports.googleCallback,
+    googleCallback,
     googleLogin,
     facebookLogin,
     facebookCallback,

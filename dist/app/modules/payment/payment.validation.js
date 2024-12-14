@@ -15,12 +15,14 @@ const UserSchema = zod_1.z.object({
         .email('Invalid email format'),
 });
 exports.TStripeSaveWithCustomerInfoPayloadSchema = zod_1.z.object({
-    user: UserSchema,
-    paymentMethodId: zod_1.z.string({
-        required_error: 'Payment Method ID is required',
-    }),
-    amount: zod_1.z.number({ required_error: 'Amount is required' }),
-    address: AddressSchema,
+    body: zod_1.z.object({
+        user: UserSchema,
+        paymentMethodId: zod_1.z.string({
+            required_error: 'Payment Method ID is required',
+        }),
+        amount: zod_1.z.number({ required_error: 'Amount is required' }),
+        address: AddressSchema,
+    })
 });
 exports.AuthorizedPaymentPayloadSchema = zod_1.z.object({
     customerId: zod_1.z.string({ required_error: 'Customer ID is required' }),

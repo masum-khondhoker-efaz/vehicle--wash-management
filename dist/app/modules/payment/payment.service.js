@@ -18,7 +18,7 @@ const config_1 = __importDefault(require("../../../config"));
 const isValidAmount_1 = require("../../utils/isValidAmount");
 const prisma_1 = __importDefault(require("../../utils/prisma"));
 // Initialize Stripe with your secret API key
-const stripe = new stripe_1.default(config_1.default.stripe.stripe_secret_key, {
+const stripe = new stripe_1.default(config_1.default.stripe.stripe_publishable_key, {
     apiVersion: '2024-11-20.acacia',
 });
 // Step 1: Create a Customer and Save the Card
@@ -35,16 +35,19 @@ const saveCardWithCustomerInfoIntoStripe = (payload, userId) => __awaiter(void 0
                 country: address.country,
             },
         });
+        console.log({ paymentMethodId });
         // Attach PaymentMethod to the Customer
-        yield stripe.paymentMethods.attach(paymentMethodId, {
+        const attach = yield stripe.paymentMethods.attach(paymentMethodId, {
             customer: customer.id,
         });
+        console.log({ attach });
         // Set PaymentMethod as Default
-        yield stripe.customers.update(customer.id, {
+        const updateCustomer = yield stripe.customers.update(customer.id, {
             invoice_settings: {
                 default_payment_method: paymentMethodId,
             },
         });
+        console.log({ updateCustomer });
         // update profile with customerId
         yield prisma_1.default.customer.update({
             where: {
@@ -60,7 +63,7 @@ const saveCardWithCustomerInfoIntoStripe = (payload, userId) => __awaiter(void 0
         };
     }
     catch (error) {
-        throw new Error(error.message);
+        throw Error(error.message);
     }
 });
 // Step 2: Authorize the Payment Using Saved Card

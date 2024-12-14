@@ -9,6 +9,7 @@ import { reviewRoutes } from '../modules/review/review.routes';
 import { bookingRoutes } from '../modules/bookings/bookings.routes';
 import { MapRoutes } from '../modules/Map/map.routes';
 import { PaymentRoutes } from '../modules/payment/payment.routes';
+import { AdminRoutes } from '../modules/admin/admin.routes';
 const router = express.Router();
 
 const moduleRoutes = [
@@ -48,6 +49,10 @@ const moduleRoutes = [
     path: '/payment',
     route: PaymentRoutes,
   },
+  {
+    path: '/admin',
+    route: AdminRoutes
+  }
 ];
 
 moduleRoutes.forEach(route => router.use(route.path, route.route));
