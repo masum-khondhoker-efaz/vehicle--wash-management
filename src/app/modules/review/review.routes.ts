@@ -19,7 +19,7 @@ router.post(
 
 router.get(
     '/',
-    auth(UserRoleEnum.GARAGE_OWNER),
+    auth(),
     reviewController.getReviewList,
 );
 

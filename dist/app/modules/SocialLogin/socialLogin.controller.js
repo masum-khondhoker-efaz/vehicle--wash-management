@@ -29,7 +29,7 @@ const googleLogin = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, vo
 }));
 const googleCallback = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const token = yield socialLogin_service_1.SocialLoginService.googleLoginIntoDb(req.user);
-    res.redirect(`http://localhost:5000/?token=${token}`);
+    res.redirect(`http://localhost:3011/?token=${token}`);
 });
 // login all user form db facebookCallback
 const facebookLogin = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -44,7 +44,7 @@ const facebookLogin = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, 
 // Facebook callback route
 const facebookCallback = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const token = yield socialLogin_service_1.SocialLoginService.facebookLoginIntoDb(req.user);
-    res.redirect(`http://localhost:3000/?token=${token}`);
+    res.redirect(`http://localhost:3011/?token=${token}`);
     // res.status(200).send(token);
 });
 exports.SocialLoginController = {

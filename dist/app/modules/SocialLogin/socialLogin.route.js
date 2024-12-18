@@ -12,8 +12,8 @@ router.get("/auth/google", passportSetup_1.default.authenticate("google", {
     scope: ["profile", "email"],
 }));
 router.get("/api/auth/google/callback", passportSetup_1.default.authenticate("google", { failureRedirect: "/" }), socialLogin_controller_1.SocialLoginController.googleLogin);
-router.get("/auth/facebook", passportSetup_1.default.authenticate("facebook", {
-    scope: ["email", "public_profile"],
+router.get('/auth/facebook', passportSetup_1.default.authenticate('facebook', {
+    scope: ['public_profile', 'email'],
 }));
 router.get("/api/auth/facebook/callback", passportSetup_1.default.authenticate("facebook", { failureRedirect: "/" }), socialLogin_controller_1.SocialLoginController.facebookCallback);
 exports.socialLoginRoutes = router;

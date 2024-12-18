@@ -28,7 +28,6 @@ const addBookingIntoDB = (userId, bookingData) => __awaiter(void 0, void 0, void
                 latitude: bookingData.latitude,
                 longitude: bookingData.longitude,
                 serviceStatus: client_1.ServiceStatus.IN_ROUTE,
-                serviceDate: bookingData.serviceDate,
                 bookingTime: bookingData.bookingTime,
                 bookingStatus: client_1.BookingStatus.PENDING,
                 totalAmount: bookingData.totalAmount,

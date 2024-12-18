@@ -17,8 +17,9 @@ const stripe_1 = __importDefault(require("stripe"));
 const config_1 = __importDefault(require("../../../config"));
 const isValidAmount_1 = require("../../utils/isValidAmount");
 const prisma_1 = __importDefault(require("../../utils/prisma"));
+const client_1 = require("@prisma/client");
 // Initialize Stripe with your secret API key
-const stripe = new stripe_1.default(config_1.default.stripe.stripe_publishable_key, {
+const stripe = new stripe_1.default(config_1.default.stripe.stripe_secret_key, {
     apiVersion: '2024-11-20.acacia',
 });
 // Step 1: Create a Customer and Save the Card
@@ -35,12 +36,10 @@ const saveCardWithCustomerInfoIntoStripe = (payload, userId) => __awaiter(void 0
                 country: address.country,
             },
         });
-        console.log({ paymentMethodId });
         // Attach PaymentMethod to the Customer
         const attach = yield stripe.paymentMethods.attach(paymentMethodId, {
             customer: customer.id,
         });
-        console.log({ attach });
         // Set PaymentMethod as Default
         const updateCustomer = yield stripe.customers.update(customer.id, {
             invoice_settings: {
@@ -51,7 +50,7 @@ const saveCardWithCustomerInfoIntoStripe = (payload, userId) => __awaiter(void 0
         // update profile with customerId
         yield prisma_1.default.customer.update({
             where: {
-                id: userId,
+                userId: userId,
             },
             data: {
                 customerId: customer.id,
@@ -69,7 +68,7 @@ const saveCardWithCustomerInfoIntoStripe = (payload, userId) => __awaiter(void 0
 // Step 2: Authorize the Payment Using Saved Card
 const authorizedPaymentWithSaveCardFromStripe = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { customerId, amount, paymentMethodId } = payload;
+        const { customerId, paymentMethodId, amount, bookingId } = payload;
         if (!(0, isValidAmount_1.isValidAmount)(amount)) {
             throw new Error(`Amount '${amount}' is not a valid amount`);
         }
@@ -81,8 +80,30 @@ const authorizedPaymentWithSaveCardFromStripe = (payload) => __awaiter(void 0, v
             payment_method: paymentMethodId,
             off_session: true,
             confirm: true,
-            capture_method: 'manual', // Authorize the payment without capturing
+            capture_method: 'automatic', // Authorize the payment with capturing
         });
+        if (paymentIntent.status === 'succeeded') {
+            const payment = yield prisma_1.default.payment.create({
+                data: {
+                    paymentId: paymentIntent.id,
+                    customerId: customerId,
+                    paymentAmount: amount,
+                    paymentDate: new Date(),
+                },
+            });
+            const booking = yield prisma_1.default.bookings.update({
+                where: {
+                    id: bookingId,
+                },
+                data: {
+                    paymentId: payment.id,
+                    paymentStatus: client_1.PaymentStatus.COMPLETED,
+                    serviceStatus: client_1.ServiceStatus.IN_ROUTE,
+                    bookingStatus: client_1.BookingStatus.ACCEPTED,
+                    serviceDate: new Date(),
+                },
+            });
+        }
         return paymentIntent;
     }
     catch (error) {

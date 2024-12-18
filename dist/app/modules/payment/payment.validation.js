@@ -25,10 +25,12 @@ exports.TStripeSaveWithCustomerInfoPayloadSchema = zod_1.z.object({
     })
 });
 exports.AuthorizedPaymentPayloadSchema = zod_1.z.object({
-    customerId: zod_1.z.string({ required_error: 'Customer ID is required' }),
-    amount: zod_1.z.number({ required_error: 'Amount is required' }),
-    paymentMethodId: zod_1.z.string({
-        required_error: 'Payment Method ID is required',
+    body: zod_1.z.object({
+        customerId: zod_1.z.string({ required_error: 'Customer ID is required' }),
+        amount: zod_1.z.number({ required_error: 'Amount is required' }),
+        paymentMethodId: zod_1.z.string({
+            required_error: 'Payment Method ID is required',
+        }),
     }),
 });
 exports.capturedPaymentPayloadSchema = zod_1.z.object({
@@ -37,9 +39,11 @@ exports.capturedPaymentPayloadSchema = zod_1.z.object({
     }),
 });
 exports.saveNewCardWithExistingCustomerPayloadSchema = zod_1.z.object({
-    customerId: zod_1.z.string({ required_error: 'Customer ID is required' }),
-    paymentMethodId: zod_1.z.string({
-        required_error: 'Payment Method ID is required',
+    body: zod_1.z.object({
+        customerId: zod_1.z.string({ required_error: 'Customer ID is required' }),
+        paymentMethodId: zod_1.z.string({
+            required_error: 'Payment Method ID is required',
+        }),
     }),
 });
 exports.refundPaymentPayloadSchema = zod_1.z.object({

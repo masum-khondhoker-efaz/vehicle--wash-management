@@ -16,7 +16,7 @@ router.post(
      multerUpload.single('garageImage'),
      parseBody,
     //  validateRequest(validateGarage.garageValidationSchema),
-     auth(UserRoleEnum.GARAGE_OWNER),
+     auth(),
      garageController.registerGarage,
 
 );
@@ -43,14 +43,14 @@ router.put(
 
 router.delete(
     '/:garageId',
-    auth(UserRoleEnum.GARAGE_OWNER),
+    auth(),
     garageController.deleteGarage,
 );
 
 
 router.post(
   '/services/:garageId',
-  auth(UserRoleEnum.GARAGE_OWNER),
+  auth(),
   garageController.addService,
 );
 
@@ -69,13 +69,13 @@ router.get(
 
 router.put(
   '/services/:garageId/:serviceId',
-  auth(UserRoleEnum.GARAGE_OWNER),
+  auth(),
   garageController.updateService,
 );
 
 router.delete(
   '/services/:garageId/:serviceId',
-  auth(UserRoleEnum.GARAGE_OWNER),
+  auth(),
   garageController.deleteService,
 );
 

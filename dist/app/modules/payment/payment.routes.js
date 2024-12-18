@@ -19,7 +19,7 @@ router.post('/capture-payment', (0, validateRequest_1.default)(payment_validatio
 // Save new card to existing customer
 router.post('/save-new-card', (0, validateRequest_1.default)(payment_validation_1.saveNewCardWithExistingCustomerPayloadSchema), payment_controller_1.PaymentController.saveNewCardWithExistingCustomer);
 // Get all save cards for customer
-router.get('/get-cards/:customerId', payment_controller_1.PaymentController.getCustomerSavedCards);
+router.get('/:customerId', payment_controller_1.PaymentController.getCustomerSavedCards);
 // Delete card from customer
 router.delete('/delete-card/:paymentMethodId', payment_controller_1.PaymentController.deleteCardFromCustomer);
 // Refund payment to customer

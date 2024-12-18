@@ -9,21 +9,20 @@ const registerUser = zod_1.default.object({
     body: zod_1.default.object({
         fullName: zod_1.default.string({
             required_error: 'Name is required!',
-        }),
+        }).optional(),
         email: zod_1.default
             .string({
             required_error: 'Email is required!',
         })
             .email({
             message: 'Invalid email format!',
-        }),
+        }).optional(),
         password: zod_1.default.string({
             required_error: 'Password is required!',
-        }),
-        dateOfBirth: zod_1.default
-            .string({
-            required_error: 'Date of birth is required!',
-        }),
+        }).optional(),
+        phoneNumber: zod_1.default.string({
+            required_error: 'Phone number is required!',
+        }).optional(),
     }),
 });
 const updateProfileSchema = zod_1.default.object({
@@ -33,7 +32,7 @@ const updateProfileSchema = zod_1.default.object({
             required_error: 'Name is required!',
         })
             .optional(),
-        password: zod_1.default
+        gender: zod_1.default
             .string({
             required_error: 'Password is required!',
         })
@@ -41,8 +40,14 @@ const updateProfileSchema = zod_1.default.object({
         phoneNumber: zod_1.default
             .string({
             required_error: 'Phone number is required!',
-        }).optional(),
+        })
+            .optional(),
     }),
+    dateOfBirth: zod_1.default
+        .string({
+        required_error: 'Date of birth is required!',
+    })
+        .optional(),
 });
 const forgetPasswordSchema = zod_1.default.object({
     body: zod_1.default.object({
@@ -59,12 +64,27 @@ const verifyOtpSchema = zod_1.default.object({
     body: zod_1.default.object({
         otp: zod_1.default.number({
             required_error: 'OTP is required!',
+        }),
+    }),
+});
+const changePasswordSchema = zod_1.default.object({
+    body: zod_1.default.object({
+        email: zod_1.default
+            .string({
+            required_error: 'Email is required!',
         })
-    })
+            .email({
+            message: 'Invalid email format!',
+        }),
+        newPassword: zod_1.default.string({
+            required_error: 'Password is required!',
+        }),
+    }),
 });
 exports.UserValidations = {
     registerUser,
     updateProfileSchema,
     forgetPasswordSchema,
     verifyOtpSchema,
+    changePasswordSchema,
 };
