@@ -3,6 +3,7 @@ import auth from '../../middlewares/auth';
 import validateRequest from '../../middlewares/validateRequest';
 import { UserControllers } from '../user/user.controller';
 import { UserValidations } from '../user/user.validation';
+import { UserRoleEnum } from '@prisma/client';
 const router = express.Router();
 
 router.post(
@@ -13,11 +14,11 @@ router.post(
 
 router.get(
   '/',
-  auth('ADMIN', 'SUPER_ADMIN', 'CUSTOMER'),
+  auth(UserRoleEnum.SUPER_ADMIN, UserRoleEnum.ADMIN),
   UserControllers.getAllUsers,
 );
 
-router.get('/me', auth('CUSTOMER', 'ADMIN', 'SUPER_ADMIN', 'DRIVER'), UserControllers.getMyProfile);
+router.get('/me', auth(), UserControllers.getMyProfile);
 
 router.get(
   '/:id',
@@ -26,7 +27,7 @@ router.get(
 );
 router.put(
   '/update-profile',
-  auth('CUSTOMER', 'ADMIN', 'CUSTOMER', 'DRIVER'),
+  auth(),
   UserControllers.updateMyProfile,
 );
 
@@ -37,7 +38,7 @@ router.put(
   UserControllers.updateUserRoleStatus,
 );
 
-router.patch(
+router.put(
   '/change-password',
   auth(),
   UserControllers.changePassword,
@@ -58,8 +59,7 @@ router.put(
 
 router.put(
   '/update-password',
-  // auth(),
-  // validateRequest(UserValidations.verifyOtpSchema),
+  
   UserControllers.updatePassword,
 );
 export const UserRouters = router;

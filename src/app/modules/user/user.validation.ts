@@ -1,4 +1,4 @@
-import z from "zod";
+import z, { date } from 'zod';
 const registerUser = z.object({
   body: z.object({
     fullName: z.string({
@@ -15,11 +15,9 @@ const registerUser = z.object({
       required_error: 'Password is required!',
     }),
 
-    dateOfBirth: z
-      .string({
-        required_error: 'Date of birth is required!',
-      })
-      ,
+    phoneNumber: z.string({
+      required_error: 'Phone number is required!',
+    }),
   }),
 });
 
@@ -30,7 +28,7 @@ const updateProfileSchema = z.object({
         required_error: 'Name is required!',
       })
       .optional(),
-    password: z
+    gender: z
       .string({
         required_error: 'Password is required!',
       })
@@ -38,8 +36,14 @@ const updateProfileSchema = z.object({
     phoneNumber: z
       .string({
         required_error: 'Phone number is required!',
-      }).optional(),
+      })
+      .optional(),
   }),
+    dateOfBirth: z
+      .string({
+        required_error: 'Date of birth is required!',
+      })
+      .optional(),
 });
 
 const forgetPasswordSchema = z.object({
@@ -58,14 +62,29 @@ const verifyOtpSchema = z.object({
   body: z.object({
     otp: z.number({
       required_error: 'OTP is required!',
-    })
-  })
+    }),
+  }),
 });
 
+const changePasswordSchema = z.object({
+  body: z.object({
+    email: z
+      .string({
+        required_error: 'Email is required!',
+      })
+      .email({
+        message: 'Invalid email format!',
+      }),
+    newPassword: z.string({
+      required_error: 'Password is required!',
+    }),
+  }),
+});
 
 export const UserValidations = {
   registerUser,
   updateProfileSchema,
   forgetPasswordSchema,
   verifyOtpSchema,
+  changePasswordSchema,
 };

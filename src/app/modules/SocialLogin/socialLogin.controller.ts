@@ -21,7 +21,7 @@ const googleLogin = catchAsync(
 
 const googleCallback = async (req: Request, res: Response) => {
   const token = await SocialLoginService.googleLoginIntoDb(req.user);
-  res.redirect(`http://localhost:5000/?token=${token}`);
+  res.redirect(`http://localhost:3011/?token=${token}`);
 };
 
 // login all user form db facebookCallback
@@ -42,7 +42,7 @@ const facebookLogin = catchAsync(
 const facebookCallback = async (req: Request, res: Response) => {
   const token = await SocialLoginService.facebookLoginIntoDb(req.user);
 
-  res.redirect(`http://localhost:3000/?token=${token}`);
+  res.redirect(`http://localhost:3011/?token=${token}`);
   // res.status(200).send(token);
 };
 

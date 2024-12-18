@@ -25,7 +25,7 @@ model User {
   facebookId      String? 
   appleId         String?
   role            UserRoleEnum   @default(CUSTOMER)
-  status          UserStatus     @default(ACTIVE)
+  status          UserStatus     @default(INACTIVE)
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   customer        Customer[]
@@ -207,7 +207,6 @@ enum UserRoleEnum {
   CUSTOMER
   ADMIN
   SUPER_ADMIN
-  GARAGE_OWNER
   DRIVER
 
 }
