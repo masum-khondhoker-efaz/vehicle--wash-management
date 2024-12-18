@@ -3,21 +3,21 @@ const registerUser = z.object({
   body: z.object({
     fullName: z.string({
       required_error: 'Name is required!',
-    }),
+    }).optional(),
     email: z
       .string({
         required_error: 'Email is required!',
       })
       .email({
         message: 'Invalid email format!',
-      }),
+      }).optional(),
     password: z.string({
       required_error: 'Password is required!',
-    }),
+    }).optional(),
 
     phoneNumber: z.string({
       required_error: 'Phone number is required!',
-    }),
+    }).optional(),
   }),
 });
 
