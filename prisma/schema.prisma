@@ -33,6 +33,7 @@ model User {
   driver          Driver[]
   admin           Admin[]
   garage          Garages[]
+  service         Service[]
 
 
   @@map("users")
@@ -40,10 +41,11 @@ model User {
 
 model Admin {
   id              String         @id @default(auto()) @map("_id") @db.ObjectId
-  userId          String         @db.ObjectId
+  userId          String         @db.ObjectId @unique
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   user            User           @relation(fields: [userId], references: [id])
+  drivers         Driver[]
   @@map("admins")
 }
 
@@ -59,7 +61,6 @@ model Customer{
   user         User           @relation(fields: [userId], references: [id])
   bookings     Bookings[]
   reviews      Review[]
-  driver       Driver[]
   cars         Car[]
   @@map("customers")
 }
@@ -74,7 +75,6 @@ model GarageOwner {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   user            User           @relation(fields: [userId], references: [id])
-  service         Service[]
   @@map("garage_owners")
 }
 
@@ -93,53 +93,55 @@ model Garages {
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   user            User           @relation(fields: [userId], references: [id])
-  bookings        Bookings[]
-  service         Service[]
-  reviews         Review[]
   @@map("garages")
 }
 
 
+
+
 model Service {
-  id              String         @id @default(auto()) @map("_id") @db.ObjectId
-  serviceName     String
-  servicePrice    Float
-  serviceStatus   String?
-  garageId        String         @db.ObjectId
-  userId          String         @db.ObjectId
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  garage          Garages        @relation(fields: [garageId], references: [id])
-  garageOwner     GarageOwner    @relation(fields: [userId], references: [userId])
-  reviews         Review[]
+  id                    String              @id @default(auto()) @map("_id") @db.ObjectId
+  serviceName           String
+  servicePrice          Float
+  servicePremiumPrice   Float?
+  duration              String
+  serviceImage          String
+  availableTimes        String[]
+  serviceStatus         ServiceActiveStatus @default(ACTIVE)
+  userId                String              @db.ObjectId
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+  user                  User                @relation(fields: [userId], references: [id])
+  reviews               Review[]
+  bookings              Bookings[]
   @@map("services")
 }
 
 
 
+
 model Bookings{
   id              String         @id @default(auto()) @map("_id") @db.ObjectId
-  garageId        String         @db.ObjectId
   customerId      String         @db.ObjectId
-  serviceIds      String[]       @db.ObjectId       
+  serviceId       String       @db.ObjectId       
   totalAmount     Float
   bookingStatus   BookingStatus  @default(PENDING)
-  carId           String         @db.ObjectId
   ownerNumber     String
   carName         String
-  serviceDate     DateTime?
+  serviceDate     DateTime
   location        String
   latitude        Float?
   longitude       Float?
   estimatedTime   String?
+  couponCode      String?
   serviceStatus   ServiceStatus  @default(IN_ROUTE)
   paymentStatus   PaymentStatus  @default(PENDING)
   paymentId       String?         @db.ObjectId
   bookingTime     String
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
-  garage          Garages        @relation(fields: [garageId], references: [id])
   customer        Customer       @relation(fields: [customerId], references: [id])
+  service         Service        @relation(fields: [serviceId], references: [id])
   
   @@map("bookings")
 }
@@ -147,12 +149,14 @@ model Bookings{
 
 model Driver {
   id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  address         String?
+  joinDate        String
   userId          String         @db.ObjectId @unique
-  customerId      String         @db.ObjectId 
+  adminId         String         @db.ObjectId 
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   user            User           @relation(fields: [userId], references: [id])
-  customer        Customer       @relation(fields: [customerId], references: [userId])
+  admin           Admin          @relation(fields: [adminId], references: [userId])
   cars            Car[]
   @@map("drivers")
 }
@@ -174,16 +178,14 @@ model Car {
 
 model Review {
   id              String         @id @default(auto()) @map("_id") @db.ObjectId
-  serviceId       String?        @db.ObjectId
-  garageId        String         @db.ObjectId
+  serviceId       String         @db.ObjectId
   customerId      String         @db.ObjectId
   rating          Int
-  comment         String?
+  comment         String
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
-  service         Service?        @relation(fields: [serviceId], references: [id])
+  service         Service        @relation(fields: [serviceId], references: [id])
   customer        Customer       @relation(fields: [customerId], references: [userId])
-  garage          Garages        @relation(fields: [garageId], references: [id])
  
   @@map("reviews")
 }
@@ -201,6 +203,17 @@ model Payment {
   @@map("payments")
 }
 
+model Coupon {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  couponCode      String
+  percentage      Int
+  discount        Float?
+  firstTimeUser   Boolean?
+  expiryDate      DateTime
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  @@map("coupons")
+}
 
 
 enum UserRoleEnum {
@@ -235,4 +248,9 @@ enum PaymentStatus {
   PENDING
   COMPLETED
   CANCELLED
+}
+
+enum ServiceActiveStatus {
+  ACTIVE
+  INACTIVE
 }

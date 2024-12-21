@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 const bookingSchema = z.object({
   body: z.object({
-    serviceIds: z.array(z.string()),
+    serviceId: z.string(),
     totalAmount: z.number(),
     ownerNumber: z.string(),
     carName: z.string(),
@@ -15,6 +15,30 @@ const bookingSchema = z.object({
   }),
 });
 
+const updateBookingSchema = z.object({
+  body: z.object({
+    serviceIds: z.array(z.string()).optional(),
+    totalAmount: z.number().optional(),
+    ownerNumber: z.string().optional(),
+    carName: z.string().optional(),
+    serviceDate: z.string().optional(),
+    location: z.string().optional(),
+    latitude: z.number().optional(),
+    longitude: z.number().optional(),
+    estimatedTime: z.string().optional(),
+    bookingTime: z.string().optional(),
+  }),
+});
+
+const applyPromoCodeSchema = z.object({
+  body: z.object({
+    couponCode: z.string(),
+  }),
+});
+
+
 export const bookingValidation = { 
-    bookingSchema 
+    bookingSchema,
+    updateBookingSchema,
+    applyPromoCodeSchema,
 };

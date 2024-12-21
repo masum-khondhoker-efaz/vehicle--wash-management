@@ -10,6 +10,8 @@ import { bookingRoutes } from '../modules/bookings/bookings.routes';
 import { MapRoutes } from '../modules/Map/map.routes';
 import { PaymentRoutes } from '../modules/payment/payment.routes';
 import { AdminRoutes } from '../modules/admin/admin.routes';
+import { ServiceRoutes } from '../modules/service/service.routes';
+import { CouponRoutes } from '../modules/coupon/coupon.routes';
 const router = express.Router();
 
 const moduleRoutes = [
@@ -22,6 +24,10 @@ const moduleRoutes = [
     route: UserRouters,
   },
   {
+    path: '/services',
+    route: ServiceRoutes,
+  },
+  {
     path: '/garages',
     route: GarageRouters,
   },
@@ -32,6 +38,10 @@ const moduleRoutes = [
   {
     path: '/cars',
     route: carRoutes,
+  },
+  {
+    path: '/coupon',
+    route: CouponRoutes,
   },
   {
     path: '/reviews',

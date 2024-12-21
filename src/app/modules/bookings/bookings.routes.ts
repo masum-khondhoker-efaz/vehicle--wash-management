@@ -31,6 +31,7 @@ router.get(
 
 router.put(
     '/:bookingId',
+    validateRequest(bookingValidation.updateBookingSchema),
     auth(UserRoleEnum.CUSTOMER),
     bookingController.updateBooking,
 );
@@ -46,5 +47,12 @@ router.delete(
     auth(UserRoleEnum.CUSTOMER),
     bookingController.deleteBooking,
 );
+
+router.post(
+    '/apply-promo/:bookingId',
+    validateRequest(bookingValidation.applyPromoCodeSchema), 
+    auth(UserRoleEnum.CUSTOMER),
+    bookingController.applyPromoCode
+)
 
 export const bookingRoutes = router;

@@ -12,7 +12,7 @@ const review_controller_1 = require("./review.controller");
 const review_validation_1 = require("./review.validation");
 const router = express_1.default.Router();
 router.post('/', (0, validateRequest_1.default)(review_validation_1.reviewValidation.ReviewSchema), (0, auth_1.default)(client_1.UserRoleEnum.CUSTOMER), review_controller_1.reviewController.addReview);
-router.get('/', (0, auth_1.default)(client_1.UserRoleEnum.GARAGE_OWNER), review_controller_1.reviewController.getReviewList);
+router.get('/', (0, auth_1.default)(), review_controller_1.reviewController.getReviewList);
 router.get('/:reviewId', (0, auth_1.default)(), review_controller_1.reviewController.getReviewById);
 router.put('/:reviewId', (0, validateRequest_1.default)(review_validation_1.reviewValidation.ReviewSchema), (0, auth_1.default)(client_1.UserRoleEnum.CUSTOMER), review_controller_1.reviewController.updateReview);
 router.delete('/:reviewId', (0, auth_1.default)(client_1.UserRoleEnum.CUSTOMER), review_controller_1.reviewController.deleteReview);

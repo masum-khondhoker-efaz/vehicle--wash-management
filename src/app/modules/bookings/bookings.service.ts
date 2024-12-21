@@ -10,23 +10,22 @@ const addBookingIntoDB = async (userId: string, bookingData: any) => {
   const transaction = await prisma.$transaction(async prisma => {
     const createdBooking = await prisma.bookings.create({
       data: {
-        garageId: bookingData.garageId,
         customerId: userId,
         ownerNumber: bookingData.ownerNumber,
         carName: bookingData.carName,
-        carId: bookingData.carId,
         location: bookingData.location,
         latitude: bookingData.latitude,
         longitude: bookingData.longitude,
         serviceStatus: ServiceStatus.IN_ROUTE,
+        serviceDate: bookingData.serviceDate,
         bookingTime: bookingData.bookingTime,
         bookingStatus: BookingStatus.PENDING,
         totalAmount: bookingData.totalAmount,
-        serviceIds: bookingData.serviceIds,
+        serviceId: bookingData.serviceId,
         paymentStatus: PaymentStatus.PENDING,
       },
     });
-
+ 
     return createdBooking;
   });
 
@@ -53,61 +52,32 @@ const getBookingByIdFromDB = async (userId: string, bookingId: string) => {
     },
     select: {
       id: true,
-      garageId: true,
       serviceDate: true,
       bookingTime: true,
-      carId: true,
       bookingStatus: true,
       totalAmount: true,
       location: true,
       latitude: true,
       longitude: true,
       serviceStatus: true,
-      serviceIds: true,
+      serviceId: true,
       estimatedTime: true,
       createdAt: true,
       updatedAt: true,
     },
   });
 
-  for (const booking of bookings) {
-    const car = await prisma.car.findUnique({
-      where: {
-        id: booking.carId,
-      },
-      select: {
-        driverId: true,
-      },
-    });
 
-    const driver = await prisma.user.findUnique({
+    const services = await prisma.service.findFirst({
       where: {
-        id: car?.driverId,
-      },
-      select: {
-        fullName: true,
-        profileImage: true,
-      },
-    });
-
-    (booking as any).driverName = driver?.fullName;
-    (booking as any).driverImage = driver?.profileImage;
-
-    const services = await prisma.service.findMany({
-      where: {
-        id: {
-          in: booking.serviceIds,
-        },
+        id:  bookings[0].serviceId,
       },
       select: {
         serviceName: true,
       },
     });
 
-    (booking as any).serviceNames = services.map(
-      service => service.serviceName,
-    );
-  }
+  
 
   return bookings;
 };
@@ -124,9 +94,13 @@ const updatedBooking = await prisma.bookings.update({
     },
     data: {
         bookingTime: data.bookingTime,
-        serviceIds: data.serviceIds,
         totalAmount: data.totalAmount,
         ownerNumber: data.ownerNumber,
+        carName: data.carName,
+        location: data.location,
+        latitude: data.latitude,
+        longitude: data.longitude,
+
     },
 });
 
@@ -153,11 +127,52 @@ const deleteBookingFromDB = async (userId: string, bookingId: string) => {
   const deletedBooking = await prisma.bookings.delete({
     where: {
       id: bookingId,
+      customerId: userId,
       bookingStatus: BookingStatus.CANCELLED,
     },
   });
   return deletedBooking;
 };
+
+const applyPromoCodeIntoDB = async (
+  userId: string,
+  bookingId: string,
+  promoCode: string,
+) => {
+  const booking = await prisma.bookings.findUnique({
+    where: {
+      id: bookingId,
+      customerId: userId,
+    },
+  });
+  if (!booking) {
+    throw new Error('Booking not found');
+  }
+
+  const promo = await prisma.coupon.findMany({
+    where: {
+      couponCode: promoCode,
+    },
+  });
+
+  if (!promo) {
+    throw new Error('Promo code not found');
+  }
+
+  const updatedBooking = await prisma.bookings.update({
+    where: {
+      id: bookingId,
+    },
+    data: {
+      totalAmount:
+        booking.totalAmount -
+        (booking.totalAmount * (promo[0].percentage ?? 0)) / 100,
+    },
+  });
+
+  return updatedBooking;
+};
+
 
 export const bookingService = {
   addBookingIntoDB,
@@ -166,4 +181,5 @@ export const bookingService = {
   cancelBookingIntoDB,
   updateBookingIntoDB,
   deleteBookingFromDB,
+  applyPromoCodeIntoDB,
 };

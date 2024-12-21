@@ -5,6 +5,8 @@ import { multerUpload, uploadFileToSpace } from '../../utils/multerUpload';
 import { UserRoleEnum } from '@prisma/client';
 import { driverController } from './driver.controller';
 import { parseBody } from '../../middlewares/parseBody';
+import { updateMulterUpload } from '../../utils/updateMulterUpload';
+import { driverValidation } from './driver.validation';
 
 
 const router = express.Router();
@@ -13,7 +15,8 @@ router.post(
     '/',
     multerUpload.single('driverImage'),
     parseBody,
-    auth(UserRoleEnum.CUSTOMER),
+    validateRequest(driverValidation.driverSchema),
+    auth(UserRoleEnum.SUPER_ADMIN, UserRoleEnum.ADMIN),
     driverController.addDriver,
 )
 
@@ -31,15 +34,16 @@ router.get(
 
 router.put(
     '/:driverId',
-    multerUpload.single('driverImage'),
+    updateMulterUpload.single('driverImage'),
     parseBody,
-    auth(UserRoleEnum.CUSTOMER),
+    validateRequest(driverValidation.updateDriverSchema),
+    auth(UserRoleEnum.SUPER_ADMIN, UserRoleEnum.ADMIN),
     driverController.updateDriver,
 );
 
 router.delete(
     '/:driverId',
-    auth(UserRoleEnum.CUSTOMER),
+    auth(UserRoleEnum.SUPER_ADMIN, UserRoleEnum.ADMIN),
     driverController.deleteDriver,
 );
 

@@ -16,15 +16,16 @@ const addDriverIntoDB = async (userId: string, driverData: any) => {
         email: data.email,
         password: await bcrypt.hash(data.password, 12),
         phoneNumber: data.phoneNumber,
-        dateOfBirth: data.dateOfBirth,
-        role: data.role || UserRoleEnum.DRIVER,
+        role:  UserRoleEnum.DRIVER,
       },
     });
 
     await prisma.driver.create({
       data: {
         userId: createdDriver.id,
-        customerId: userId,
+        address: data.address,
+        joinDate: data.joinDate,
+        adminId: userId,
       },
     });
 
@@ -36,11 +37,17 @@ const addDriverIntoDB = async (userId: string, driverData: any) => {
 
 const getDriverListFromDB = async (userId: string) => {
   const drivers = await prisma.driver.findMany({
-    where: {
-      customerId: userId,
-    },
-    include: {
-      user: true,
+    select: {
+      userId: true,
+      address: true,
+      joinDate: true,
+      user: {
+        select: {
+          fullName: true,
+          email: true,
+          phoneNumber: true,
+        },
+      },
     },
   });
 
@@ -50,10 +57,19 @@ const getDriverListFromDB = async (userId: string) => {
 const getDriverByIdFromDB = async (driverId: string) => {
   const driver = await prisma.driver.findUnique({
     where: {
-      id: driverId,
+      userId: driverId,
     },
-    include: {
-      user: true,
+    select: {
+      userId: true,
+      address: true,
+      joinDate: true,
+      user: {
+        select: {
+          fullName: true,
+          email: true,
+          phoneNumber: true,
+        },
+      },
     },
   });
 
@@ -74,11 +90,32 @@ const updateDriverIntoDB = async (userId: string, driverId: string, driverData: 
         profileImage: driverData.driverImage,
         email: driverData.email,
         phoneNumber: driverData.phoneNumber,
-        dateOfBirth: driverData.dateOfBirth,
       },
     });
 
-    return updatedDriver;
+    const updateData = await prisma.driver.update({
+      where: {
+        userId: driverId,
+      },
+      data: {
+        address: driverData.address,
+        joinDate: driverData.joinDate,
+      },
+      select: {
+        userId: true,
+        address: true,
+        joinDate: true,
+        user: {
+          select: {
+            fullName: true,
+            email: true,
+            phoneNumber: true,
+          },
+        },
+      },
+    });
+
+    return updateData;
   });
 
   return transaction;
@@ -90,7 +127,6 @@ const deleteDriverFromDB = async (userId: string, driverId: string) => {
     const deletedDriver = await prisma.driver.delete({
       where: {
         userId: driverId,
-        customerId: userId,
       },
     });
     await prisma.user.delete({
