@@ -116,6 +116,18 @@ const updatePassword = catchAsync(async (req, res) => {
   });
 });
 
+const verifyOtpForgotPassword = catchAsync(async (req, res) => {
+  const result = await UserServices.verifyOtpForgotPasswordInDB(req.body);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'OTP verified successfully!',
+    data: result,
+  });
+});
+
+
 export const UserControllers = {
   registerUser,
   getAllUsers,
@@ -127,4 +139,5 @@ export const UserControllers = {
   forgotPassword,
   verifyOtp,
   updatePassword,
+  verifyOtpForgotPassword,
 };

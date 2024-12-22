@@ -6,6 +6,7 @@ import { JwtPayload } from 'jsonwebtoken';
 import exp from 'constants';
 import { carService } from './car.service';
 import { uploadFileToSpaceForUpdate } from '../../utils/updateMulterUpload';
+import AppError from '../../errors/AppError';
 
 const addCar = catchAsync(async (req, res) => {
   const user = req.user as any;

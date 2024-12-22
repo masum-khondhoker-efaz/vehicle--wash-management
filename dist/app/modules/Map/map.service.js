@@ -14,6 +14,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.MapServices = void 0;
 const prisma_1 = __importDefault(require("../../utils/prisma"));
+const AppError_1 = __importDefault(require("../../errors/AppError"));
+const http_status_1 = __importDefault(require("http-status"));
 const distance = (lat1, lon1, lat2, lon2) => {
     const toRad = (value) => (value * Math.PI) / 180;
     const R = 6371; // Radius of the Earth in km
@@ -51,10 +53,7 @@ const getCompaniesFromDb = (latitude, longitude, garageName) => __awaiter(void 0
         return filteredCompanies;
     }
     else {
-        throw new AppError(
-          httpStatus.CONFLICT,
-          'Either latitude/longitude or a valid garage name must be provided',
-        );
+        throw new AppError_1.default(http_status_1.default.CONFLICT, 'Either latitude/longitude or a valid garage name must be provided');
     }
 });
 // distance between two location
@@ -63,10 +62,7 @@ const getDistanceFromGarageFromDb = (latitude, longitude, garageID) => __awaiter
         where: { id: garageID },
     });
     if (!garage || garage.latitude === null || garage.longitude === null) {
-        throw new AppError(
-          httpStatus.CONFLICT,
-          'Garage not found or invalid coordinates',
-        );
+        throw new AppError_1.default(http_status_1.default.CONFLICT, 'Garage not found or invalid coordinates');
     }
     const dist = distance(latitude, longitude, garage.latitude, garage.longitude);
     return `${dist.toFixed(2)} km`;

@@ -1,5 +1,7 @@
 import { JwtPayload } from 'jsonwebtoken';
 import prisma from '../../utils/prisma';
+import AppError from '../../errors/AppError';
+import httpStatus from 'http-status';
 
 
 const distance = (lat1: number, lon1: number, lat2: number, lon2: number) => {

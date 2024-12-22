@@ -18,56 +18,35 @@ const client_1 = require("@prisma/client");
 // get all users
 const getUserList = (offset, limit) => __awaiter(void 0, void 0, void 0, function* () {
     // Fetch paginated user data with cars
-    const customersWithCars = yield prisma_1.default.customer.findMany({
+    const customers = yield prisma_1.default.user.findMany({
         skip: offset, // Skip the first `offset` records
         take: limit, // Limit the result to `limit` records
-        include: {
-            user: {
-                select: {
-                    id: true,
-                    fullName: true,
-                    email: true,
-                    profileImage: true,
-                    role: true,
-                },
-            },
-            cars: {
-                select: {
-                    carName: true,
-                },
-            },
-        },
         where: {
-            user: {
-                role: client_1.UserRoleEnum.CUSTOMER,
-            },
+            role: client_1.UserRoleEnum.CUSTOMER,
+        },
+        select: {
+            id: true,
+            fullName: true,
+            email: true,
+            phoneNumber: true,
+            profileImage: true,
+            role: true,
         },
     });
     // Get the total count of customers with the role of 'CUSTOMER'
-    const totalCount = yield prisma_1.default.customer.count({
+    const totalCount = yield prisma_1.default.user.count({
         where: {
-            user: {
-                role: client_1.UserRoleEnum.CUSTOMER,
-            },
+            role: client_1.UserRoleEnum.CUSTOMER,
         },
     });
     // Calculate the total number of pages
     const totalPages = Math.ceil(totalCount / limit);
-    // Transform the data into the desired format
-    const result = customersWithCars.map(customer => ({
-        id: customer.user.id,
-        fullName: customer.user.fullName,
-        email: customer.user.email,
-        profileImage: customer.user.profileImage,
-        carNames: customer.cars.map(car => car.carName).join(', '),
-        totalCars: customer.cars.length,
-    }));
     // Return pagination info along with data
     return {
         currentPage: Math.floor(offset / limit) + 1, // Current page is calculated by dividing offset by limit
         totalPages,
         totalUser: totalCount, // Total number of users
-        result, // The paginated result
+        customers,
     };
 });
 // get all bookings
@@ -138,7 +117,6 @@ const getGarageList = (offset, limit) => __awaiter(void 0, void 0, void 0, funct
     const completedBookingsPromises = garages.map((garage) => __awaiter(void 0, void 0, void 0, function* () {
         return prisma_1.default.bookings.count({
             where: {
-                garageId: garage.id,
                 bookingStatus: client_1.BookingStatus.COMPLETED,
             },
         });

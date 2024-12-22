@@ -6,6 +6,8 @@ import {
 import fs from 'fs';
 import config from '../../config';
 import multer from 'multer';
+import AppError from '../errors/AppError';
+import httpStatus from 'http-status';
 
 // Configure DigitalOcean Spaces
 const s3 = new S3Client({

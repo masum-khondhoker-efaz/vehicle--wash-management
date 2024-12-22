@@ -51,12 +51,7 @@ const registerUserIntoDB = (payload) => __awaiter(void 0, void 0, void 0, functi
             },
         });
         if (existingUser) {
-            const login = yield auth_service_1.AuthServices.loginUserFromDB({
-                email: payload.email,
-                password: payload.password,
-            });
-            return login;
-            // throw new AppError(httpStatus.CONFLICT,'Email already exists!');
+            throw new AppError_1.default(http_status_1.default.CONFLICT, 'User already exists!');
         }
     }
     const hashedPassword = yield bcrypt.hash(payload.password, 12);
@@ -179,7 +174,7 @@ const getAllUsersFromDB = (searchTerm) => __awaiter(void 0, void 0, void 0, func
         },
     });
     if (!result) {
-        throw new AppError(httpStatus.CONFLICT, 'Users not found!');
+        throw new AppError_1.default(http_status_1.default.CONFLICT, 'Users not found!');
     }
     return result;
 });
@@ -199,7 +194,7 @@ const getMyProfileFromDB = (id) => __awaiter(void 0, void 0, void 0, function* (
         },
     });
     if (!Profile) {
-        throw new AppError(httpStatus.CONFLICT, 'User not found!');
+        throw new AppError_1.default(http_status_1.default.CONFLICT, 'User not found!');
     }
     return Profile;
 });
@@ -217,7 +212,7 @@ const getUserDetailsFromDB = (id) => __awaiter(void 0, void 0, void 0, function*
         },
     });
     if (!user) {
-        throw new AppError(httpStatus.CONFLICT, 'User not found!');
+        throw new AppError_1.default(http_status_1.default.CONFLICT, 'User not found!');
     }
     return user;
 });
@@ -259,11 +254,11 @@ const changePassword = (user, payload) => __awaiter(void 0, void 0, void 0, func
         },
     });
     if (!userData.password) {
-        throw new AppError(httpStatus.CONFLICT, 'Password not set for user!');
+        throw new AppError_1.default(http_status_1.default.CONFLICT, 'Password not set for user!');
     }
     const isCorrectPassword = yield bcrypt.compare(payload.oldPassword, userData.password);
     if (!isCorrectPassword) {
-        throw new AppError(httpStatus.CONFLICT, 'Password incorrect!');
+        throw new AppError_1.default(http_status_1.default.CONFLICT, 'Password incorrect!');
     }
     const hashedPassword = yield bcrypt.hash(payload.newPassword, 12);
     yield prisma_1.default.user.update({
@@ -285,7 +280,7 @@ const forgotPassword = (payload) => __awaiter(void 0, void 0, void 0, function* 
         },
     });
     if (!userData) {
-        throw new AppError(httpStatus.CONFLICT, 'User not found!');
+        throw new AppError_1.default(http_status_1.default.CONFLICT, 'User not found!');
     }
     const otp = Math.floor(1000 + Math.random() * 9000);
     const otpExpiresAt = new Date();
@@ -333,17 +328,14 @@ const verifyOtpInDB = (bodyData) => __awaiter(void 0, void 0, void 0, function* 
         where: { email: bodyData.email },
     });
     if (!userData) {
-        throw new AppError(httpStatus.CONFLICT, 'User not found!');
+        throw new AppError_1.default(http_status_1.default.CONFLICT, 'User not found!');
     }
     const currentTime = new Date(Date.now());
     if ((userData === null || userData === void 0 ? void 0 : userData.otp) !== bodyData.otp) {
-        throw new AppError(httpStatus.CONFLICT, 'Your OTP is incorrect!');
+        throw new AppError_1.default(http_status_1.default.CONFLICT, 'Your OTP is incorrect!');
     }
     else if (!userData.otpExpiresAt || userData.otpExpiresAt <= currentTime) {
-        throw new AppError(
-          httpStatus.CONFLICT,
-          'Your OTP is expired, please send new otp',
-        );
+        throw new AppError_1.default(http_status_1.default.CONFLICT, 'Your OTP is expired, please send new otp');
     }
     if (userData.status !== client_1.UserStatus.ACTIVE) {
         yield prisma_1.default.user.update({
@@ -364,7 +356,13 @@ const verifyOtpInDB = (bodyData) => __awaiter(void 0, void 0, void 0, function* 
             },
         });
     }
-    return { message: 'OTP verified successfully!' };
+    if (userData) {
+        const login = yield auth_service_1.AuthServices.loginUserFromDB({
+            email: userData.email,
+            password: bodyData.password,
+        });
+        return { message: 'OTP verified successfully!', login };
+    }
 });
 const updatePassword = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     const userData = yield prisma_1.default.user.findUnique({

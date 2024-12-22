@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const auth_routes_1 = require("../modules/auth/auth.routes");
 const user_routes_1 = require("../modules/user/user.routes");
-const garage_routes_1 = require("../modules/garage/garage.routes");
 const driver_routes_1 = require("../modules/driver/driver.routes");
 const car_routes_1 = require("../modules/car/car.routes");
 const review_routes_1 = require("../modules/review/review.routes");
@@ -30,10 +29,10 @@ const moduleRoutes = [
         path: '/services',
         route: service_routes_1.ServiceRoutes,
     },
-    {
-        path: '/garages',
-        route: garage_routes_1.GarageRouters,
-    },
+    // {
+    //   path: '/garages',
+    //   route: GarageRouters,
+    // },
     {
         path: '/drivers',
         route: driver_routes_1.driverRoutes,

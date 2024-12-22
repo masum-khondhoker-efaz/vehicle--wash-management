@@ -16,6 +16,8 @@ exports.multerUpload = exports.uploadFileToSpace = void 0;
 const client_s3_1 = require("@aws-sdk/client-s3");
 const config_1 = __importDefault(require("../../config"));
 const multer_1 = __importDefault(require("multer"));
+const AppError_1 = __importDefault(require("../errors/AppError"));
+const http_status_1 = __importDefault(require("http-status"));
 // Configure DigitalOcean Spaces
 const s3 = new client_s3_1.S3Client({
     region: "nyc3",
@@ -28,10 +30,7 @@ const s3 = new client_s3_1.S3Client({
 // Function to upload a file to DigitalOcean Space
 const uploadFileToSpace = (file, folder) => __awaiter(void 0, void 0, void 0, function* () {
     if (!process.env.DO_SPACE_BUCKET) {
-        throw new AppError(
-          httpStatus.CONFLICT,
-          'DO_SPACE_BUCKET is not defined in the environment variables.',
-        );
+        throw new AppError_1.default(http_status_1.default.CONFLICT, 'DO_SPACE_BUCKET is not defined in the environment variables.');
     }
     const params = {
         Bucket: process.env.DO_SPACE_BUCKET, // Your Space name

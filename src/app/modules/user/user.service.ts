@@ -399,6 +399,53 @@ const verifyOtpInDB = async (bodyData: {
     return { message: 'OTP verified successfully!', login };
   }
 };
+// verify otp
+const verifyOtpForgotPasswordInDB = async (bodyData: {
+  email: string;
+  password: string;
+  otp: number;
+}) => {
+  const userData = await prisma.user.findUnique({
+    where: { email: bodyData.email },
+  });
+
+  if (!userData) {
+    throw new AppError(httpStatus.CONFLICT, 'User not found!');
+  }
+  const currentTime = new Date(Date.now());
+
+  if (userData?.otp !== bodyData.otp) {
+    throw new AppError(httpStatus.CONFLICT, 'Your OTP is incorrect!');
+  } else if (!userData.otpExpiresAt || userData.otpExpiresAt <= currentTime) {
+    throw new AppError(
+      httpStatus.CONFLICT,
+      'Your OTP is expired, please send new otp',
+    );
+  }
+
+  if (userData.status !== UserStatus.ACTIVE) {
+    await prisma.user.update({
+      where: { email: bodyData.email },
+      data: {
+        otp: null,
+        otpExpiresAt: null,
+        status: UserStatus.ACTIVE,
+      },
+    });
+  } else {
+    await prisma.user.update({
+      where: { email: bodyData.email },
+      data: {
+        otp: null,
+        otpExpiresAt: null,
+      },
+    });
+  }
+ 
+
+    return { message: 'OTP verified successfully!' };
+  
+};
 
 const updatePassword = async (payload: any) => {
   const userData = await prisma.user.findUnique({
@@ -422,6 +469,8 @@ const updatePassword = async (payload: any) => {
   };
 };
 
+
+
 export const UserServices = {
   registerUserIntoDB,
   getAllUsersFromDB,
@@ -433,4 +482,5 @@ export const UserServices = {
   forgotPassword,
   verifyOtpInDB,
   updatePassword,
+  verifyOtpForgotPasswordInDB,
 };

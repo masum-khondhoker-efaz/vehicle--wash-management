@@ -19,12 +19,13 @@ const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
 const multerUpload_1 = require("../../utils/multerUpload");
 const car_service_1 = require("./car.service");
 const updateMulterUpload_1 = require("../../utils/updateMulterUpload");
+const AppError_1 = __importDefault(require("../../errors/AppError"));
 const addCar = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
     const data = req.body;
     const file = req.file;
     if (!file) {
-        throw new AppError(httpStatus.CONFLICT, 'file not found');
+        throw new AppError_1.default(http_status_1.default.CONFLICT, 'file not found');
     }
     const fileUrl = yield (0, multerUpload_1.uploadFileToSpace)(file, 'retire-professional');
     const carData = {
