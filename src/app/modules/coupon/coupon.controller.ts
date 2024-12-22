@@ -58,10 +58,22 @@ const deleteCoupon = catchAsync(async (req, res) => {
     });
 });
 
+const applyPromoCode = catchAsync(async (req, res) => {
+  const user = req.user as any;
+  const data = req.body;
+  const result = await couponService.applyPromoCodeIntoDB(user.id, data);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: 'Promo code applied successfully',
+    data: result,
+  });
+});
+
 export const couponController = {
     addCoupon,
     getCouponList,
     getCouponById,
     updateCoupon,
     deleteCoupon,
+    applyPromoCode,
 };

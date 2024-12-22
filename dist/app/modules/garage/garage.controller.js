@@ -25,7 +25,7 @@ const registerGarage = (0, catchAsync_1.default)((req, res) => __awaiter(void 0,
     const file = req.file;
     // console.log(file, 'check file');
     if (!file) {
-        throw new Error('file not found');
+        throw new AppError(httpStatus.CONFLICT, 'file not found');
     }
     const fileUrl = yield (0, multerUpload_1.uploadFileToSpace)(file, 'retire-professional');
     // console.log(fileUrl, 'check url');

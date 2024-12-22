@@ -18,12 +18,7 @@ const registerUserIntoDB = async (payload: any) => {
       },
     });
     if (existingUser) {
-      const login = await AuthServices.loginUserFromDB({
-        email: payload.email,
-        password: payload.password,
-      });
-      return login;
-      // throw new Error('Email already exists!');
+      throw new AppError(httpStatus.CONFLICT, 'User already exists!');
     }
   }
 
@@ -97,24 +92,24 @@ const registerUserIntoDB = async (payload: any) => {
   // delete userWithOptionalPassword.password;
 
   // return login;
-   const otp = Math.floor(1000 + Math.random() * 9000);
-   const otpExpiresAt = new Date();
-   otpExpiresAt.setMinutes(otpExpiresAt.getMinutes() + 5);
-   const otpExpiresAtString = otpExpiresAt.toISOString();
+  const otp = Math.floor(1000 + Math.random() * 9000);
+  const otpExpiresAt = new Date();
+  otpExpiresAt.setMinutes(otpExpiresAt.getMinutes() + 5);
+  const otpExpiresAtString = otpExpiresAt.toISOString();
 
-   await prisma.user.update({
-     where: { email: payload.email },
-     data: {
-       otp: otp,
-       otpExpiresAt: otpExpiresAtString,
-     },
-   });
+  await prisma.user.update({
+    where: { email: payload.email },
+    data: {
+      otp: otp,
+      otpExpiresAt: otpExpiresAtString,
+    },
+  });
 
-   await emailSender(
-     'Verify Your Email',
-     userData.email,
+  await emailSender(
+    'Verify Your Email',
+    userData.email,
 
-     `<div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
+    `<div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
     <table width="100%" style="border-collapse: collapse;">
     <tr>
       <td style="background-color: #FCC734; padding: 20px; text-align: center; color: #000000; border-radius: 10px 10px 0 0;">
@@ -143,8 +138,8 @@ const registerUserIntoDB = async (payload: any) => {
   </div>
 
       `,
-   );
-   return { message: 'OTP sent via your email successfully' };
+  );
+  return { message: 'OTP sent via your email successfully' };
 };
 
 const getAllUsersFromDB = async (searchTerm?: string) => {
@@ -171,7 +166,7 @@ const getAllUsersFromDB = async (searchTerm?: string) => {
     },
   });
   if (!result) {
-    throw new Error('Users not found!');
+    throw new AppError(httpStatus.CONFLICT, 'Users not found!');
   }
 
   return result;
@@ -193,7 +188,7 @@ const getMyProfileFromDB = async (id: string) => {
     },
   });
   if (!Profile) {
-    throw new Error('User not found!');
+    throw new AppError(httpStatus.CONFLICT, 'User not found!');
   }
 
   return Profile;
@@ -213,7 +208,7 @@ const getUserDetailsFromDB = async (id: string) => {
     },
   });
   if (!user) {
-    throw new Error('User not found!');
+    throw new AppError(httpStatus.CONFLICT, 'User not found!');
   }
   return user;
 };
@@ -265,7 +260,7 @@ const changePassword = async (user: any, payload: any) => {
   });
 
   if (!userData.password) {
-    throw new Error('Password not set for user!');
+    throw new AppError(httpStatus.CONFLICT, 'Password not set for user!');
   }
   const isCorrectPassword = await bcrypt.compare(
     payload.oldPassword,
@@ -273,7 +268,7 @@ const changePassword = async (user: any, payload: any) => {
   );
 
   if (!isCorrectPassword) {
-    throw new Error('Password incorrect!');
+    throw new AppError(httpStatus.CONFLICT, 'Password incorrect!');
   }
 
   const hashedPassword: string = await bcrypt.hash(payload.newPassword, 12);
@@ -300,7 +295,7 @@ const forgotPassword = async (payload: { email: string }) => {
   });
 
   if (!userData) {
-    throw new Error('User not found!');
+    throw new AppError(httpStatus.CONFLICT, 'User not found!');
   }
 
   const otp = Math.floor(1000 + Math.random() * 9000);
@@ -354,20 +349,27 @@ const forgotPassword = async (payload: { email: string }) => {
 };
 
 // verify otp
-const verifyOtpInDB = async (bodyData: { email: string; otp: number }) => {
+const verifyOtpInDB = async (bodyData: {
+  email: string;
+  password: string;
+  otp: number;
+}) => {
   const userData = await prisma.user.findUnique({
     where: { email: bodyData.email },
   });
 
   if (!userData) {
-    throw new Error('User not found!');
+    throw new AppError(httpStatus.CONFLICT, 'User not found!');
   }
   const currentTime = new Date(Date.now());
 
   if (userData?.otp !== bodyData.otp) {
-    throw new Error('Your OTP is incorrect!');
+    throw new AppError(httpStatus.CONFLICT, 'Your OTP is incorrect!');
   } else if (!userData.otpExpiresAt || userData.otpExpiresAt <= currentTime) {
-    throw new Error('Your OTP is expired, please send new otp');
+    throw new AppError(
+      httpStatus.CONFLICT,
+      'Your OTP is expired, please send new otp',
+    );
   }
 
   if (userData.status !== UserStatus.ACTIVE) {
@@ -388,8 +390,14 @@ const verifyOtpInDB = async (bodyData: { email: string; otp: number }) => {
       },
     });
   }
+  if (userData) {
+    const login = await AuthServices.loginUserFromDB({
+      email: userData.email,
+      password: bodyData.password,
+    });
 
-  return { message: 'OTP verified successfully!' };
+    return { message: 'OTP verified successfully!', login };
+  }
 };
 
 const updatePassword = async (payload: any) => {

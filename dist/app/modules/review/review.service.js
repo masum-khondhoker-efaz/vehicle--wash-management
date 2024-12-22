@@ -20,7 +20,7 @@ const addReviewIntoDB = (userId, reviewData) => __awaiter(void 0, void 0, void 0
             data: {
                 rating: reviewData.rating,
                 customerId: userId,
-                garageId: reviewData.garageId,
+                serviceId: reviewData.serviceId,
             },
         });
         return createdReview;
@@ -28,11 +28,6 @@ const addReviewIntoDB = (userId, reviewData) => __awaiter(void 0, void 0, void 0
     return transaction;
 });
 const getReviewListFromDB = (userId) => __awaiter(void 0, void 0, void 0, function* () {
-    const garages = yield prisma_1.default.garages.findMany({
-        where: {
-            userId: userId,
-        },
-    });
     const reviewStats = yield prisma_1.default.review.aggregate({
         _count: {
             id: true,
@@ -40,51 +35,28 @@ const getReviewListFromDB = (userId) => __awaiter(void 0, void 0, void 0, functi
         _avg: {
             rating: true,
         },
-        where: {
-            garageId: {
-                in: garages.map(garage => garage.id),
-            },
-        },
     });
     const reviews = yield prisma_1.default.review.findMany({
-        where: {
-            garageId: {
-                in: garages.map(garage => garage.id),
-            },
-        },
-        select: {
-            id: true,
-            rating: true,
-            customerId: true,
-            garageId: true,
-            createdAt: true,
-            updatedAt: true,
+        include: {
+            service: true,
         },
     });
     return { reviewStats, reviews };
 });
 const getReviewByIdFromDB = (userId, reviewId) => __awaiter(void 0, void 0, void 0, function* () {
-    const garages = yield prisma_1.default.garages.findMany({
-        where: {
-            userId: userId,
-        },
-    });
     const review = yield prisma_1.default.review.findUnique({
         where: {
             id: reviewId,
-            garageId: {
-                in: garages.map(garage => garage.id),
-            },
         },
     });
     return review;
 });
 const updateReviewIntoDB = (userId, reviewId, reviewData) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(userId, reviewId, reviewData);
     const review = yield prisma_1.default.review.update({
         where: {
             id: reviewId,
             customerId: userId,
+            serviceId: reviewData.serviceId,
         },
         data: {
             rating: reviewData.rating,
@@ -97,9 +69,13 @@ const deleteReviewFromDB = (userId, reviewId) => __awaiter(void 0, void 0, void 
         where: {
             id: reviewId,
             customerId: userId,
-        }
+        },
     });
     return review;
+});
+const deleteAllReviewFromDB = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    const reviews = yield prisma_1.default.review.deleteMany({});
+    return reviews;
 });
 exports.reviewService = {
     addReviewIntoDB,
@@ -107,4 +83,5 @@ exports.reviewService = {
     getReviewByIdFromDB,
     updateReviewIntoDB,
     deleteReviewFromDB,
+    deleteAllReviewFromDB,
 };

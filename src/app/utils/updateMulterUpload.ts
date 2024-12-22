@@ -23,7 +23,8 @@ export const uploadFileToSpaceForUpdate = async (
   folder: string,
 ) => {
   if (!process.env.DO_SPACE_BUCKET) {
-    throw new Error(
+    throw new AppError(
+      httpStatus.CONFLICT,
       'DO_SPACE_BUCKET is not defined in the environment variables.',
     );
   }

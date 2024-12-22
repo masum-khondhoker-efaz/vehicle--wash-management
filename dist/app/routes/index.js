@@ -14,6 +14,8 @@ const bookings_routes_1 = require("../modules/bookings/bookings.routes");
 const map_routes_1 = require("../modules/Map/map.routes");
 const payment_routes_1 = require("../modules/payment/payment.routes");
 const admin_routes_1 = require("../modules/admin/admin.routes");
+const service_routes_1 = require("../modules/service/service.routes");
+const coupon_routes_1 = require("../modules/coupon/coupon.routes");
 const router = express_1.default.Router();
 const moduleRoutes = [
     {
@@ -23,6 +25,10 @@ const moduleRoutes = [
     {
         path: '/users',
         route: user_routes_1.UserRouters,
+    },
+    {
+        path: '/services',
+        route: service_routes_1.ServiceRoutes,
     },
     {
         path: '/garages',
@@ -35,6 +41,10 @@ const moduleRoutes = [
     {
         path: '/cars',
         route: car_routes_1.carRoutes,
+    },
+    {
+        path: '/coupon',
+        route: coupon_routes_1.CouponRoutes,
     },
     {
         path: '/reviews',

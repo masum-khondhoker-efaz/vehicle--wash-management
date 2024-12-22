@@ -10,60 +10,40 @@ import {
 // get all users
 const getUserList = async (offset: number, limit: number) => {
   // Fetch paginated user data with cars
-  const customersWithCars = await prisma.customer.findMany({
+  const customers = await prisma.user.findMany({
     skip: offset, // Skip the first `offset` records
     take: limit, // Limit the result to `limit` records
-    include: {
-      user: {
-        select: {
-          id: true,
-          fullName: true,
-          email: true,
-          profileImage: true,
-          role: true,
-        },
-      },
-      cars: {
-        select: {
-          carName: true,
-        },
-      },
-    },
     where: {
-      user: {
-        role: UserRoleEnum.CUSTOMER,
-      },
+      role: UserRoleEnum.CUSTOMER,
+    },
+    select: {
+      id: true,
+      fullName: true,
+      email: true,
+      phoneNumber: true,
+      profileImage: true,
+      role: true,
     },
   });
 
   // Get the total count of customers with the role of 'CUSTOMER'
-  const totalCount = await prisma.customer.count({
+  const totalCount = await prisma.user.count({
     where: {
-      user: {
         role: UserRoleEnum.CUSTOMER,
-      },
     },
   });
 
   // Calculate the total number of pages
   const totalPages = Math.ceil(totalCount / limit);
 
-  // Transform the data into the desired format
-  const result = customersWithCars.map(customer => ({
-    id: customer.user.id,
-    fullName: customer.user.fullName,
-    email: customer.user.email,
-    profileImage: customer.user.profileImage,
-    carNames: customer.cars.map(car => car.carName).join(', '),
-    totalCars: customer.cars.length,
-  }));
+
 
   // Return pagination info along with data
   return {
     currentPage: Math.floor(offset / limit) + 1, // Current page is calculated by dividing offset by limit
     totalPages,
     totalUser: totalCount, // Total number of users
-    result, // The paginated result
+    customers, 
   };
 };
 
@@ -146,7 +126,6 @@ const getGarageList = async (offset: number, limit: number) => {
   const completedBookingsPromises = garages.map(async garage => {
     return prisma.bookings.count({
       where: {
-        garageId: garage.id,
         bookingStatus: BookingStatus.COMPLETED,
       },
     });

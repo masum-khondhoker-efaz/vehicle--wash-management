@@ -114,6 +114,31 @@ const createPaymentIntent = catchAsync(async (req: any, res: any) => {
   });
 });
 
+const getCustomerDetails = catchAsync(async (req: any, res: any) => {
+  const result = await StripeServices.getCustomerDetailsFromStripe(
+    req?.params?.customerId,
+  );
+
+  sendResponse(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Retrieve customer cards successfully',
+    data: result,
+  });
+});
+
+const getAllCustomers = catchAsync(async (req: any, res: any) => {
+  const result = await StripeServices.getAllCustomersFromStripe();
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Retrieve customer details successfully',
+    data: result,
+  });
+});
+
+
 export const PaymentController = {
   saveCardWithCustomerInfo,
   authorizedPaymentWithSaveCard,
@@ -123,4 +148,7 @@ export const PaymentController = {
   deleteCardFromCustomer,
   refundPaymentToCustomer,
   createPaymentIntent,
+  getCustomerDetails,
+  getAllCustomers,
+  
 };

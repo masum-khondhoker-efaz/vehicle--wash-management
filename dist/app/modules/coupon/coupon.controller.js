@@ -12,74 +12,75 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.reviewController = void 0;
+exports.couponController = void 0;
 const http_status_1 = __importDefault(require("http-status"));
 const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
-const review_service_1 = require("./review.service");
-const addReview = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = req.user;
-    const result = yield review_service_1.reviewService.addReviewIntoDB(user.id, req.body);
-    (0, sendResponse_1.default)(res, {
-        statusCode: http_status_1.default.CREATED,
-        message: 'Review registered successfully',
-        data: result,
-    });
-}));
-const getReviewList = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = req.user;
-    const reviews = yield review_service_1.reviewService.getReviewListFromDB(user.id);
-    (0, sendResponse_1.default)(res, {
-        statusCode: http_status_1.default.OK,
-        message: 'Review list',
-        data: reviews,
-    });
-}));
-const getReviewById = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const user = req.user;
-    const reviewId = req.params.reviewId;
-    const review = yield review_service_1.reviewService.getReviewByIdFromDB(user.id, reviewId);
-    (0, sendResponse_1.default)(res, {
-        statusCode: http_status_1.default.OK,
-        message: 'Review details',
-        data: review,
-    });
-}));
-const updateReview = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const reviewId = req.params.reviewId;
+const coupon_service_1 = require("./coupon.service");
+const addCoupon = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
     const data = req.body;
-    const result = yield review_service_1.reviewService.updateReviewIntoDB(user.id, reviewId, data);
+    const result = yield coupon_service_1.couponService.addCouponIntoDB(user.id, data);
     (0, sendResponse_1.default)(res, {
-        statusCode: http_status_1.default.OK,
-        message: 'Review updated successfully',
+        statusCode: http_status_1.default.CREATED,
+        message: 'Coupon added successfully',
         data: result,
     });
 }));
-const deleteReview = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const reviewId = req.params.reviewId;
+const getCouponList = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
-    const result = yield review_service_1.reviewService.deleteReviewFromDB(user.id, reviewId);
+    const coupons = yield coupon_service_1.couponService.getCouponListFromDB();
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
-        message: 'Review deleted successfully',
-        data: result,
+        message: 'Coupon list',
+        data: coupons,
     });
 }));
-const deleteAllReview = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const getCouponById = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
-    const result = yield review_service_1.reviewService.deleteAllReviewFromDB(user.id);
+    const couponId = req.params.couponId;
+    const coupon = yield coupon_service_1.couponService.getCouponByIdFromDB(couponId);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
-        message: 'All Review deleted successfully',
+        message: 'Coupon details',
+        data: coupon,
+    });
+}));
+const updateCoupon = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const couponId = req.params.couponId;
+    const user = req.user;
+    const data = req.body;
+    const result = yield coupon_service_1.couponService.updateCouponIntoDB(user.id, couponId, data);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Coupon updated successfully',
         data: result,
     });
 }));
-exports.reviewController = {
-    addReview,
-    getReviewList,
-    getReviewById,
-    updateReview,
-    deleteReview,
-    deleteAllReview,
+const deleteCoupon = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const couponId = req.params.couponId;
+    const result = yield coupon_service_1.couponService.deleteCouponFromDB(couponId);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Coupon deleted successfully',
+        data: result,
+    });
+}));
+const applyPromoCode = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const data = req.body;
+    const result = yield coupon_service_1.couponService.applyPromoCodeIntoDB(user.id, data);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Promo code applied successfully',
+        data: result,
+    });
+}));
+exports.couponController = {
+    addCoupon,
+    getCouponList,
+    getCouponById,
+    updateCoupon,
+    deleteCoupon,
+    applyPromoCode,
 };

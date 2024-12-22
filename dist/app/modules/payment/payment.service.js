@@ -70,7 +70,10 @@ const authorizedPaymentWithSaveCardFromStripe = (payload) => __awaiter(void 0, v
     try {
         const { customerId, paymentMethodId, amount, bookingId } = payload;
         if (!(0, isValidAmount_1.isValidAmount)(amount)) {
-            throw new Error(`Amount '${amount}' is not a valid amount`);
+            throw new AppError(
+              httpStatus.CONFLICT,
+              `Amount '${amount}' is not a valid amount`,
+            );
         }
         // Create a PaymentIntent with the specified PaymentMethod
         const paymentIntent = yield stripe.paymentIntents.create({
@@ -107,7 +110,7 @@ const authorizedPaymentWithSaveCardFromStripe = (payload) => __awaiter(void 0, v
         return paymentIntent;
     }
     catch (error) {
-        throw new Error(error.message);
+        throw new AppError(httpStatus.CONFLICT, error.message);
     }
 });
 // Step 3: Capture the Payment
@@ -119,7 +122,7 @@ const capturePaymentRequestToStripe = (payload) => __awaiter(void 0, void 0, voi
         return paymentIntent;
     }
     catch (error) {
-        throw new Error(error.message);
+        throw new AppError(httpStatus.CONFLICT, error.message);
     }
 });
 // New Route: Save a New Card for Existing Customer
@@ -142,7 +145,7 @@ const saveNewCardWithExistingCustomerIntoStripe = (payload) => __awaiter(void 0,
         };
     }
     catch (error) {
-        throw new Error(error.message);
+        throw new AppError(httpStatus.CONFLICT, error.message);
     }
 });
 const getCustomerSavedCardsFromStripe = (customerId) => __awaiter(void 0, void 0, void 0, function* () {
@@ -155,7 +158,7 @@ const getCustomerSavedCardsFromStripe = (customerId) => __awaiter(void 0, void 0
         return { paymentMethods: paymentMethods.data };
     }
     catch (error) {
-        throw new Error(error.message);
+        throw new AppError(httpStatus.CONFLICT, error.message);
     }
 });
 // Delete a card from a customer in the stripe
@@ -165,7 +168,7 @@ const deleteCardFromCustomer = (paymentMethodId) => __awaiter(void 0, void 0, vo
         return { message: 'Card deleted successfully' };
     }
     catch (error) {
-        throw new Error(error.message);
+        throw new AppError(httpStatus.CONFLICT, error.message);
     }
 });
 // Refund amount to customer in the stripe
@@ -178,16 +181,19 @@ const refundPaymentToCustomer = (payload) => __awaiter(void 0, void 0, void 0, f
         return refund;
     }
     catch (error) {
-        throw new Error(error.message);
+        throw new AppError(httpStatus.CONFLICT, error.message);
     }
 });
 // Service function for creating a PaymentIntent
 const createPaymentIntentService = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     if (!payload.amount) {
-        throw new Error('Amount is required');
+        throw new AppError(httpStatus.CONFLICT, 'Amount is required');
     }
     if (!(0, isValidAmount_1.isValidAmount)(payload.amount)) {
-        throw new Error(`Amount '${payload.amount}' is not a valid amount`);
+        throw new AppError(
+          httpStatus.CONFLICT,
+          `Amount '${payload.amount}' is not a valid amount`,
+        );
     }
     // Create a PaymentIntent with Stripe
     const paymentIntent = yield stripe.paymentIntents.create({
@@ -202,13 +208,37 @@ const createPaymentIntentService = (payload) => __awaiter(void 0, void 0, void 0
         dpmCheckerLink: `https://dashboard.stripe.com/settings/payment_methods/review?transaction_id=${paymentIntent.id}`,
     };
 });
+const getCustomerDetailsFromStripe = customerId =>
+  __awaiter(void 0, void 0, void 0, function* () {
+    try {
+      // Retrieve the customer details from Stripe
+      const customer = yield stripe.customers.retrieve(customerId);
+      return customer;
+    } catch (error) {
+      throw new AppError(httpStatus.CONFLICT, error.message);
+    }
+  });
+const getAllCustomersFromStripe = () =>
+  __awaiter(void 0, void 0, void 0, function* () {
+    try {
+      // Retrieve all customers from Stripe
+      const customers = yield stripe.customers.list({
+        limit: 2,
+      });
+      return customers;
+    } catch (error) {
+      throw new AppError(httpStatus.CONFLICT, error.message);
+    }
+  });
 exports.StripeServices = {
-    saveCardWithCustomerInfoIntoStripe,
-    authorizedPaymentWithSaveCardFromStripe,
-    capturePaymentRequestToStripe,
-    saveNewCardWithExistingCustomerIntoStripe,
-    getCustomerSavedCardsFromStripe,
-    deleteCardFromCustomer,
-    refundPaymentToCustomer,
-    createPaymentIntentService,
+  saveCardWithCustomerInfoIntoStripe,
+  authorizedPaymentWithSaveCardFromStripe,
+  capturePaymentRequestToStripe,
+  saveNewCardWithExistingCustomerIntoStripe,
+  getCustomerSavedCardsFromStripe,
+  deleteCardFromCustomer,
+  refundPaymentToCustomer,
+  createPaymentIntentService,
+  getCustomerDetailsFromStripe,
+  getAllCustomersFromStripe,
 };

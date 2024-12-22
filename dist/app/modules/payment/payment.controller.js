@@ -15,6 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PaymentController = void 0;
 const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
+const http_status_1 = __importDefault(require("http-status"));
 const payment_service_1 = require("./payment.service");
 // create a new customer with card
 const saveCardWithCustomerInfo = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -99,6 +100,25 @@ const createPaymentIntent = (0, catchAsync_1.default)((req, res) => __awaiter(vo
         data: result,
     });
 }));
+const getCustomerDetails = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    var _c;
+    const result = yield payment_service_1.StripeServices.getCustomerDetailsFromStripe((_c = req === null || req === void 0 ? void 0 : req.params) === null || _c === void 0 ? void 0 : _c.customerId);
+    (0, sendResponse_1.default)(res, {
+        statusCode: 200,
+        success: true,
+        message: 'Retrieve customer cards successfully',
+        data: result,
+    });
+}));
+const getAllCustomers = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield payment_service_1.StripeServices.getAllCustomersFromStripe();
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        success: true,
+        message: 'Retrieve customer details successfully',
+        data: result,
+    });
+}));
 exports.PaymentController = {
     saveCardWithCustomerInfo,
     authorizedPaymentWithSaveCard,
@@ -108,4 +128,6 @@ exports.PaymentController = {
     deleteCardFromCustomer,
     refundPaymentToCustomer,
     createPaymentIntent,
+    getCustomerDetails,
+    getAllCustomers,
 };

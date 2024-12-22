@@ -24,9 +24,19 @@ const updateCouponValidationSchema = z.object({
 })
 });
 
+const applyPromoCodeSchema = z.object({
+  body: z.object({
+    couponCode: z.string(),
+    serviceId: z.string(),
+    serviceType: z.string(),
+    couponId: z.string(),
+  }),
+});
+
 
 
 export const couponValidation ={
     couponValidationSchema,
-    updateCouponValidationSchema
+    updateCouponValidationSchema,
+    applyPromoCodeSchema,
 };

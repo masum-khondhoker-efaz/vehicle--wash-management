@@ -23,6 +23,11 @@ router.get(
     reviewController.getReviewList,
 );
 
+router.delete(
+    '/all',
+    auth(UserRoleEnum.SUPER_ADMIN, UserRoleEnum.ADMIN),
+    reviewController.deleteAllReview,
+);
 router.get(
     '/:reviewId',
     auth(),
@@ -41,6 +46,7 @@ router.delete(
     auth(UserRoleEnum.CUSTOMER),
     reviewController.deleteReview,
 );
+
 
 export const reviewRoutes = router;
 

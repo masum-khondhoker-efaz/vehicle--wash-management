@@ -15,7 +15,7 @@ const registerGarage = catchAsync(async (req, res) => {
     // console.log(file, 'check file');
 
     if (!file) {
-      throw new Error('file not found');
+      throw new AppError(httpStatus.CONFLICT, 'file not found');
     }
     const fileUrl = await uploadFileToSpace(file, 'retire-professional');
     // console.log(fileUrl, 'check url');

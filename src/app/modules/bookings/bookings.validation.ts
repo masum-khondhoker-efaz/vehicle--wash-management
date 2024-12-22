@@ -30,15 +30,11 @@ const updateBookingSchema = z.object({
   }),
 });
 
-const applyPromoCodeSchema = z.object({
-  body: z.object({
-    couponCode: z.string(),
-  }),
-});
+
 
 
 export const bookingValidation = { 
     bookingSchema,
     updateBookingSchema,
-    applyPromoCodeSchema,
+    
 };

@@ -39,5 +39,12 @@ router.delete(
   couponController.deleteCoupon,
 );
 
+router.post(
+  '/apply-promo-code',
+  validateRequest(couponValidation.applyPromoCodeSchema),
+  auth(UserRoleEnum.CUSTOMER),
+  couponController.applyPromoCode,
+);
+
 export const CouponRoutes = router;
 

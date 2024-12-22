@@ -62,6 +62,7 @@ model Customer{
   bookings     Bookings[]
   reviews      Review[]
   cars         Car[]
+  couponUsage  CouponUsage[]
   @@map("customers")
 }
 
@@ -123,7 +124,7 @@ model Service {
 model Bookings{
   id              String         @id @default(auto()) @map("_id") @db.ObjectId
   customerId      String         @db.ObjectId
-  serviceId       String       @db.ObjectId       
+  serviceId       String          @db.ObjectId       
   totalAmount     Float
   bookingStatus   BookingStatus  @default(PENDING)
   ownerNumber     String
@@ -133,15 +134,18 @@ model Bookings{
   latitude        Float?
   longitude       Float?
   estimatedTime   String?
-  couponCode      String?
+  couponId        String?        @db.ObjectId
+  serviceType     ServiceType    @default(NORMAL)
   serviceStatus   ServiceStatus  @default(IN_ROUTE)
   paymentStatus   PaymentStatus  @default(PENDING)
-  paymentId       String?         @db.ObjectId
+  paymentId       String?        @db.ObjectId
   bookingTime     String
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   customer        Customer       @relation(fields: [customerId], references: [id])
   service         Service        @relation(fields: [serviceId], references: [id])
+  coupon          Coupon?         @relation(fields: [couponId], references: [id])
+  couponUsage     CouponUsage[]
   
   @@map("bookings")
 }
@@ -181,7 +185,7 @@ model Review {
   serviceId       String         @db.ObjectId
   customerId      String         @db.ObjectId
   rating          Int
-  comment         String
+  comment         String?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   service         Service        @relation(fields: [serviceId], references: [id])
@@ -203,16 +207,32 @@ model Payment {
   @@map("payments")
 }
 
-model Coupon {
+  model Coupon {
+    id              String         @id @default(auto()) @map("_id") @db.ObjectId
+    couponCode      String
+    percentage      Int
+    discount        Float?
+    firstTimeUser   Boolean?
+    expiryDate      DateTime
+    createdAt       DateTime       @default(now())
+    updatedAt       DateTime       @updatedAt
+    couponUsage     CouponUsage[]
+    booking         Bookings[]
+    @@map("coupons")
+}
+
+model CouponUsage {
   id              String         @id @default(auto()) @map("_id") @db.ObjectId
-  couponCode      String
-  percentage      Int
-  discount        Float?
-  firstTimeUser   Boolean?
-  expiryDate      DateTime
+  couponId        String         @db.ObjectId
+  bookingId       String         @db.ObjectId
+  customerId      String         @db.ObjectId
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
-  @@map("coupons")
+  coupon          Coupon         @relation(fields: [couponId], references: [id])
+  booking         Bookings       @relation(fields: [bookingId], references: [id])
+  customer        Customer       @relation(fields: [customerId], references: [userId])
+  
+  @@map("coupon_usages")
 }
 
 
@@ -253,4 +273,9 @@ enum PaymentStatus {
 enum ServiceActiveStatus {
   ACTIVE
   INACTIVE
+}
+
+enum ServiceType {
+  NORMAL
+  PREMIUM
 }

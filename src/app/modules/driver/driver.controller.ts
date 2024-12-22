@@ -5,6 +5,7 @@ import { uploadFileToSpace } from '../../utils/multerUpload';
 import { JwtPayload } from 'jsonwebtoken';
 import { driverService } from './driver.service';
 import { uploadFileToSpaceForUpdate } from '../../utils/updateMulterUpload';
+import AppError from '../../errors/AppError';
 
 
 const addDriver = catchAsync(async (req, res) => {
@@ -13,7 +14,7 @@ const addDriver = catchAsync(async (req, res) => {
     const file = req.file;
 
      if (!file) {
-      throw new Error('file not found');
+      throw new AppError(httpStatus.CONFLICT, 'file not found');
     }
     const fileUrl = await uploadFileToSpace(file, 'retire-professional');
 

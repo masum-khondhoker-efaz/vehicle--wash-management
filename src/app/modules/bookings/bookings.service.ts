@@ -1,8 +1,11 @@
+import httpStatus from 'http-status';
+import AppError from '../../errors/AppError';
 import prisma from '../../utils/prisma';
 import {
   BookingStatus,
   PaymentStatus,
   ServiceStatus,
+  ServiceType,
   UserRoleEnum,
 } from '@prisma/client';
 
@@ -17,22 +20,38 @@ const addBookingIntoDB = async (userId: string, bookingData: any) => {
         latitude: bookingData.latitude,
         longitude: bookingData.longitude,
         serviceStatus: ServiceStatus.IN_ROUTE,
+        serviceType: bookingData.serviceType,
         serviceDate: bookingData.serviceDate,
         bookingTime: bookingData.bookingTime,
         bookingStatus: BookingStatus.PENDING,
         totalAmount: bookingData.totalAmount,
         serviceId: bookingData.serviceId,
         paymentStatus: PaymentStatus.PENDING,
+        couponId: bookingData.couponId ? bookingData.couponId : null,
       },
     });
- 
+
+    if (!createdBooking) {
+      throw new AppError(httpStatus.CONFLICT, 'Booking not created');
+    }
+    if (bookingData.couponId) {
+      const couponUsed = await prisma.couponUsage.create({
+        data: {
+          couponId: bookingData.couponId,
+          bookingId: createdBooking.id,
+          customerId: userId,
+        },
+      });
+
+      if (!couponUsed) {
+        throw new AppError(httpStatus.CONFLICT, 'couponUsage is not created');
+      }
+    }
     return createdBooking;
   });
 
   return transaction;
 };
-
-
 
 const getBookingListFromDB = async (userId: string) => {
   const bookings = await prisma.bookings.findMany({
@@ -67,17 +86,14 @@ const getBookingByIdFromDB = async (userId: string, bookingId: string) => {
     },
   });
 
-
-    const services = await prisma.service.findFirst({
-      where: {
-        id:  bookings[0].serviceId,
-      },
-      select: {
-        serviceName: true,
-      },
-    });
-
-  
+  const services = await prisma.service.findFirst({
+    where: {
+      id: bookings[0].serviceId,
+    },
+    select: {
+      serviceName: true,
+    },
+  });
 
   return bookings;
 };
@@ -87,26 +103,24 @@ const updateBookingIntoDB = async (
   bookingId: string,
   data: any,
 ) => {
-const updatedBooking = await prisma.bookings.update({
+  const updatedBooking = await prisma.bookings.update({
     where: {
-        id: bookingId,
-        customerId: userId,
+      id: bookingId,
+      customerId: userId,
     },
     data: {
-        bookingTime: data.bookingTime,
-        totalAmount: data.totalAmount,
-        ownerNumber: data.ownerNumber,
-        carName: data.carName,
-        location: data.location,
-        latitude: data.latitude,
-        longitude: data.longitude,
-
+      bookingTime: data.bookingTime,
+      totalAmount: data.totalAmount,
+      ownerNumber: data.ownerNumber,
+      carName: data.carName,
+      location: data.location,
+      latitude: data.latitude,
+      longitude: data.longitude,
     },
-});
+  });
 
   return updatedBooking;
 };
-
 
 const cancelBookingIntoDB = async (userId: string, bookingId: string) => {
   const cancelledBooking = await prisma.bookings.update({
@@ -122,7 +136,6 @@ const cancelBookingIntoDB = async (userId: string, bookingId: string) => {
   return cancelledBooking;
 };
 
-
 const deleteBookingFromDB = async (userId: string, bookingId: string) => {
   const deletedBooking = await prisma.bookings.delete({
     where: {
@@ -134,46 +147,6 @@ const deleteBookingFromDB = async (userId: string, bookingId: string) => {
   return deletedBooking;
 };
 
-const applyPromoCodeIntoDB = async (
-  userId: string,
-  bookingId: string,
-  promoCode: string,
-) => {
-  const booking = await prisma.bookings.findUnique({
-    where: {
-      id: bookingId,
-      customerId: userId,
-    },
-  });
-  if (!booking) {
-    throw new Error('Booking not found');
-  }
-
-  const promo = await prisma.coupon.findMany({
-    where: {
-      couponCode: promoCode,
-    },
-  });
-
-  if (!promo) {
-    throw new Error('Promo code not found');
-  }
-
-  const updatedBooking = await prisma.bookings.update({
-    where: {
-      id: bookingId,
-    },
-    data: {
-      totalAmount:
-        booking.totalAmount -
-        (booking.totalAmount * (promo[0].percentage ?? 0)) / 100,
-    },
-  });
-
-  return updatedBooking;
-};
-
-
 export const bookingService = {
   addBookingIntoDB,
   getBookingListFromDB,
@@ -181,5 +154,4 @@ export const bookingService = {
   cancelBookingIntoDB,
   updateBookingIntoDB,
   deleteBookingFromDB,
-  applyPromoCodeIntoDB,
 };

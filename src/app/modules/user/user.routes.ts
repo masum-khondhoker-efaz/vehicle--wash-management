@@ -56,6 +56,13 @@ router.put(
   UserControllers.verifyOtp,
 );
 
+router.put(
+  '/verify-otp-forgot-password',
+  validateRequest(UserValidations.verifyOtpSchema),
+  UserControllers.verifyOtp,
+);
+
+
 
 router.put(
   '/update-password',

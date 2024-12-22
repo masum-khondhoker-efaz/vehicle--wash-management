@@ -48,11 +48,6 @@ router.delete(
     bookingController.deleteBooking,
 );
 
-router.post(
-    '/apply-promo/:bookingId',
-    validateRequest(bookingValidation.applyPromoCodeSchema), 
-    auth(UserRoleEnum.CUSTOMER),
-    bookingController.applyPromoCode
-)
+
 
 export const bookingRoutes = router;

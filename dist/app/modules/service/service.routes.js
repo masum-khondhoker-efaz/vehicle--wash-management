@@ -1,0 +1,22 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ServiceRoutes = void 0;
+const express_1 = __importDefault(require("express"));
+const auth_1 = __importDefault(require("../../middlewares/auth"));
+const validateRequest_1 = __importDefault(require("../../middlewares/validateRequest"));
+const client_1 = require("@prisma/client");
+const service_controller_1 = require("./service.controller");
+const service_validation_1 = require("./service.validation");
+const multerUpload_1 = require("../../utils/multerUpload");
+const parseBody_1 = require("../../middlewares/parseBody");
+const updateMulterUpload_1 = require("../../utils/updateMulterUpload");
+const router = express_1.default.Router();
+router.post('/', multerUpload_1.multerUpload.single('serviceImage'), parseBody_1.parseBody, (0, validateRequest_1.default)(service_validation_1.serviceValidation.serviceSchema), (0, auth_1.default)(client_1.UserRoleEnum.SUPER_ADMIN, client_1.UserRoleEnum.ADMIN), service_controller_1.serviceController.addService);
+router.get('/', (0, auth_1.default)(), service_controller_1.serviceController.getServiceList);
+router.get('/:serviceId', (0, auth_1.default)(), service_controller_1.serviceController.getServiceById);
+router.put('/:serviceId', updateMulterUpload_1.updateMulterUpload.single('serviceImage'), parseBody_1.parseBody, (0, validateRequest_1.default)(service_validation_1.serviceValidation.updateServiceSchema), (0, auth_1.default)(client_1.UserRoleEnum.SUPER_ADMIN, client_1.UserRoleEnum.ADMIN), service_controller_1.serviceController.updateService);
+router.delete('/:serviceId', (0, auth_1.default)(client_1.UserRoleEnum.SUPER_ADMIN, client_1.UserRoleEnum.ADMIN), service_controller_1.serviceController.deleteService);
+exports.ServiceRoutes = router;

@@ -5,6 +5,7 @@ import { isValidAmount } from '../../utils/isValidAmount';
 import { TStripeSaveWithCustomerInfo } from './payment.interface';
 import prisma from '../../utils/prisma';
 import { BookingStatus, PaymentStatus, ServiceStatus } from '@prisma/client';
+import AppError from '../../errors/AppError';
 
 // Initialize Stripe with your secret API key
 const stripe = new Stripe(config.stripe.stripe_secret_key as string, {
@@ -77,7 +78,7 @@ const authorizedPaymentWithSaveCardFromStripe = async (payload: {
     const { customerId, paymentMethodId, amount, bookingId } = payload;
 
     if (!isValidAmount(amount)) {
-      throw new Error(
+      throw new AppError(httpStatus.CONFLICT,
         `Amount '${amount}' is not a valid amount`,
       );
     }
@@ -119,7 +120,7 @@ const authorizedPaymentWithSaveCardFromStripe = async (payload: {
 
     return paymentIntent;
   } catch (error: any) {
-    throw new Error( error.message);
+    throw new AppError(httpStatus.CONFLICT, error.message);
   }
 };
 
@@ -135,7 +136,7 @@ const capturePaymentRequestToStripe = async (payload: {
 
     return paymentIntent;
   } catch (error: any) {
-    throw new Error(error.message);
+    throw new AppError(httpStatus.CONFLICT, error.message);
   }
 };
 
@@ -164,7 +165,7 @@ const saveNewCardWithExistingCustomerIntoStripe = async (payload: {
       paymentMethodId: paymentMethodId,
     };
   } catch (error: any) {
-    throw new Error(error.message);
+    throw new AppError(httpStatus.CONFLICT, error.message);
   }
 };
 
@@ -178,7 +179,7 @@ const getCustomerSavedCardsFromStripe = async (customerId: string) => {
 
     return { paymentMethods: paymentMethods.data };
   } catch (error: any) {
-    throw new Error( error.message);
+    throw new AppError(httpStatus.CONFLICT, error.message);
   }
 };
 
@@ -188,7 +189,7 @@ const deleteCardFromCustomer = async (paymentMethodId: string) => {
     await stripe.paymentMethods.detach(paymentMethodId);
     return { message: 'Card deleted successfully' };
   } catch (error: any) {
-    throw new Error(error.message);
+    throw new AppError(httpStatus.CONFLICT, error.message);
   }
 };
 
@@ -204,18 +205,19 @@ const refundPaymentToCustomer = async (payload: {
 
     return refund;
   } catch (error: any) {
-    throw new Error( error.message);
+    throw new AppError(httpStatus.CONFLICT, error.message);
   }
 };
 
 // Service function for creating a PaymentIntent
 const createPaymentIntentService = async (payload: { amount: number }) => {
   if (!payload.amount) {
-    throw new Error('Amount is required');
+    throw new AppError(httpStatus.CONFLICT, 'Amount is required');
   }
 
   if (!isValidAmount(payload.amount)) {
-    throw new Error(
+    throw new AppError(
+      httpStatus.CONFLICT,
       `Amount '${payload.amount}' is not a valid amount`,
     );
   }
@@ -235,6 +237,30 @@ const createPaymentIntentService = async (payload: { amount: number }) => {
   };
 };
 
+const getCustomerDetailsFromStripe = async (customerId: string) => {
+  try {
+    // Retrieve the customer details from Stripe
+    const customer = await stripe.customers.retrieve(customerId);
+
+    return customer;
+  } catch (error: any) {
+    throw new AppError(httpStatus.CONFLICT, error.message);
+  }
+};
+
+const getAllCustomersFromStripe = async () => {
+  try {
+    // Retrieve all customers from Stripe
+    const customers = await stripe.customers.list({
+      limit: 2,
+    });
+
+    return customers;
+  } catch (error: any) {
+    throw new AppError(httpStatus.CONFLICT, error.message);
+  }
+};
+
 export const StripeServices = {
   saveCardWithCustomerInfoIntoStripe,
   authorizedPaymentWithSaveCardFromStripe,
@@ -244,4 +270,6 @@ export const StripeServices = {
   deleteCardFromCustomer,
   refundPaymentToCustomer,
   createPaymentIntentService,
+  getCustomerDetailsFromStripe,
+  getAllCustomersFromStripe,
 };

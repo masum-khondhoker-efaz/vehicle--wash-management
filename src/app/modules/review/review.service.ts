@@ -1,30 +1,22 @@
 import prisma from '../../utils/prisma';
 
-
-
-const addReviewIntoDB = async (userId: string, reviewData: any) => {    
-    const transaction = await prisma.$transaction(async prisma => {
-        const createdReview = await prisma.review.create({
-          data: {
-            rating: reviewData.rating,
-            customerId: userId,
-            garageId: reviewData.garageId,
-          },
-        });
-    
-        return createdReview;
-    });
-    
-    return transaction;
-}
-    
-
-const getReviewListFromDB = async (userId: string,) => {
-    const garages = await prisma.garages.findMany({
-      where: {
-        userId: userId,
+const addReviewIntoDB = async (userId: string, reviewData: any) => {
+  const transaction = await prisma.$transaction(async prisma => {
+    const createdReview = await prisma.review.create({
+      data: {
+        rating: reviewData.rating,
+        customerId: userId,
+        serviceId: reviewData.serviceId,
       },
     });
+
+    return createdReview;
+  });
+
+  return transaction;
+};
+
+const getReviewListFromDB = async (userId: string) => {
   const reviewStats = await prisma.review.aggregate({
     _count: {
       id: true,
@@ -32,85 +24,68 @@ const getReviewListFromDB = async (userId: string,) => {
     _avg: {
       rating: true,
     },
-    where: {
-      garageId: {
-        in: garages.map(garage => garage.id),
-      },
+  });
+  const reviews = await prisma.review.findMany({
+    include: {
+      service: true,
     },
   });
 
-const reviews = await prisma.review.findMany({
-    where: {
-        garageId: {
-            in: garages.map(garage => garage.id),
-        },
-    },
-    select: {
-        id: true,
-        rating: true,
-        customerId: true,
-        garageId: true,
-        createdAt: true,
-        updatedAt: true,
-    },
-});
-
-return { reviewStats, reviews };
+  return { reviewStats, reviews };
 };
 
 const getReviewByIdFromDB = async (userId: string, reviewId: string) => {
-    const garages = await prisma.garages.findMany({
-      where: {
-        userId: userId,
-      },
-    });
-    const review = await prisma.review.findUnique({
-        where: {
-        id: reviewId,
-        garageId: {
-            in: garages.map(garage => garage.id),
-        },
-        },
-    });
-    
-    return review;
-}
+  const review = await prisma.review.findUnique({
+    where: {
+      id: reviewId,
+    },
+  });
+
+  return review;
+};
 
 const updateReviewIntoDB = async (
-    userId: string,
-    reviewId: string,
-    reviewData: {rating: number},
+  userId: string,
+  reviewId: string,
+  reviewData: { serviceId: string; rating: number },
 ) => {
-    console.log(userId, reviewId, reviewData);
-    const review = await prisma.review.update({
-        where: {
-        id: reviewId,
-        customerId: userId,
-        },
-        data: {
-        rating: reviewData.rating,
-        },
-    });
-    
-    return review;
-}
+  const review = await prisma.review.update({
+    where: {
+      id: reviewId,
+      customerId: userId,
+      serviceId: reviewData.serviceId,
+    },
+    data: {
+      rating: reviewData.rating,
+    },
+  });
+
+  return review;
+};
 
 const deleteReviewFromDB = async (userId: string, reviewId: string) => {
-  
-    const review = await prisma.review.delete({
-        where: {
-        id: reviewId,
-        customerId: userId,
-      }
-    });
-    
-    return review;
-}
+  const review = await prisma.review.delete({
+    where: {
+      id: reviewId,
+      customerId: userId,
+    },
+  });
+
+  return review;
+};
+
+const deleteAllReviewFromDB = async (userId: string) => {
+  const reviews = await prisma.review.deleteMany({
+  });
+
+  return reviews;
+};
 
 export const reviewService = {
-    addReviewIntoDB,
-    getReviewListFromDB,
-    getReviewByIdFromDB,
-    updateReviewIntoDB,
-    deleteReviewFromDB,
+  addReviewIntoDB,
+  getReviewListFromDB,
+  getReviewByIdFromDB,
+  updateReviewIntoDB,
+  deleteReviewFromDB,
+  deleteAllReviewFromDB,
 };

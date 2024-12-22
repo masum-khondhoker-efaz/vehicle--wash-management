@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.PaymentRoutes = void 0;
 const express_1 = __importDefault(require("express"));
 const auth_1 = __importDefault(require("../../middlewares/auth"));
+const client_1 = require("@prisma/client");
 const payment_controller_1 = require("./payment.controller");
 const router = express_1.default.Router();
 const payment_validation_1 = require("./payment.validation");
@@ -19,9 +20,11 @@ router.post('/capture-payment', (0, validateRequest_1.default)(payment_validatio
 // Save new card to existing customer
 router.post('/save-new-card', (0, validateRequest_1.default)(payment_validation_1.saveNewCardWithExistingCustomerPayloadSchema), payment_controller_1.PaymentController.saveNewCardWithExistingCustomer);
 // Get all save cards for customer
-router.get('/:customerId', payment_controller_1.PaymentController.getCustomerSavedCards);
 // Delete card from customer
 router.delete('/delete-card/:paymentMethodId', payment_controller_1.PaymentController.deleteCardFromCustomer);
 // Refund payment to customer
 router.post('/refund-payment', (0, validateRequest_1.default)(payment_validation_1.refundPaymentPayloadSchema), payment_controller_1.PaymentController.refundPaymentToCustomer);
+router.get('/customers/:customerId', payment_controller_1.PaymentController.getCustomerDetails);
+router.get('/customers', (0, auth_1.default)(client_1.UserRoleEnum.SUPER_ADMIN, client_1.UserRoleEnum.ADMIN), payment_controller_1.PaymentController.getAllCustomers);
+router.get('/:customerId', payment_controller_1.PaymentController.getCustomerSavedCards);
 exports.PaymentRoutes = router;

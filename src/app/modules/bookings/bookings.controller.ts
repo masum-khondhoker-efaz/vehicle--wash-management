@@ -85,17 +85,7 @@ const deleteBooking = catchAsync(async (req, res) => {
   });
 });
 
-const applyPromoCode = catchAsync(async (req, res) => {
-  const user = req.user as any;
-  const bookingId = req.params.bookingId;
-  const data = req.body;
-  const result = await bookingService.applyPromoCodeIntoDB(user.id, bookingId, data);
-  sendResponse(res, {
-    statusCode: httpStatus.OK,
-    message: 'Promo code applied successfully',
-    data: result,
-  });
-});
+
 
 export const bookingController = {
   addBooking,
@@ -104,5 +94,4 @@ export const bookingController = {
   updateBooking,
   cancelBookingStatus,
   deleteBooking,
-  applyPromoCode,
 };

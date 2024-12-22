@@ -46,7 +46,6 @@ router.post(
 );
 
 // Get all save cards for customer
-router.get('/:customerId', PaymentController.getCustomerSavedCards);
 
 // Delete card from customer
 router.delete(
@@ -61,6 +60,14 @@ router.post(
   PaymentController.refundPaymentToCustomer,
 );
 
+router.get('/customers/:customerId', PaymentController.getCustomerDetails);
+
+router.get(
+  '/customers', 
+  auth(UserRoleEnum.SUPER_ADMIN, UserRoleEnum.ADMIN),
+  PaymentController.getAllCustomers);
+  
+  router.get('/:customerId', PaymentController.getCustomerSavedCards);
 
 
 export const PaymentRoutes = router;

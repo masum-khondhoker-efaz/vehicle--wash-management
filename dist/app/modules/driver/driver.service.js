@@ -50,14 +50,15 @@ const addDriverIntoDB = (userId, driverData) => __awaiter(void 0, void 0, void 0
                 email: data.email,
                 password: yield bcrypt.hash(data.password, 12),
                 phoneNumber: data.phoneNumber,
-                dateOfBirth: data.dateOfBirth,
-                role: data.role || client_1.UserRoleEnum.DRIVER,
+                role: client_1.UserRoleEnum.DRIVER,
             },
         });
         yield prisma.driver.create({
             data: {
                 userId: createdDriver.id,
-                customerId: userId,
+                address: data.address,
+                joinDate: data.joinDate,
+                adminId: userId,
             },
         });
         return createdDriver;
@@ -66,11 +67,17 @@ const addDriverIntoDB = (userId, driverData) => __awaiter(void 0, void 0, void 0
 });
 const getDriverListFromDB = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     const drivers = yield prisma_1.default.driver.findMany({
-        where: {
-            customerId: userId,
-        },
-        include: {
-            user: true,
+        select: {
+            userId: true,
+            address: true,
+            joinDate: true,
+            user: {
+                select: {
+                    fullName: true,
+                    email: true,
+                    phoneNumber: true,
+                },
+            },
         },
     });
     return drivers;
@@ -78,10 +85,19 @@ const getDriverListFromDB = (userId) => __awaiter(void 0, void 0, void 0, functi
 const getDriverByIdFromDB = (driverId) => __awaiter(void 0, void 0, void 0, function* () {
     const driver = yield prisma_1.default.driver.findUnique({
         where: {
-            id: driverId,
+            userId: driverId,
         },
-        include: {
-            user: true,
+        select: {
+            userId: true,
+            address: true,
+            joinDate: true,
+            user: {
+                select: {
+                    fullName: true,
+                    email: true,
+                    phoneNumber: true,
+                },
+            },
         },
     });
     return driver;
@@ -98,10 +114,30 @@ const updateDriverIntoDB = (userId, driverId, driverData) => __awaiter(void 0, v
                 profileImage: driverData.driverImage,
                 email: driverData.email,
                 phoneNumber: driverData.phoneNumber,
-                dateOfBirth: driverData.dateOfBirth,
             },
         });
-        return updatedDriver;
+        const updateData = yield prisma.driver.update({
+            where: {
+                userId: driverId,
+            },
+            data: {
+                address: driverData.address,
+                joinDate: driverData.joinDate,
+            },
+            select: {
+                userId: true,
+                address: true,
+                joinDate: true,
+                user: {
+                    select: {
+                        fullName: true,
+                        email: true,
+                        phoneNumber: true,
+                    },
+                },
+            },
+        });
+        return updateData;
     }));
     return transaction;
 });
@@ -111,7 +147,6 @@ const deleteDriverFromDB = (userId, driverId) => __awaiter(void 0, void 0, void 
         const deletedDriver = yield prisma.driver.delete({
             where: {
                 userId: driverId,
-                customerId: userId,
             },
         });
         yield prisma.user.delete({

@@ -51,7 +51,10 @@ const getCompaniesFromDb = (latitude, longitude, garageName) => __awaiter(void 0
         return filteredCompanies;
     }
     else {
-        throw new Error('Either latitude/longitude or a valid garage name must be provided');
+        throw new AppError(
+          httpStatus.CONFLICT,
+          'Either latitude/longitude or a valid garage name must be provided',
+        );
     }
 });
 // distance between two location
@@ -60,7 +63,10 @@ const getDistanceFromGarageFromDb = (latitude, longitude, garageID) => __awaiter
         where: { id: garageID },
     });
     if (!garage || garage.latitude === null || garage.longitude === null) {
-        throw new Error('Garage not found or invalid coordinates');
+        throw new AppError(
+          httpStatus.CONFLICT,
+          'Garage not found or invalid coordinates',
+        );
     }
     const dist = distance(latitude, longitude, garage.latitude, garage.longitude);
     return `${dist.toFixed(2)} km`;

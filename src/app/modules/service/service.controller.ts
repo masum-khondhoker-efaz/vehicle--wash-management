@@ -4,6 +4,7 @@ import catchAsync from '../../utils/catchAsync';
 import { serviceService } from './service.service';
 import { uploadFileToSpace } from '../../utils/multerUpload';
 import { uploadFileToSpaceForUpdate } from '../../utils/updateMulterUpload';
+import AppError from '../../errors/AppError';
 
 const addService = catchAsync(async (req, res) => {
   const user = req.user as any;
@@ -11,7 +12,7 @@ const addService = catchAsync(async (req, res) => {
   const file = req.file;
 
   if (!file) {
-    throw new Error('file not found');
+    throw new AppError(httpStatus.CONFLICT, 'file not found');
   }
   const fileUrl = await uploadFileToSpace(file, 'retire-professional');
 
@@ -29,7 +30,14 @@ const addService = catchAsync(async (req, res) => {
 
 const getServiceList = catchAsync(async (req, res) => {
   const user = req.user as any;
-  const services = await serviceService.getServiceListFromDB(user.id);
+  const page = parseInt(req.query.page as string) || 1; // Default to page 1
+  const limit = parseInt(req.query.limit as string) || 10; // Default to 10 items per page
+  const offset = (page - 1) * limit;
+  const services = await serviceService.getServiceListFromDB(
+    user.id,
+    offset,
+    limit,
+  );
   sendResponse(res, {
     statusCode: httpStatus.OK,
     message: 'Service list',

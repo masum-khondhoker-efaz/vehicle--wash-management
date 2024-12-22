@@ -33,7 +33,6 @@ const getCompaniesFromDb = async (
         latitude: garage.latitude,
         longitude: garage.longitude,
       };
-      
 
       return (
         distance(
@@ -54,12 +53,12 @@ const getCompaniesFromDb = async (
 
     return filteredCompanies;
   } else {
-    throw new Error(
+    throw new AppError(
+      httpStatus.CONFLICT,
       'Either latitude/longitude or a valid garage name must be provided',
     );
   }
 };
-
 
 // distance between two location
 const getDistanceFromGarageFromDb = async (
@@ -72,7 +71,10 @@ const getDistanceFromGarageFromDb = async (
   });
 
   if (!garage || garage.latitude === null || garage.longitude === null) {
-    throw new Error('Garage not found or invalid coordinates');
+    throw new AppError(
+      httpStatus.CONFLICT,
+      'Garage not found or invalid coordinates',
+    );
   }
 
   const dist = distance(latitude, longitude, garage.latitude, garage.longitude);
