@@ -90,10 +90,34 @@ const deleteDriver = catchAsync(async (req, res) => {
     });
 });
 
+const getBookings = catchAsync(async (req, res) => {
+    const user = req.user as any;
+    const bookings = await driverService.getBookingsFromDB(user.id);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        message: 'Booking list',
+        data: bookings,
+    });
+});
+
+const getBookingById = catchAsync(async (req, res) => {
+    const user = req.user as any;
+    const bookingId = req.params.bookingId;
+    const booking = await driverService.getBookingByIdFromDB(user.id, bookingId);
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        message: 'Booking details',
+        data: booking,
+    });
+});
+
+
 export const driverController = {
     addDriver,
     getDriverList,
     getDriverById,
     updateDriver,
     deleteDriver,
+    getBookings,
+    getBookingById,
 };

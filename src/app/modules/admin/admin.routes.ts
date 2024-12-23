@@ -77,4 +77,17 @@ router.delete(
   adminController.deleteGarage,
 );
 
+// add offer
+router.post(
+  '/offers',
+  auth(UserRoleEnum.ADMIN, UserRoleEnum.SUPER_ADMIN),
+  adminController.addOffer
+);
+
+// get all offers
+router.get(
+  '/offers',
+  auth(),
+  adminController.getOfferList
+);
 export const AdminRoutes = router;

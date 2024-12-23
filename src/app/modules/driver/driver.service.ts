@@ -141,10 +141,71 @@ const deleteDriverFromDB = async (userId: string, driverId: string) => {
   return transaction;
 };
 
+const getBookingsFromDB = async (userId: string) => {
+  const drivers = await prisma.bookings.findMany({
+    where: {
+      driverId: userId,
+    },
+    select: {
+      id: true,
+      bookingTime: true,
+      bookingStatus: true,
+      serviceStatus: true,
+      serviceType: true,
+      serviceId: true,
+      carName: true,
+      ownerNumber: true,
+      location: true,
+      totalAmount: true,
+      paymentStatus: true,
+      service: {
+        select: {
+          serviceName: true,
+        },
+      },
+    },
+  });
+
+  return drivers;
+};
+
+const getBookingByIdFromDB = async (userId: string, bookingId: string) => {
+  const driver = await prisma.bookings.findUnique({
+    where: {
+      driverId: userId,
+      id: bookingId,
+    },
+    select: {
+      id: true,
+      bookingTime: true,
+      bookingStatus: true,
+      serviceStatus: true,
+      serviceType: true,
+      serviceId: true,
+      carName: true,
+      ownerNumber: true,
+      location: true,
+      totalAmount: true,
+      paymentStatus: true,
+      service: {
+        select: {
+          serviceName: true,
+        },
+      },
+    },
+  });
+
+  return driver;
+}
+
+
+
 export const driverService = {
   addDriverIntoDB,
   getDriverListFromDB,
   getDriverByIdFromDB,
   updateDriverIntoDB,
   deleteDriverFromDB,
+  getBookingsFromDB,
+  getBookingByIdFromDB,
 };

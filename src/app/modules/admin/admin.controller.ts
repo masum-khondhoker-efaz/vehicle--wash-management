@@ -140,6 +140,28 @@ const deleteGarage = catchAsync(async (req, res) => {
   });
 });
 
+const addOffer = catchAsync(async (req, res) => {
+  const data = req.body;
+  const result = await adminService.addOfferIntoDB(data);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: 'Offer added successfully',
+    data: result,
+  });
+});
+
+const getOfferList = catchAsync(async (req, res) => {
+ 
+  const result = await adminService.getOfferListFromDB();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: 'Offer list retrieved successfully',
+    data: result,
+  });
+});
+
+
+
 export const adminController = {
   getUserList,
   getBookingList,
@@ -151,4 +173,6 @@ export const adminController = {
   getServiceList,
   changeServiceStatus,
   getPayment,
+  addOffer,
+  getOfferList,
 };

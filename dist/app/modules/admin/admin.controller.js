@@ -30,6 +30,51 @@ const getUserList = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, vo
         data: result,
     });
 }));
+//change user status
+const changeUserStatus = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.params.userId;
+    const status = req.params.status;
+    const result = yield admin_service_1.adminService.changeUserStatusIntoDB(userId, status);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'User status updated successfully',
+        data: result,
+    });
+}));
+// assign driver
+const assignDriver = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const driverId = req.params.driverId;
+    const bookingId = req.params.bookingId;
+    const result = yield admin_service_1.adminService.assignDriverIntoDB(driverId, bookingId);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Driver assigned successfully',
+        data: result,
+    });
+}));
+// get all drivers
+const getDriverList = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    const result = yield admin_service_1.adminService.getDriverList(offset, limit);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Driver list',
+        data: result,
+    });
+}));
+//service status change
+const changeServiceStatus = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const serviceId = req.params.serviceId;
+    const status = req.params.status;
+    const result = yield admin_service_1.adminService.changeServiceStatusIntoDB(serviceId, status);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Service status updated successfully',
+        data: result,
+    });
+}));
 // get all bookings
 const getBookingList = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const page = parseInt(req.query.page) || 1;
@@ -39,6 +84,27 @@ const getBookingList = (0, catchAsync_1.default)((req, res) => __awaiter(void 0,
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
         message: 'Booking list',
+        data: result,
+    });
+}));
+// get all services
+const getServiceList = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = (page - 1) * limit;
+    const result = yield admin_service_1.adminService.getServiceListFromDB(offset, limit);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Service list',
+        data: result,
+    });
+}));
+// get payment in total
+const getPayment = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield admin_service_1.adminService.getPaymentFromDB();
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Total payment',
         data: result,
     });
 }));
@@ -69,4 +135,10 @@ exports.adminController = {
     getBookingList,
     getGarageList,
     deleteGarage,
+    changeUserStatus,
+    getDriverList,
+    assignDriver,
+    getServiceList,
+    changeServiceStatus,
+    getPayment,
 };

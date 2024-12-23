@@ -238,6 +238,19 @@ model CouponUsage {
   @@map("coupon_usages")
 }
 
+model Offer {
+  id               String         @id @default(auto()) @map("_id") @db.ObjectId
+  offerName        String
+  offerImage       String?
+  offerPrice       Float?
+  offerDescription String
+  offerStatus      ServiceActiveStatus @default(ACTIVE)
+  offerExpiresAt   DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  @@map("offers")
+}
+
 
 enum UserRoleEnum {
   CUSTOMER

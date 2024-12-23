@@ -16,6 +16,7 @@ exports.serviceService = void 0;
 const http_status_1 = __importDefault(require("http-status"));
 const AppError_1 = __importDefault(require("../../errors/AppError"));
 const prisma_1 = __importDefault(require("../../utils/prisma"));
+const querBuilder_1 = __importDefault(require("../../utils/querBuilder"));
 const addServiceIntoDB = (userId, serviceData) => __awaiter(void 0, void 0, void 0, function* () {
     const { data, serviceImage } = serviceData;
     const service = yield prisma_1.default.service.create({
@@ -26,20 +27,26 @@ const addServiceIntoDB = (userId, serviceData) => __awaiter(void 0, void 0, void
     }
     return service;
 });
-const getServiceListFromDB = (userId, offset, limit) => __awaiter(void 0, void 0, void 0, function* () {
+const getServiceListFromDB = (userId, offset, limit, searchTerm) => __awaiter(void 0, void 0, void 0, function* () {
+    const queryBuilder = new querBuilder_1.default(prisma_1.default.service.findMany);
+    const { query, options } = queryBuilder
+        .paginate({ page: Math.floor(offset / limit) + 1, limit })
+        .setSearch(['serviceName'], searchTerm)
+        .build();
     const services = yield prisma_1.default.service.findMany({
-        skip: offset, // Skip the first `offset` records
-        take: limit,
+        where: query.where,
+        skip: options.skip,
+        take: options.limit,
     });
     if (!services) {
         throw new AppError_1.default(http_status_1.default.CONFLICT, 'Services not found');
     }
-    // Get the total count of customers with the role of 'CUSTOMER'
-    const totalCount = yield prisma_1.default.service.count();
-    // Calculate the total number of pages
+    const totalCount = yield prisma_1.default.service.count({
+        where: query,
+    });
     const totalPages = Math.ceil(totalCount / limit);
     return {
-        currentPage: Math.floor(offset / limit) + 1, // Current page is calculated by dividing offset by limit
+        currentPage: Math.floor(offset / limit) + 1,
         totalPages,
         total_services: totalCount,
         services,

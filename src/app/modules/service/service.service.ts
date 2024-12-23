@@ -19,6 +19,65 @@ const addServiceIntoDB = async (userId: string, serviceData: any) => {
   return service;
 };
 
+
+
+// const getServiceListFromDB = async (
+//   userId: string,
+//   offset: number,
+//   limit: number,
+//   searchTerm: string,
+// ) => {
+//   const queryBuilder = new QueryBuilder(prisma.service.findMany);
+
+//   const { query, options } = queryBuilder
+//     .paginate({ page: Math.floor(offset / limit) + 1, limit })
+//     .setSearch(['serviceName'], searchTerm)
+//     .build();
+
+//   const services = await prisma.service.findMany({
+//     where: {
+//       ...query.where,
+//       OR: [
+//         {
+//           serviceName: {
+//             contains: searchTerm,
+//             mode: 'insensitive',
+//           },
+//         },
+//       ],
+//     },
+//     skip: options.skip,
+//     take: options.limit,
+//   });
+
+//   if (!services) {
+//     throw new AppError(httpStatus.CONFLICT, 'Services not found');
+//   }
+
+//   const totalCount = await prisma.service.count({
+//     where: {
+//       ...query.where,
+//       OR: [
+//         {
+//           serviceName: {
+//             contains: searchTerm,
+//             mode: 'insensitive',
+//           },
+//         },
+//       ],
+//     },
+//   });
+
+//   const totalPages = Math.ceil(totalCount / limit);
+//   return {
+//     currentPage: Math.floor(offset / limit) + 1,
+//     totalPages,
+//     total_services: totalCount,
+//     services,
+//   };
+// };
+
+
 const getServiceListFromDB = async (
   userId: string,
   offset: number,
@@ -33,17 +92,57 @@ const getServiceListFromDB = async (
     .build();
 
   const services = await prisma.service.findMany({
-    where: query.where,
+    where: {
+      ...query.where,
+      OR: [
+        {
+          serviceName: {
+            contains: searchTerm,
+            mode: 'insensitive',
+          },
+        },
+      ],
+    },
     skip: options.skip,
     take: options.limit,
+    include: {
+      reviews: true,
+    },
   });
 
   if (!services) {
     throw new AppError(httpStatus.CONFLICT, 'Services not found');
   }
 
+  const servicesWithReviewStats = services.map(service => {
+    const totalReviews = service.reviews.length;
+    const avgRating = totalReviews
+      ? service.reviews.reduce((sum, review) => sum + review.rating, 0) /
+        totalReviews
+      : 0;
+
+    // Exclude the reviews field from the response
+    const { reviews, ...serviceWithoutReviews } = service;
+
+    return {
+      ...serviceWithoutReviews,
+      totalReviews,
+      avgRating,
+    };
+  });
+
   const totalCount = await prisma.service.count({
-    where: query,
+    where: {
+      ...query.where,
+      OR: [
+        {
+          serviceName: {
+            contains: searchTerm,
+            mode: 'insensitive',
+          },
+        },
+      ],
+    },
   });
 
   const totalPages = Math.ceil(totalCount / limit);
@@ -51,7 +150,7 @@ const getServiceListFromDB = async (
     currentPage: Math.floor(offset / limit) + 1,
     totalPages,
     total_services: totalCount,
-    services,
+    services: servicesWithReviewStats,
   };
 };
 
@@ -62,13 +161,31 @@ const getServiceByIdFromDB = async (userId: string, serviceId: string) => {
     where: {
       id: serviceId,
     },
+    include: {
+      reviews: true,
+    },
   });
+
   if (!service) {
     throw new AppError(httpStatus.CONFLICT, 'Service not found');
   }
 
-  return service;
+  const totalReviews = service.reviews.length;
+  const avgRating = totalReviews
+    ? service.reviews.reduce((sum, review) => sum + review.rating, 0) /
+      totalReviews
+    : 0;
+
+  // Exclude the reviews field from the response
+  const { reviews, ...serviceWithoutReviews } = service;
+
+  return {
+    ...serviceWithoutReviews,
+    totalReviews,
+    avgRating,
+  };
 };
+
 
 const updateServiceIntoDB = async (
   userId: string,

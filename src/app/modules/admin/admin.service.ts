@@ -450,6 +450,24 @@ const deleteGarage = async (garageId: string) => {
   return {};
 };
 
+const addOfferIntoDB = async (data: any) => {
+  const result = await prisma.offer.create({
+    data,
+  });
+  return result;
+};
+
+const getOfferListFromDB = async () => {
+  const offers = await prisma.offer.findMany();
+
+  // const totalOffers = await prisma.offer.count();
+
+
+  return offers
+  
+};
+
+
 export const adminService = {
   getUserList,
   getBookingList,
@@ -462,4 +480,6 @@ export const adminService = {
   getServiceListFromDB,
   changeServiceStatusIntoDB,
   getPaymentFromDB,
+  addOfferIntoDB,
+  getOfferListFromDB,
 };

@@ -44,7 +44,8 @@ const getServiceList = (0, catchAsync_1.default)((req, res) => __awaiter(void 0,
     const page = parseInt(req.query.page) || 1; // Default to page 1
     const limit = parseInt(req.query.limit) || 10; // Default to 10 items per page
     const offset = (page - 1) * limit;
-    const services = yield service_service_1.serviceService.getServiceListFromDB(user.id, offset, limit);
+    const searchTerm = req.query.searchTerm ? String(req.query.searchTerm) : '';
+    const services = yield service_service_1.serviceService.getServiceListFromDB(user.id, offset, limit, searchTerm);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
         message: 'Service list',
