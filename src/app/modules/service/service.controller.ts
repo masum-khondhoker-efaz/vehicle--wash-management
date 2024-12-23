@@ -33,10 +33,12 @@ const getServiceList = catchAsync(async (req, res) => {
   const page = parseInt(req.query.page as string) || 1; // Default to page 1
   const limit = parseInt(req.query.limit as string) || 10; // Default to 10 items per page
   const offset = (page - 1) * limit;
+  const searchTerm = req.query.searchTerm ? String(req.query.searchTerm) : '';
   const services = await serviceService.getServiceListFromDB(
     user.id,
     offset,
     limit,
+    searchTerm,
   );
   sendResponse(res, {
     statusCode: httpStatus.OK,

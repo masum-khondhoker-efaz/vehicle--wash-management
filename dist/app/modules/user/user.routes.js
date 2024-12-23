@@ -20,6 +20,6 @@ router.put('/update-user/:id', (0, validateRequest_1.default)(user_validation_1.
 router.put('/change-password', (0, auth_1.default)(), user_controller_1.UserControllers.changePassword);
 router.post('/forgot-password', (0, validateRequest_1.default)(user_validation_1.UserValidations.forgetPasswordSchema), user_controller_1.UserControllers.forgotPassword);
 router.put('/verify-otp', (0, validateRequest_1.default)(user_validation_1.UserValidations.verifyOtpSchema), user_controller_1.UserControllers.verifyOtp);
-router.put('/verify-otp-forgot-password', (0, validateRequest_1.default)(user_validation_1.UserValidations.verifyOtpSchema), user_controller_1.UserControllers.verifyOtp);
+router.put('/verify-otp-forgot-password', (0, validateRequest_1.default)(user_validation_1.UserValidations.verifyOtpSchema), user_controller_1.UserControllers.verifyOtpForgotPassword);
 router.put('/update-password', user_controller_1.UserControllers.updatePassword);
 exports.UserRouters = router;

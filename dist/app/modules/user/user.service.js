@@ -364,6 +364,42 @@ const verifyOtpInDB = (bodyData) => __awaiter(void 0, void 0, void 0, function* 
         return { message: 'OTP verified successfully!', login };
     }
 });
+// verify otp
+const verifyOtpForgotPasswordInDB = (bodyData) => __awaiter(void 0, void 0, void 0, function* () {
+    const userData = yield prisma_1.default.user.findUnique({
+        where: { email: bodyData.email },
+    });
+    if (!userData) {
+        throw new AppError_1.default(http_status_1.default.CONFLICT, 'User not found!');
+    }
+    const currentTime = new Date(Date.now());
+    if ((userData === null || userData === void 0 ? void 0 : userData.otp) !== bodyData.otp) {
+        throw new AppError_1.default(http_status_1.default.CONFLICT, 'Your OTP is incorrect!');
+    }
+    else if (!userData.otpExpiresAt || userData.otpExpiresAt <= currentTime) {
+        throw new AppError_1.default(http_status_1.default.CONFLICT, 'Your OTP is expired, please send new otp');
+    }
+    if (userData.status !== client_1.UserStatus.ACTIVE) {
+        yield prisma_1.default.user.update({
+            where: { email: bodyData.email },
+            data: {
+                otp: null,
+                otpExpiresAt: null,
+                status: client_1.UserStatus.ACTIVE,
+            },
+        });
+    }
+    else {
+        yield prisma_1.default.user.update({
+            where: { email: bodyData.email },
+            data: {
+                otp: null,
+                otpExpiresAt: null,
+            },
+        });
+    }
+    return { message: 'OTP verified successfully!' };
+});
 const updatePassword = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     const userData = yield prisma_1.default.user.findUnique({
         where: { email: payload.email },
@@ -395,4 +431,5 @@ exports.UserServices = {
     forgotPassword,
     verifyOtpInDB,
     updatePassword,
+    verifyOtpForgotPasswordInDB,
 };

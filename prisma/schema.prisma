@@ -134,6 +134,7 @@ model Bookings{
   latitude        Float?
   longitude       Float?
   estimatedTime   String?
+  driverId        String?        @db.ObjectId
   couponId        String?        @db.ObjectId
   serviceType     ServiceType    @default(NORMAL)
   serviceStatus   ServiceStatus  @default(IN_ROUTE)
@@ -142,9 +143,10 @@ model Bookings{
   bookingTime     String
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
-  customer        Customer       @relation(fields: [customerId], references: [id])
+  customer        Customer       @relation(fields: [customerId], references: [userId])
   service         Service        @relation(fields: [serviceId], references: [id])
   coupon          Coupon?         @relation(fields: [couponId], references: [id])
+  driver          Driver?         @relation(fields: [driverId], references: [userId])
   couponUsage     CouponUsage[]
   
   @@map("bookings")
@@ -162,6 +164,7 @@ model Driver {
   user            User           @relation(fields: [userId], references: [id])
   admin           Admin          @relation(fields: [adminId], references: [userId])
   cars            Car[]
+  bookings        Bookings[]
   @@map("drivers")
 }
 

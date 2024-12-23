@@ -1,6 +1,7 @@
 import httpStatus from 'http-status';
 import AppError from '../../errors/AppError';
 import prisma from '../../utils/prisma';
+import QueryBuilder from '../../utils/querBuilder';
 
 const addServiceIntoDB = async (userId: string, serviceData: any) => {
   const { data, serviceImage } = serviceData;
@@ -22,26 +23,39 @@ const getServiceListFromDB = async (
   userId: string,
   offset: number,
   limit: number,
+  searchTerm: string,
 ) => {
+  const queryBuilder = new QueryBuilder(prisma.service.findMany);
+
+  const { query, options } = queryBuilder
+    .paginate({ page: Math.floor(offset / limit) + 1, limit })
+    .setSearch(['serviceName'], searchTerm)
+    .build();
+
   const services = await prisma.service.findMany({
-    skip: offset, // Skip the first `offset` records
-    take: limit,
+    where: query.where,
+    skip: options.skip,
+    take: options.limit,
   });
+
   if (!services) {
     throw new AppError(httpStatus.CONFLICT, 'Services not found');
   }
-  // Get the total count of customers with the role of 'CUSTOMER'
-  const totalCount = await prisma.service.count();
 
-  // Calculate the total number of pages
+  const totalCount = await prisma.service.count({
+    where: query,
+  });
+
   const totalPages = Math.ceil(totalCount / limit);
   return {
-    currentPage: Math.floor(offset / limit) + 1, // Current page is calculated by dividing offset by limit
+    currentPage: Math.floor(offset / limit) + 1,
     totalPages,
     total_services: totalCount,
     services,
   };
 };
+
+
 
 const getServiceByIdFromDB = async (userId: string, serviceId: string) => {
   const service = await prisma.service.findUnique({

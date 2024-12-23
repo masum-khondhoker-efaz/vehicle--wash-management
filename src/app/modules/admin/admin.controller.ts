@@ -19,6 +19,62 @@ const getUserList = catchAsync(async (req, res) => {
   });
 });
 
+//change user status
+const changeUserStatus = catchAsync(async (req, res) => {
+  const userId = req.params.userId as string;
+  const status = req.params.status as string;
+
+  const result = await adminService.changeUserStatusIntoDB(userId, status);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: 'User status updated successfully',
+    data: result,
+  });
+});
+
+
+// assign driver
+const assignDriver = catchAsync(async (req, res) => {
+  const driverId = req.params.driverId as string;
+  const bookingId = req.params.bookingId as string;
+  const result = await adminService.assignDriverIntoDB(driverId, bookingId);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: 'Driver assigned successfully',
+    data: result,
+  });
+});
+
+
+// get all drivers
+const getDriverList = catchAsync(async (req, res) => {
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  const offset = (page - 1) * limit;
+
+  const result = await adminService.getDriverList(offset, limit);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: 'Driver list',
+    data: result,
+  });
+});
+
+
+//service status change
+const changeServiceStatus = catchAsync(async (req, res) => {
+  const serviceId = req.params.serviceId as string;
+  const status = req.params.status as string;
+
+  const result = await adminService.changeServiceStatusIntoDB(serviceId, status);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: 'Service status updated successfully',
+    data: result,
+  });
+});
+
+
 // get all bookings
 const getBookingList = catchAsync(async (req, res) => {
   const page = parseInt(req.query.page as string) || 1;
@@ -29,6 +85,31 @@ const getBookingList = catchAsync(async (req, res) => {
   sendResponse(res, {
     statusCode: httpStatus.OK,
     message: 'Booking list',
+    data: result,
+  });
+});
+
+// get all services
+const getServiceList = catchAsync(async (req, res) => {
+  const page = parseInt(req.query.page as string) || 1;
+  const limit = parseInt(req.query.limit as string) || 10;
+  const offset = (page - 1) * limit;
+
+  const result = await adminService.getServiceListFromDB(offset, limit);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: 'Service list',
+    data: result,
+  });
+});
+
+
+// get payment in total
+const getPayment = catchAsync(async (req, res) => {
+  const result = await adminService.getPaymentFromDB();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: 'Total payment',
     data: result,
   });
 });
@@ -64,4 +145,10 @@ export const adminController = {
   getBookingList,
   getGarageList,
   deleteGarage,
+  changeUserStatus,
+  getDriverList,
+  assignDriver,
+  getServiceList,
+  changeServiceStatus,
+  getPayment,
 };
