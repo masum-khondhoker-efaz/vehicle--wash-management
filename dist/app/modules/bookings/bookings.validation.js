@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.bookingValidation = void 0;
+const client_1 = require("@prisma/client");
 const zod_1 = require("zod");
 const bookingSchema = zod_1.z.object({
     body: zod_1.z.object({
@@ -28,6 +29,8 @@ const updateBookingSchema = zod_1.z.object({
         longitude: zod_1.z.number().optional(),
         estimatedTime: zod_1.z.string().optional(),
         bookingTime: zod_1.z.string().optional(),
+        bookingStatus: zod_1.z.nativeEnum(client_1.BookingStatus).optional(),
+        paymentStatus: zod_1.z.nativeEnum(client_1.PaymentStatus).optional(),
     }),
 });
 exports.bookingValidation = {

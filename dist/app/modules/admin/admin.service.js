@@ -282,8 +282,8 @@ const getServiceListFromDB = (offset, limit) => __awaiter(void 0, void 0, void 0
             serviceName: true,
             serviceImage: true,
             duration: true,
-            servicePremiumPrice: true,
-            servicePrice: true,
+            largeCarPrice: true,
+            smallCarPrice: true,
             serviceStatus: true,
             availableTimes: true,
         },
@@ -397,6 +397,17 @@ const deleteGarage = (garageId) => __awaiter(void 0, void 0, void 0, function* (
     });
     return {};
 });
+const addOfferIntoDB = (data) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield prisma_1.default.offer.create({
+        data,
+    });
+    return result;
+});
+const getOfferListFromDB = () => __awaiter(void 0, void 0, void 0, function* () {
+    const offers = yield prisma_1.default.offer.findMany();
+    // const totalOffers = await prisma.offer.count();
+    return offers;
+});
 exports.adminService = {
     getUserList,
     getBookingList,
@@ -409,4 +420,6 @@ exports.adminService = {
     getServiceListFromDB,
     changeServiceStatusIntoDB,
     getPaymentFromDB,
+    addOfferIntoDB,
+    getOfferListFromDB,
 };

@@ -8,6 +8,8 @@ const couponValidationSchema = z.object({
       .int()
       .min(0)
       .max(100, 'Percentage must be between 0 and 100'),
+      largeCarPrice: z.number().optional(),
+      smallCarPrice: z.number().optional(),
     discount: z.number().optional(),
     firstTimeUser: z.boolean().optional(),
     expiryDate: z.string().optional(),
@@ -28,8 +30,8 @@ const applyPromoCodeSchema = z.object({
   body: z.object({
     couponCode: z.string(),
     serviceId: z.string(),
-    serviceType: z.string(),
-    couponId: z.string(),
+    largeCarPrice: z.number().optional(),
+    smallCarPrice: z.number().optional(),
   }),
 });
 

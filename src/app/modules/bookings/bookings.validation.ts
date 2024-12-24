@@ -1,3 +1,4 @@
+import { BookingStatus, PaymentStatus } from '@prisma/client';
 import { z } from 'zod';
 
 const bookingSchema = z.object({
@@ -27,6 +28,8 @@ const updateBookingSchema = z.object({
     longitude: z.number().optional(),
     estimatedTime: z.string().optional(),
     bookingTime: z.string().optional(),
+    bookingStatus: z.nativeEnum(BookingStatus).optional(),
+    paymentStatus: z.nativeEnum(PaymentStatus).optional(),
   }),
 });
 

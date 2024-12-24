@@ -84,10 +84,31 @@ const deleteDriver = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
         data: result,
     });
 }));
+const getBookings = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const bookings = yield driver_service_1.driverService.getBookingsFromDB(user.id);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Booking list',
+        data: bookings,
+    });
+}));
+const getBookingById = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const bookingId = req.params.bookingId;
+    const booking = yield driver_service_1.driverService.getBookingByIdFromDB(user.id, bookingId);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Booking details',
+        data: booking,
+    });
+}));
 exports.driverController = {
     addDriver,
     getDriverList,
     getDriverById,
     updateDriver,
     deleteDriver,
+    getBookings,
+    getBookingById,
 };

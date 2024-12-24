@@ -29,4 +29,8 @@ router.get('/payment', (0, auth_1.default)(client_1.UserRoleEnum.ADMIN, client_1
 router.get('/garages', (0, auth_1.default)(client_1.UserRoleEnum.ADMIN, client_1.UserRoleEnum.SUPER_ADMIN), admin_controller_1.adminController.getGarageList);
 // delete garage
 router.delete('/garages/:garageId', (0, auth_1.default)(client_1.UserRoleEnum.ADMIN, client_1.UserRoleEnum.SUPER_ADMIN), admin_controller_1.adminController.deleteGarage);
+// add offer
+router.post('/offers', (0, auth_1.default)(client_1.UserRoleEnum.ADMIN, client_1.UserRoleEnum.SUPER_ADMIN), admin_controller_1.adminController.addOffer);
+// get all offers
+router.get('/offers', (0, auth_1.default)(), admin_controller_1.adminController.getOfferList);
 exports.AdminRoutes = router;

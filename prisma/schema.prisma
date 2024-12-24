@@ -103,11 +103,13 @@ model Garages {
 model Service {
   id                    String              @id @default(auto()) @map("_id") @db.ObjectId
   serviceName           String
-  servicePrice          Float
-  servicePremiumPrice   Float?
+  smallCarPrice         Float?
+  largeCarPrice         Float?
+  carType               CarType?             
   duration              String
   serviceImage          String
   availableTimes        String[]
+  serviceType           ServiceType         @default(BASIC)
   serviceStatus         ServiceActiveStatus @default(ACTIVE)
   userId                String              @db.ObjectId
   createdAt             DateTime            @default(now())
@@ -136,7 +138,7 @@ model Bookings{
   estimatedTime   String?
   driverId        String?        @db.ObjectId
   couponId        String?        @db.ObjectId
-  serviceType     ServiceType    @default(NORMAL)
+  serviceType     ServiceType    @default(BASIC)
   serviceStatus   ServiceStatus  @default(IN_ROUTE)
   paymentStatus   PaymentStatus  @default(PENDING)
   paymentId       String?        @db.ObjectId
@@ -212,7 +214,7 @@ model Payment {
 
   model Coupon {
     id              String         @id @default(auto()) @map("_id") @db.ObjectId
-    couponCode      String
+    couponCode      String          @unique
     percentage      Int
     discount        Float?
     firstTimeUser   Boolean?
@@ -227,12 +229,12 @@ model Payment {
 model CouponUsage {
   id              String         @id @default(auto()) @map("_id") @db.ObjectId
   couponId        String         @db.ObjectId
-  bookingId       String         @db.ObjectId
+  bookingId       String?         @db.ObjectId
   customerId      String         @db.ObjectId
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   coupon          Coupon         @relation(fields: [couponId], references: [id])
-  booking         Bookings       @relation(fields: [bookingId], references: [id])
+  booking         Bookings?       @relation(fields: [bookingId], references: [id])
   customer        Customer       @relation(fields: [customerId], references: [userId])
   
   @@map("coupon_usages")
@@ -276,7 +278,7 @@ enum BookingStatus {
 
 enum ServiceStatus {
   IN_ROUTE
-  IN_GARAGE
+  IN_PROGRESS
   COMPLETED
 }
 
@@ -292,6 +294,11 @@ enum ServiceActiveStatus {
 }
 
 enum ServiceType {
-  NORMAL
+  BASIC
   PREMIUM
+}
+
+enum CarType {
+  SMALL
+  LARGE
 }

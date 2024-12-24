@@ -16,6 +16,8 @@ const driver_validation_1 = require("./driver.validation");
 const router = express_1.default.Router();
 router.post('/', multerUpload_1.multerUpload.single('driverImage'), parseBody_1.parseBody, (0, validateRequest_1.default)(driver_validation_1.driverValidation.driverSchema), (0, auth_1.default)(client_1.UserRoleEnum.SUPER_ADMIN, client_1.UserRoleEnum.ADMIN), driver_controller_1.driverController.addDriver);
 router.get('/', (0, auth_1.default)(), driver_controller_1.driverController.getDriverList);
+router.get('/get-bookings', (0, auth_1.default)(client_1.UserRoleEnum.DRIVER), driver_controller_1.driverController.getBookings);
+router.get('/booking-details/:bookingId', (0, auth_1.default)(client_1.UserRoleEnum.DRIVER), driver_controller_1.driverController.getBookingById);
 router.get('/:driverId', (0, auth_1.default)(), driver_controller_1.driverController.getDriverById);
 router.put('/:driverId', updateMulterUpload_1.updateMulterUpload.single('driverImage'), parseBody_1.parseBody, (0, validateRequest_1.default)(driver_validation_1.driverValidation.updateDriverSchema), (0, auth_1.default)(client_1.UserRoleEnum.SUPER_ADMIN, client_1.UserRoleEnum.ADMIN), driver_controller_1.driverController.updateDriver);
 router.delete('/:driverId', (0, auth_1.default)(client_1.UserRoleEnum.SUPER_ADMIN, client_1.UserRoleEnum.ADMIN), driver_controller_1.driverController.deleteDriver);

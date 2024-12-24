@@ -32,7 +32,7 @@ router.get(
 router.put(
     '/:bookingId',
     validateRequest(bookingValidation.updateBookingSchema),
-    auth(UserRoleEnum.CUSTOMER),
+    auth(),
     bookingController.updateBooking,
 );
 

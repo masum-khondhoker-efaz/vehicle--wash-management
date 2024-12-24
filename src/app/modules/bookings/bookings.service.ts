@@ -17,9 +17,9 @@ const addBookingIntoDB = async (userId: string, bookingData: any) => {
         ownerNumber: bookingData.ownerNumber,
         carName: bookingData.carName,
         location: bookingData.location,
-        latitude: bookingData.latitude,
-        longitude: bookingData.longitude,
-        serviceStatus: ServiceStatus.IN_ROUTE,
+        latitude: bookingData.latitude? bookingData.latitude : null,
+        longitude: bookingData.longitude? bookingData.longitude : null,
+        serviceStatus: ServiceStatus.IN_PROGRESS,
         serviceType: bookingData.serviceType,
         serviceDate: bookingData.serviceDate,
         bookingTime: bookingData.bookingTime,
@@ -53,15 +53,15 @@ const addBookingIntoDB = async (userId: string, bookingData: any) => {
   return transaction;
 };
 
-const getBookingListFromDB = async (userId: string) => {
-  const bookings = await prisma.bookings.findMany({
-    where: {
-      customerId: userId,
-    },
-  });
+// const getBookingListFromDB = async (userId: string) => {
+//   const bookings = await prisma.bookings.findMany({
+//     where: {
+//       customerId: userId,
+//     },
+//   });
 
-  return bookings;
-};
+//   return bookings;
+// };
 
 const getBookingByIdFromDB = async (userId: string, bookingId: string) => {
   const bookings = await prisma.bookings.findMany({
@@ -98,6 +98,57 @@ const getBookingByIdFromDB = async (userId: string, bookingId: string) => {
   return bookings;
 };
 
+
+const getBookingListFromDB = async (userId: string) => {
+  const pendingBookings = await prisma.bookings.findMany({
+    where: {
+      customerId: userId,
+      bookingStatus: BookingStatus.PENDING,
+    },
+    include: {
+      service: {
+        select: {
+          serviceName: true,
+        },
+      },
+    },
+  });
+
+  const completedBookings = await prisma.bookings.findMany({
+    where: {
+      customerId: userId,
+      bookingStatus: BookingStatus.COMPLETED,
+    },
+    include: {
+      service: {
+        select: {
+          serviceName: true,
+        },
+      },
+    },
+  });
+
+  const cancelledBookings = await prisma.bookings.findMany({
+    where: {
+      customerId: userId,
+      bookingStatus: BookingStatus.CANCELLED,
+    },
+    include: {
+      service: {
+        select: {
+          serviceName: true,
+        },
+      },
+    },
+  });
+
+  return {
+    pendingBookings,
+    completedBookings,
+    cancelledBookings,
+  };
+};
+
 const updateBookingIntoDB = async (
   userId: string,
   bookingId: string,
@@ -109,13 +160,16 @@ const updateBookingIntoDB = async (
       customerId: userId,
     },
     data: {
-      bookingTime: data.bookingTime,
-      totalAmount: data.totalAmount,
-      ownerNumber: data.ownerNumber,
-      carName: data.carName,
-      location: data.location,
-      latitude: data.latitude,
-      longitude: data.longitude,
+      ...(data.bookingTime && { bookingTime: data.bookingTime }),
+      ...(data.totalAmount && { totalAmount: data.totalAmount }),
+      ...(data.ownerNumber && { ownerNumber: data.ownerNumber }),
+      ...(data.carName && { carName: data.carName }),
+      ...(data.location && { location: data.location }),
+      ...(data.latitude && { latitude: data.latitude }),
+      ...(data.longitude && { longitude: data.longitude }),
+      ...(data.bookingStatus && { bookingStatus: data.bookingStatus }),
+      ...(data.paymentStatus && { paymentStatus: data.paymentStatus }),
+      ...(data.serviceStatus && { serviceStatus: data.serviceStatus }),
     },
   });
 

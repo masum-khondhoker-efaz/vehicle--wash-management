@@ -13,7 +13,7 @@ const addServiceIntoDB = async (userId: string, serviceData: any) => {
     },
   });
   if (!service) {
-    throw new AppError(httpStatus.CONFLICT, 'Service not created');
+    throw new AppError(httpStatus.BAD_REQUEST, 'Service not created');
   }
 
   return service;

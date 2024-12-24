@@ -110,14 +110,11 @@ const authorizedPaymentWithSaveCardFromStripe = async (payload: {
         data: {
           paymentId: payment.id,
           paymentStatus: PaymentStatus.COMPLETED,
-          serviceStatus: ServiceStatus.IN_ROUTE,
           bookingStatus: BookingStatus.ACCEPTED,
           serviceDate: new Date(),
         },
       });
     }
-
-
     return paymentIntent;
   } catch (error: any) {
     throw new AppError(httpStatus.CONFLICT, error.message);
@@ -244,7 +241,7 @@ const getCustomerDetailsFromStripe = async (customerId: string) => {
 
     return customer;
   } catch (error: any) {
-    throw new AppError(httpStatus.CONFLICT, error.message);
+    throw new AppError(httpStatus.NOT_FOUND, error.message);
   }
 };
 

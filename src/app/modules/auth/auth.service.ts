@@ -5,6 +5,7 @@ import config from '../../../config';
 import AppError from '../../errors/AppError';
 import { generateToken } from '../../utils/generateToken';
 import prisma from '../../utils/prisma';
+import { UserStatus } from '@prisma/client';
 
 
 
@@ -15,6 +16,7 @@ const loginUserFromDB = async (payload: {
   const userData = await prisma.user.findUniqueOrThrow({
     where: {
       email: payload.email,
+      status: UserStatus.ACTIVE,
     },
   });
   if(!userData.fullName){

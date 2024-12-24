@@ -158,10 +158,65 @@ const deleteDriverFromDB = (userId, driverId) => __awaiter(void 0, void 0, void 
     }));
     return transaction;
 });
+const getBookingsFromDB = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    const drivers = yield prisma_1.default.bookings.findMany({
+        where: {
+            driverId: userId,
+        },
+        select: {
+            id: true,
+            bookingTime: true,
+            bookingStatus: true,
+            serviceStatus: true,
+            serviceType: true,
+            serviceId: true,
+            carName: true,
+            ownerNumber: true,
+            location: true,
+            totalAmount: true,
+            paymentStatus: true,
+            service: {
+                select: {
+                    serviceName: true,
+                },
+            },
+        },
+    });
+    return drivers;
+});
+const getBookingByIdFromDB = (userId, bookingId) => __awaiter(void 0, void 0, void 0, function* () {
+    const driver = yield prisma_1.default.bookings.findUnique({
+        where: {
+            driverId: userId,
+            id: bookingId,
+        },
+        select: {
+            id: true,
+            bookingTime: true,
+            bookingStatus: true,
+            serviceStatus: true,
+            serviceType: true,
+            serviceId: true,
+            carName: true,
+            ownerNumber: true,
+            location: true,
+            totalAmount: true,
+            paymentStatus: true,
+            service: {
+                select: {
+                    serviceName: true,
+                },
+            },
+        },
+    });
+    return driver;
+});
 exports.driverService = {
     addDriverIntoDB,
     getDriverListFromDB,
     getDriverByIdFromDB,
     updateDriverIntoDB,
     deleteDriverFromDB,
+    getBookingsFromDB,
+    getBookingByIdFromDB,
 };

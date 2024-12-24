@@ -104,19 +104,24 @@ const applyPromoCodeIntoDB = (userId, promoCode) => __awaiter(void 0, void 0, vo
     let servicePrice;
     // Update the booking with the discounted amount
     if (promoCode.serviceType === client_1.ServiceType.PREMIUM) {
-        if (service.servicePremiumPrice !== null) {
+        if (service.largeCarPrice !== null) {
             servicePrice =
-                service.servicePremiumPrice -
-                    (service.servicePremiumPrice * ((_a = promo.percentage) !== null && _a !== void 0 ? _a : 0)) / 100;
+                service.largeCarPrice -
+                    (service.largeCarPrice * ((_a = promo.percentage) !== null && _a !== void 0 ? _a : 0)) / 100;
         }
         else {
             throw new AppError_1.default(http_status_1.default.CONFLICT, 'Service premium price is null');
         }
     }
-    if (promoCode.serviceType === client_1.ServiceType.NORMAL) {
-        servicePrice =
-            service.servicePrice -
-                (service.servicePrice * ((_b = promo.percentage) !== null && _b !== void 0 ? _b : 0)) / 100;
+    if (promoCode.serviceType === client_1.ServiceType.BASIC) {
+        if (service.smallCarPrice !== null) {
+            servicePrice =
+                service.smallCarPrice -
+                    (service.smallCarPrice * ((_b = promo.percentage) !== null && _b !== void 0 ? _b : 0)) / 100;
+        }
+        else {
+            throw new AppError_1.default(http_status_1.default.CONFLICT, 'Service basic price is null');
+        }
     }
     // Create a coupon usage entry
     // const couponUsed = await prisma.couponUsage.create({

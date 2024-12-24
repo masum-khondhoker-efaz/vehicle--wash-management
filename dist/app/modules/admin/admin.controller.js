@@ -130,6 +130,23 @@ const deleteGarage = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
         data: result,
     });
 }));
+const addOffer = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const data = req.body;
+    const result = yield admin_service_1.adminService.addOfferIntoDB(data);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Offer added successfully',
+        data: result,
+    });
+}));
+const getOfferList = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield admin_service_1.adminService.getOfferListFromDB();
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Offer list retrieved successfully',
+        data: result,
+    });
+}));
 exports.adminController = {
     getUserList,
     getBookingList,
@@ -141,4 +158,6 @@ exports.adminController = {
     getServiceList,
     changeServiceStatus,
     getPayment,
+    addOffer,
+    getOfferList,
 };

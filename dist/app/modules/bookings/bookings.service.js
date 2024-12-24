@@ -25,9 +25,9 @@ const addBookingIntoDB = (userId, bookingData) => __awaiter(void 0, void 0, void
                 ownerNumber: bookingData.ownerNumber,
                 carName: bookingData.carName,
                 location: bookingData.location,
-                latitude: bookingData.latitude,
-                longitude: bookingData.longitude,
-                serviceStatus: client_1.ServiceStatus.IN_ROUTE,
+                latitude: bookingData.latitude ? bookingData.latitude : null,
+                longitude: bookingData.longitude ? bookingData.longitude : null,
+                serviceStatus: client_1.ServiceStatus.IN_PROGRESS,
                 serviceType: bookingData.serviceType,
                 serviceDate: bookingData.serviceDate,
                 bookingTime: bookingData.bookingTime,
@@ -57,14 +57,14 @@ const addBookingIntoDB = (userId, bookingData) => __awaiter(void 0, void 0, void
     }));
     return transaction;
 });
-const getBookingListFromDB = (userId) => __awaiter(void 0, void 0, void 0, function* () {
-    const bookings = yield prisma_1.default.bookings.findMany({
-        where: {
-            customerId: userId,
-        },
-    });
-    return bookings;
-});
+// const getBookingListFromDB = async (userId: string) => {
+//   const bookings = await prisma.bookings.findMany({
+//     where: {
+//       customerId: userId,
+//     },
+//   });
+//   return bookings;
+// };
 const getBookingByIdFromDB = (userId, bookingId) => __awaiter(void 0, void 0, void 0, function* () {
     const bookings = yield prisma_1.default.bookings.findMany({
         where: {
@@ -97,21 +97,59 @@ const getBookingByIdFromDB = (userId, bookingId) => __awaiter(void 0, void 0, vo
     });
     return bookings;
 });
+const getBookingListFromDB = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    const pendingBookings = yield prisma_1.default.bookings.findMany({
+        where: {
+            customerId: userId,
+            bookingStatus: client_1.BookingStatus.PENDING,
+        },
+        include: {
+            service: {
+                select: {
+                    serviceName: true,
+                },
+            },
+        },
+    });
+    const completedBookings = yield prisma_1.default.bookings.findMany({
+        where: {
+            customerId: userId,
+            bookingStatus: client_1.BookingStatus.COMPLETED,
+        },
+        include: {
+            service: {
+                select: {
+                    serviceName: true,
+                },
+            },
+        },
+    });
+    const cancelledBookings = yield prisma_1.default.bookings.findMany({
+        where: {
+            customerId: userId,
+            bookingStatus: client_1.BookingStatus.CANCELLED,
+        },
+        include: {
+            service: {
+                select: {
+                    serviceName: true,
+                },
+            },
+        },
+    });
+    return {
+        pendingBookings,
+        completedBookings,
+        cancelledBookings,
+    };
+});
 const updateBookingIntoDB = (userId, bookingId, data) => __awaiter(void 0, void 0, void 0, function* () {
     const updatedBooking = yield prisma_1.default.bookings.update({
         where: {
             id: bookingId,
             customerId: userId,
         },
-        data: {
-            bookingTime: data.bookingTime,
-            totalAmount: data.totalAmount,
-            ownerNumber: data.ownerNumber,
-            carName: data.carName,
-            location: data.location,
-            latitude: data.latitude,
-            longitude: data.longitude,
-        },
+        data: Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (data.bookingTime && { bookingTime: data.bookingTime })), (data.totalAmount && { totalAmount: data.totalAmount })), (data.ownerNumber && { ownerNumber: data.ownerNumber })), (data.carName && { carName: data.carName })), (data.location && { location: data.location })), (data.latitude && { latitude: data.latitude })), (data.longitude && { longitude: data.longitude })), (data.bookingStatus && { bookingStatus: data.bookingStatus })), (data.paymentStatus && { paymentStatus: data.paymentStatus })), (data.serviceStatus && { serviceStatus: data.serviceStatus })),
     });
     return updatedBooking;
 });
