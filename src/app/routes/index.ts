@@ -11,6 +11,7 @@ import { PaymentRoutes } from '../modules/payment/payment.routes';
 import { AdminRoutes } from '../modules/admin/admin.routes';
 import { ServiceRoutes } from '../modules/service/service.routes';
 import { CouponRoutes } from '../modules/coupon/coupon.routes';
+// import { notificationsRoute } from '../modules/notification/notification.route';
 const router = express.Router();
 
 const moduleRoutes = [
@@ -60,8 +61,12 @@ const moduleRoutes = [
   },
   {
     path: '/admin',
-    route: AdminRoutes
-  }
+    route: AdminRoutes,
+  },
+  // {
+  //   path: '/notifications',
+  //   route: notificationsRoute,
+  // },
 ];
 
 moduleRoutes.forEach(route => router.use(route.path, route.route));

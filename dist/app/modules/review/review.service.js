@@ -21,6 +21,15 @@ const addReviewIntoDB = (userId, reviewData) => __awaiter(void 0, void 0, void 0
                 rating: reviewData.rating,
                 customerId: userId,
                 serviceId: reviewData.serviceId,
+                bookingId: reviewData.bookingId,
+            },
+        });
+        yield prisma.bookings.update({
+            where: {
+                id: reviewData.bookingId,
+            },
+            data: {
+                isRated: true,
             },
         });
         return createdReview;

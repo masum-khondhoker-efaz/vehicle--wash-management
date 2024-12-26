@@ -13,21 +13,22 @@ const addBookingIntoDB = async (userId: string, bookingData: any) => {
   const transaction = await prisma.$transaction(async prisma => {
     const createdBooking = await prisma.bookings.create({
       data: {
-        customerId: userId,
-        ownerNumber: bookingData.ownerNumber,
-        carName: bookingData.carName,
-        location: bookingData.location,
-        latitude: bookingData.latitude? bookingData.latitude : null,
-        longitude: bookingData.longitude? bookingData.longitude : null,
-        serviceStatus: ServiceStatus.IN_PROGRESS,
-        serviceType: bookingData.serviceType,
-        serviceDate: bookingData.serviceDate,
-        bookingTime: bookingData.bookingTime,
-        bookingStatus: BookingStatus.PENDING,
-        totalAmount: bookingData.totalAmount,
-        serviceId: bookingData.serviceId,
-        paymentStatus: PaymentStatus.PENDING,
-        couponId: bookingData.couponId ? bookingData.couponId : null,
+      customerId: userId,
+      ownerNumber: bookingData.ownerNumber,
+      carName: bookingData.carName,
+      location: bookingData.location,
+      latitude: bookingData.latitude ? bookingData.latitude : null,
+      longitude: bookingData.longitude ? bookingData.longitude : null,
+      specificInstruction: bookingData.specificInstruction ? bookingData.specificInstruction : null,
+      serviceStatus: ServiceStatus.IN_PROGRESS,
+      serviceType: bookingData.serviceType,
+      serviceDate: new Date(bookingData.serviceDate), 
+      bookingTime: bookingData.bookingTime, 
+      bookingStatus: BookingStatus.PENDING,
+      totalAmount: bookingData.totalAmount,
+      serviceId: bookingData.serviceId,
+      paymentStatus: PaymentStatus.PENDING,
+      couponCode: bookingData.couponCode ? bookingData.couponCode : null,
       },
     });
 
@@ -37,7 +38,7 @@ const addBookingIntoDB = async (userId: string, bookingData: any) => {
     if (bookingData.couponId) {
       const couponUsed = await prisma.couponUsage.create({
         data: {
-          couponId: bookingData.couponId,
+          couponCode: bookingData.couponId,
           bookingId: createdBooking.id,
           customerId: userId,
         },
@@ -78,6 +79,7 @@ const getBookingByIdFromDB = async (userId: string, bookingId: string) => {
       location: true,
       latitude: true,
       longitude: true,
+      specificInstruction: true,
       serviceStatus: true,
       serviceId: true,
       estimatedTime: true,
@@ -182,6 +184,9 @@ const updateBookingIntoDB = async (
       ...(data.bookingStatus && { bookingStatus: data.bookingStatus }),
       ...(data.paymentStatus && { paymentStatus: data.paymentStatus }),
       ...(data.serviceStatus && { serviceStatus: data.serviceStatus }),
+      ...(data.specificInstruction && {
+        specificInstruction: data.specificInstruction,
+      }),
     },
   });
 

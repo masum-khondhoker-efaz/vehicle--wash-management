@@ -20,6 +20,7 @@ const isValidAmount_1 = require("../../utils/isValidAmount");
 const prisma_1 = __importDefault(require("../../utils/prisma"));
 const client_1 = require("@prisma/client");
 const AppError_1 = __importDefault(require("../../errors/AppError"));
+const firebaseAdmin_1 = require("../../utils/firebaseAdmin");
 // Initialize Stripe with your secret API key
 const stripe = new stripe_1.default(config_1.default.stripe.stripe_secret_key, {
     apiVersion: '2024-11-20.acacia',
@@ -68,16 +69,16 @@ const saveCardWithCustomerInfoIntoStripe = (payload, userId) => __awaiter(void 0
     }
 });
 // Step 2: Authorize the Payment Using Saved Card
-const authorizedPaymentWithSaveCardFromStripe = (payload) => __awaiter(void 0, void 0, void 0, function* () {
+const authorizedPaymentWithSaveCardFromStripe = (userId, payload) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { customerId, paymentMethodId, amount, bookingId } = payload;
         if (!(0, isValidAmount_1.isValidAmount)(amount)) {
-            throw new AppError_1.default(http_status_1.default.CONFLICT, `Amount '${amount}' is not a valid amount`);
+            throw new AppError_1.default(http_status_1.default.BAD_REQUEST, `Amount '${amount}' is not a valid amount`);
         }
         // Create a PaymentIntent with the specified PaymentMethod
         const paymentIntent = yield stripe.paymentIntents.create({
             amount: amount * 100, // Convert to cents
-            currency: 'usd',
+            currency: 'aed',
             customer: customerId,
             payment_method: paymentMethodId,
             off_session: true,
@@ -100,16 +101,29 @@ const authorizedPaymentWithSaveCardFromStripe = (payload) => __awaiter(void 0, v
                 data: {
                     paymentId: payment.id,
                     paymentStatus: client_1.PaymentStatus.COMPLETED,
-                    serviceStatus: client_1.ServiceStatus.IN_ROUTE,
-                    bookingStatus: client_1.BookingStatus.ACCEPTED,
+                    bookingStatus: client_1.BookingStatus.IN_PROGRESS,
                     serviceDate: new Date(),
                 },
             });
         }
+        const fcmToken = yield prisma_1.default.user.findUnique({
+            where: {
+                id: userId,
+            },
+            select: {
+                fcmToken: true,
+            },
+        });
+        if (fcmToken === null || fcmToken === void 0 ? void 0 : fcmToken.fcmToken) {
+            yield (0, firebaseAdmin_1.sendNotification)(fcmToken.fcmToken, 'Payment Successful', 'Your payment has been successful');
+        }
+        if (fcmToken === null || fcmToken === void 0 ? void 0 : fcmToken.fcmToken) {
+            yield (0, firebaseAdmin_1.sendNotification)(fcmToken.fcmToken, 'Payment Successful', 'Your booking has been accepted successfully');
+        }
         return paymentIntent;
     }
     catch (error) {
-        throw new AppError_1.default(http_status_1.default.CONFLICT, error.message);
+        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, error.message);
     }
 });
 // Step 3: Capture the Payment
@@ -211,7 +225,7 @@ const getCustomerDetailsFromStripe = (customerId) => __awaiter(void 0, void 0, v
         return customer;
     }
     catch (error) {
-        throw new AppError_1.default(http_status_1.default.CONFLICT, error.message);
+        throw new AppError_1.default(http_status_1.default.NOT_FOUND, error.message);
     }
 });
 const getAllCustomersFromStripe = () => __awaiter(void 0, void 0, void 0, function* () {

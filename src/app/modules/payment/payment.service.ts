@@ -6,6 +6,7 @@ import { TStripeSaveWithCustomerInfo } from './payment.interface';
 import prisma from '../../utils/prisma';
 import { BookingStatus, PaymentStatus, ServiceStatus } from '@prisma/client';
 import AppError from '../../errors/AppError';
+import { sendNotification } from '../../utils/firebaseAdmin';
 
 // Initialize Stripe with your secret API key
 const stripe = new Stripe(config.stripe.stripe_secret_key as string, {
@@ -68,7 +69,8 @@ const saveCardWithCustomerInfoIntoStripe = async (
 };
 
 // Step 2: Authorize the Payment Using Saved Card
-const authorizedPaymentWithSaveCardFromStripe = async (payload: {
+const authorizedPaymentWithSaveCardFromStripe = async (userId : string,
+  payload: {
   customerId: string;
   amount: number;
   paymentMethodId: string;
@@ -115,6 +117,23 @@ const authorizedPaymentWithSaveCardFromStripe = async (payload: {
         },
       });
     }
+
+    const fcmToken = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      },
+      select: {
+        fcmToken: true,
+      },
+    });
+
+    if (fcmToken?.fcmToken) {
+      await sendNotification(fcmToken.fcmToken, 'Payment Successful', 'Your payment has been successful');
+    }
+    if(fcmToken?.fcmToken){
+      await sendNotification(fcmToken.fcmToken, 'Payment Successful', 'Your booking has been accepted successfully');
+    }
+
     return paymentIntent;
   } catch (error: any) {
     throw new AppError(httpStatus.BAD_REQUEST, error.message);

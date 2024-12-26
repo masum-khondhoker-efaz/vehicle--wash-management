@@ -39,6 +39,26 @@ exports.driverService = void 0;
 const bcrypt = __importStar(require("bcrypt"));
 const prisma_1 = __importDefault(require("../../utils/prisma"));
 const client_1 = require("@prisma/client");
+const distance = (lat1, lon1, lat2, lon2) => {
+    const toRad = (value) => (value * Math.PI) / 180;
+    const R = 6371; // Radius of the Earth in km
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) *
+            Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distance in km
+};
+const estimateTime = (distance, speed = 40) => {
+    // speed is in km/h, default is 40 km/h
+    const time = distance / speed; // time in hours
+    const hours = Math.floor(time);
+    const minutes = Math.round((time - hours) * 60);
+    return { hours, minutes };
+};
 const addDriverIntoDB = (userId, driverData) => __awaiter(void 0, void 0, void 0, function* () {
     const { data, driverImage } = driverData;
     const transaction = yield prisma_1.default.$transaction((prisma) => __awaiter(void 0, void 0, void 0, function* () {
@@ -158,10 +178,39 @@ const deleteDriverFromDB = (userId, driverId) => __awaiter(void 0, void 0, void 
     }));
     return transaction;
 });
-const getBookingsFromDB = (userId) => __awaiter(void 0, void 0, void 0, function* () {
-    const drivers = yield prisma_1.default.bookings.findMany({
+const getBookingsFromDB = (userId, latitude, longitude) => __awaiter(void 0, void 0, void 0, function* () {
+    const pendingBookings = yield prisma_1.default.bookings.findMany({
         where: {
             driverId: userId,
+            bookingStatus: 'PENDING',
+        },
+        select: {
+            id: true,
+            bookingTime: true,
+            bookingStatus: true,
+            serviceStatus: true,
+            serviceType: true,
+            serviceId: true,
+            carName: true,
+            ownerNumber: true,
+            location: true,
+            latitude: true,
+            longitude: true,
+            totalAmount: true,
+            paymentStatus: true,
+            service: {
+                select: {
+                    serviceName: true,
+                    serviceImage: true,
+                    duration: true,
+                },
+            },
+        },
+    });
+    const completedBookings = yield prisma_1.default.bookings.findMany({
+        where: {
+            driverId: userId,
+            bookingStatus: 'COMPLETED',
         },
         select: {
             id: true,
@@ -178,11 +227,24 @@ const getBookingsFromDB = (userId) => __awaiter(void 0, void 0, void 0, function
             service: {
                 select: {
                     serviceName: true,
+                    serviceImage: true,
+                    duration: true,
                 },
             },
         },
     });
-    return drivers;
+    const pendingBookingsWithDistance = pendingBookings.map(booking => {
+        if (booking.latitude !== null && booking.longitude !== null) {
+            const dist = distance(latitude, longitude, booking.latitude, booking.longitude);
+            const time = estimateTime(dist);
+            return Object.assign(Object.assign({}, booking), { distance: `${dist.toFixed(2)} km`, time });
+        }
+        return Object.assign(Object.assign({}, booking), { distance: null });
+    });
+    return {
+        pendingBookings: pendingBookingsWithDistance,
+        completedBookings
+    };
 });
 const getBookingByIdFromDB = (userId, bookingId) => __awaiter(void 0, void 0, void 0, function* () {
     const driver = yield prisma_1.default.bookings.findUnique({
@@ -211,6 +273,43 @@ const getBookingByIdFromDB = (userId, bookingId) => __awaiter(void 0, void 0, vo
     });
     return driver;
 });
+const updateOnlineStatusIntoDB = (userId, data) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const updatedDriver = yield prisma_1.default.driver.update({
+            where: {
+                userId: userId,
+            },
+            data: {
+                inOnline: data.status,
+                latitude: data.latitude || 0,
+                longitude: data.longitude || 0,
+            },
+        });
+        return updatedDriver;
+    }
+    catch (error) {
+        console.error('Error updating driver status:', error);
+        throw error;
+    }
+});
+const getDriverLiveLocation = (driverId) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const driver = yield prisma_1.default.driver.findUnique({
+            where: {
+                userId: driverId,
+            },
+            select: {
+                latitude: true,
+                longitude: true,
+            },
+        });
+        return driver;
+    }
+    catch (error) {
+        console.error('Error fetching driver location:', error);
+        throw error;
+    }
+});
 exports.driverService = {
     addDriverIntoDB,
     getDriverListFromDB,
@@ -219,4 +318,6 @@ exports.driverService = {
     deleteDriverFromDB,
     getBookingsFromDB,
     getBookingByIdFromDB,
+    updateOnlineStatusIntoDB,
+    getDriverLiveLocation,
 };

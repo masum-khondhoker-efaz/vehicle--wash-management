@@ -86,7 +86,9 @@ const deleteDriver = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
 }));
 const getBookings = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const user = req.user;
-    const bookings = yield driver_service_1.driverService.getBookingsFromDB(user.id);
+    const latitude = parseFloat(req.params.latitude);
+    const longitude = parseFloat(req.params.longitude);
+    const bookings = yield driver_service_1.driverService.getBookingsFromDB(user.id, latitude, longitude);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
         message: 'Booking list',
@@ -103,6 +105,25 @@ const getBookingById = (0, catchAsync_1.default)((req, res) => __awaiter(void 0,
         data: booking,
     });
 }));
+const updateOnlineStatus = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const data = req.body;
+    const result = yield driver_service_1.driverService.updateOnlineStatusIntoDB(user.id, data);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Online status updated successfully',
+        data: result,
+    });
+}));
+const getDriverLiveLocation = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const driverId = req.params.driverId;
+    const location = yield driver_service_1.driverService.getDriverLiveLocation(driverId);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Driver live location retrieved successfully',
+        data: location,
+    });
+}));
 exports.driverController = {
     addDriver,
     getDriverList,
@@ -111,4 +132,6 @@ exports.driverController = {
     deleteDriver,
     getBookings,
     getBookingById,
+    updateOnlineStatus,
+    getDriverLiveLocation,
 };

@@ -15,6 +15,7 @@ const bookingSchema = zod_1.z.object({
         longitude: zod_1.z.number().optional(),
         estimatedTime: zod_1.z.string().optional(),
         bookingTime: zod_1.z.string(),
+        specificInstruction: zod_1.z.string().optional(),
     }),
 });
 const updateBookingSchema = zod_1.z.object({

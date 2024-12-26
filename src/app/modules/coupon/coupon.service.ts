@@ -107,7 +107,7 @@ const applyPromoCodeIntoDB = async (
 
   const couponUsage = await prisma.couponUsage.findFirst({
     where: {
-      couponId: promo.id,
+      couponCode: promo.couponCode,
     },
   });
 
@@ -137,17 +137,7 @@ const applyPromoCodeIntoDB = async (
     }
   }
 
-  // Create a coupon usage entry
-  const couponUsed = await prisma.couponUsage.create({
-    data: {
-      couponId: promo.id,
-      customerId: userId,
-    },
-  });
-
-  if (!couponUsed) {
-    throw new AppError(httpStatus.BAD_REQUEST,'CouponUsage is not created');
-  }
+ 
 
   return { Total_price: servicePrice };
 };

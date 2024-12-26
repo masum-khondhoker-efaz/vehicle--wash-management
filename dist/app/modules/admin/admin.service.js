@@ -104,6 +104,7 @@ const assignDriverIntoDB = (driverId, bookingId) => __awaiter(void 0, void 0, vo
         },
         data: {
             driverId: driverId,
+            bookingStatus: client_1.BookingStatus.IN_PROGRESS,
         },
     });
     return data;
@@ -221,6 +222,8 @@ const getBookingList = (offset, limit) => __awaiter(void 0, void 0, void 0, func
             select: {
                 fullName: true,
                 email: true,
+                profileImage: true,
+                phoneNumber: true,
             },
         });
         return {
@@ -408,6 +411,24 @@ const getOfferListFromDB = () => __awaiter(void 0, void 0, void 0, function* () 
     // const totalOffers = await prisma.offer.count();
     return offers;
 });
+const getDriverLiveLocation = (driverId) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const driver = yield prisma_1.default.driver.findUnique({
+            where: {
+                userId: driverId,
+            },
+            select: {
+                latitude: true,
+                longitude: true,
+            },
+        });
+        return driver;
+    }
+    catch (error) {
+        console.error('Error fetching driver location:', error);
+        throw error;
+    }
+});
 exports.adminService = {
     getUserList,
     getBookingList,
@@ -422,4 +443,5 @@ exports.adminService = {
     getPaymentFromDB,
     addOfferIntoDB,
     getOfferListFromDB,
+    getDriverLiveLocation,
 };

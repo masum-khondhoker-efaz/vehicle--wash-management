@@ -22,7 +22,7 @@ const addCouponIntoDB = (userId, couponData) => __awaiter(void 0, void 0, void 0
         data: Object.assign({}, couponData),
     });
     if (!coupon) {
-        throw new AppError_1.default(http_status_1.default.CONFLICT, 'Coupon not created');
+        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Coupon not created');
     }
     return coupon;
 });
@@ -76,12 +76,11 @@ const applyPromoCodeIntoDB = (userId, promoCode) => __awaiter(void 0, void 0, vo
         },
     });
     if (!service) {
-        throw new AppError_1.default(http_status_1.default.CONFLICT, 'Service not found');
+        throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'Service not found');
     }
     // Find the promo code
     const promo = yield prisma_1.default.coupon.findUnique({
         where: {
-            id: promoCode.couponId,
             couponCode: promoCode.couponCode,
             expiryDate: {
                 gte: new Date(),
@@ -90,12 +89,12 @@ const applyPromoCodeIntoDB = (userId, promoCode) => __awaiter(void 0, void 0, vo
     });
     // Check if the promo code exists
     if (!promo) {
-        throw new AppError_1.default(http_status_1.default.CONFLICT, 'Promo code not found');
+        throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'Promo code not found');
     }
     // Optional: Validate promo code expiry date
     const couponUsage = yield prisma_1.default.couponUsage.findFirst({
         where: {
-            couponId: promo.id,
+            couponCode: promo.couponCode,
         },
     });
     if (couponUsage) {
@@ -103,37 +102,26 @@ const applyPromoCodeIntoDB = (userId, promoCode) => __awaiter(void 0, void 0, vo
     }
     let servicePrice;
     // Update the booking with the discounted amount
-    if (promoCode.serviceType === client_1.ServiceType.PREMIUM) {
-        if (service.largeCarPrice !== null) {
-            servicePrice =
-                service.largeCarPrice -
-                    (service.largeCarPrice * ((_a = promo.percentage) !== null && _a !== void 0 ? _a : 0)) / 100;
-        }
-        else {
-            throw new AppError_1.default(http_status_1.default.CONFLICT, 'Service premium price is null');
-        }
-    }
-    if (promoCode.serviceType === client_1.ServiceType.BASIC) {
+    if (promoCode.carType === client_1.CarType.SMALL) {
         if (service.smallCarPrice !== null) {
             servicePrice =
                 service.smallCarPrice -
-                    (service.smallCarPrice * ((_b = promo.percentage) !== null && _b !== void 0 ? _b : 0)) / 100;
+                    (service.smallCarPrice * ((_a = promo.percentage) !== null && _a !== void 0 ? _a : 0)) / 100;
         }
         else {
-            throw new AppError_1.default(http_status_1.default.CONFLICT, 'Service basic price is null');
+            throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'Service premium price is null');
         }
     }
-    // Create a coupon usage entry
-    // const couponUsed = await prisma.couponUsage.create({
-    //   data: {
-    //     couponId: promo.id,
-    //     bookingId: bookingId,
-    //     customerId: userId,
-    //   },
-    // });
-    // if (!couponUsed) {
-    //   throw new AppError(httpStatus.CONFLICT,'couponUsage is not created');
-    // }
+    if (promoCode.carType === client_1.CarType.LARGE) {
+        if (service.largeCarPrice !== null) {
+            servicePrice =
+                service.largeCarPrice -
+                    (service.largeCarPrice * ((_b = promo.percentage) !== null && _b !== void 0 ? _b : 0)) / 100;
+        }
+        else {
+            throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'Service basic price is null');
+        }
+    }
     return { Total_price: servicePrice };
 });
 exports.couponService = {

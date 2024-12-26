@@ -17,6 +17,12 @@ router.patch('/users/:userId/:status', (0, auth_1.default)(client_1.UserRoleEnum
 router.get('/drivers', (0, auth_1.default)(client_1.UserRoleEnum.ADMIN, client_1.UserRoleEnum.SUPER_ADMIN), admin_controller_1.adminController.getDriverList);
 // assign driver
 router.patch('/drivers/:driverId/:bookingId', (0, auth_1.default)(client_1.UserRoleEnum.ADMIN, client_1.UserRoleEnum.SUPER_ADMIN), admin_controller_1.adminController.assignDriver);
+// change booking status
+// router.patch(
+//   '/bookings/:bookingId',
+//   auth(UserRoleEnum.ADMIN, UserRoleEnum.SUPER_ADMIN),
+//   adminController.changeBookingStatus,
+// );
 //get all bookings
 router.get('/bookings', (0, auth_1.default)(client_1.UserRoleEnum.ADMIN, client_1.UserRoleEnum.SUPER_ADMIN), admin_controller_1.adminController.getBookingList);
 // get all services
@@ -33,4 +39,5 @@ router.delete('/garages/:garageId', (0, auth_1.default)(client_1.UserRoleEnum.AD
 router.post('/offers', (0, auth_1.default)(client_1.UserRoleEnum.ADMIN, client_1.UserRoleEnum.SUPER_ADMIN), admin_controller_1.adminController.addOffer);
 // get all offers
 router.get('/offers', (0, auth_1.default)(), admin_controller_1.adminController.getOfferList);
+router.get('/live-location/:driverId', (0, auth_1.default)(client_1.UserRoleEnum.ADMIN), admin_controller_1.adminController.getDriverLiveLocation);
 exports.AdminRoutes = router;

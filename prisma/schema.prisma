@@ -11,262 +11,284 @@ datasource db {
 }
 
 model User {
-  id              String          @id @default(auto()) @map("_id") @db.ObjectId
-  email           String          @unique
-  password        String?
-  fullName        String?
-  dateOfBirth     String?
-  phoneNumber     String?
-  profileImage    String?
-  gender          String?
-  otp             Int?
-  otpExpiresAt    DateTime?
-  googleId        String? 
-  facebookId      String? 
-  appleId         String?
-  role            UserRoleEnum   @default(CUSTOMER)
-  status          UserStatus     @default(INACTIVE)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  customer        Customer[]
-  garageOwner     GarageOwner[]
-  driver          Driver[]
-  admin           Admin[]
-  garage          Garages[]
-  service         Service[]
-
+  id           String        @id @default(auto()) @map("_id") @db.ObjectId
+  email        String        @unique
+  password     String?
+  fullName     String?
+  dateOfBirth  String?
+  phoneNumber  String?
+  profileImage String?
+  gender       String?
+  otp          Int?
+  otpExpiresAt DateTime?
+  googleId     String?
+  facebookId   String?
+  appleId      String?
+  fcmToken     String?
+  role         UserRoleEnum  @default(CUSTOMER)
+  status       UserStatus    @default(INACTIVE)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  customer     Customer[]
+  garageOwner  GarageOwner[]
+  driver       Driver[]
+  admin        Admin[]
+  garage       Garages[]
+  service      Service[]
+  notification notification[]
 
   @@map("users")
 }
 
 model Admin {
-  id              String         @id @default(auto()) @map("_id") @db.ObjectId
-  userId          String         @db.ObjectId @unique
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  user            User           @relation(fields: [userId], references: [id])
-  drivers         Driver[]
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @unique @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+  drivers   Driver[]
+
   @@map("admins")
 }
 
-model Customer{
-  id           String         @id @default(auto()) @map("_id") @db.ObjectId
-  userId       String         @db.ObjectId @unique
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
-  customerId   String?
-  location     String?
-  latitude     Float?
-  longitude    Float?
-  user         User           @relation(fields: [userId], references: [id])
-  bookings     Bookings[]
-  reviews      Review[]
-  cars         Car[]
-  couponUsage  CouponUsage[]
+model Customer {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String        @unique @db.ObjectId
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  customerId  String?
+  location    String?
+  latitude    Float?
+  longitude   Float?
+  user        User          @relation(fields: [userId], references: [id])
+  bookings    Bookings[]
+  reviews     Review[]
+  cars        Car[]
+  couponUsage CouponUsage[]
+
   @@map("customers")
 }
 
 model GarageOwner {
-  id              String         @id @default(auto()) @map("_id") @db.ObjectId
-  userId          String         @db.ObjectId @unique
-  description     String?
-  location        String?
-  latitude        Float?
-  longitude       Float?
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  user            User           @relation(fields: [userId], references: [id])
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @unique @db.ObjectId
+  description String?
+  location    String?
+  latitude    Float?
+  longitude   Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id])
+
   @@map("garage_owners")
 }
 
 model Garages {
-  id              String         @id @default(auto()) @map("_id") @db.ObjectId
-  userId          String         @db.ObjectId
-  garageName      String
-  garageImage     String?
-  description     String
-  location        String
-  latitude        Float?
-  longitude       Float?
-  minimumPrice    Float
-  availableTimes  String[]
-  serviceIds      String[]       @db.ObjectId
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  user            User           @relation(fields: [userId], references: [id])
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String   @db.ObjectId
+  garageName     String
+  garageImage    String?
+  description    String
+  location       String
+  latitude       Float?
+  longitude      Float?
+  minimumPrice   Float
+  availableTimes String[]
+  serviceIds     String[] @db.ObjectId
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  user           User     @relation(fields: [userId], references: [id])
+
   @@map("garages")
 }
 
-
-
-
 model Service {
-  id                    String              @id @default(auto()) @map("_id") @db.ObjectId
-  serviceName           String
-  smallCarPrice         Float?
-  largeCarPrice         Float?
-  carType               CarType?             
-  duration              String
-  serviceImage          String
-  availableTimes        String[]
-  serviceType           ServiceType         @default(BASIC)
-  serviceStatus         ServiceActiveStatus @default(ACTIVE)
-  userId                String              @db.ObjectId
-  createdAt             DateTime            @default(now())
-  updatedAt             DateTime            @updatedAt
-  user                  User                @relation(fields: [userId], references: [id])
-  reviews               Review[]
-  bookings              Bookings[]
+  id             String              @id @default(auto()) @map("_id") @db.ObjectId
+  serviceName    String
+  smallCarPrice  Float?
+  largeCarPrice  Float?
+  carType        CarType?
+  duration       String
+  serviceImage   String
+  availableTimes String[]
+  serviceType    ServiceType         @default(BASIC)
+  serviceStatus  ServiceActiveStatus @default(ACTIVE)
+  userId         String              @db.ObjectId
+  createdAt      DateTime            @default(now())
+  updatedAt      DateTime            @updatedAt
+  user           User                @relation(fields: [userId], references: [id])
+  reviews        Review[]
+  bookings       Bookings[]
+  notification   notification[]
+
   @@map("services")
 }
 
+model Bookings {
+  id                  String         @id @default(auto()) @map("_id") @db.ObjectId
+  customerId          String         @db.ObjectId
+  serviceId           String         @db.ObjectId
+  totalAmount         Float
+  bookingStatus       BookingStatus  @default(PENDING)
+  ownerNumber         String
+  carName             String
+  serviceDate         DateTime
+  specificInstruction String?
+  location            String
+  latitude            Float?
+  longitude           Float?
+  estimatedTime       String?
+  driverId            String?        @db.ObjectId
+  couponCode          String?        
+  serviceType         ServiceType    @default(BASIC)
+  serviceStatus       ServiceStatus? @default(IN_ROUTE)
+  paymentStatus       PaymentStatus  @default(PENDING)
+  paymentId           String?        @db.ObjectId
+  bookingTime         String
+  isRated             Boolean        @default(false)
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  customer            Customer       @relation(fields: [customerId], references: [userId])
+  service             Service        @relation(fields: [serviceId], references: [id])
+  coupon              Coupon?        @relation(fields: [couponCode], references: [couponCode])
+  driver              Driver?        @relation(fields: [driverId], references: [userId])
+  couponUsage         CouponUsage[]
+  reviews             Review[]
+  notification        notification[]
 
-
-
-model Bookings{
-  id              String         @id @default(auto()) @map("_id") @db.ObjectId
-  customerId      String         @db.ObjectId
-  serviceId       String          @db.ObjectId       
-  totalAmount     Float
-  bookingStatus   BookingStatus  @default(PENDING)
-  ownerNumber     String
-  carName         String
-  serviceDate     DateTime
-  location        String
-  latitude        Float?
-  longitude       Float?
-  estimatedTime   String?
-  driverId        String?        @db.ObjectId
-  couponId        String?        @db.ObjectId
-  serviceType     ServiceType    @default(BASIC)
-  serviceStatus   ServiceStatus?  @default(IN_ROUTE)
-  paymentStatus   PaymentStatus  @default(PENDING)
-  paymentId       String?        @db.ObjectId
-  bookingTime     String
-  isRated         Boolean        @default(false)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  customer        Customer       @relation(fields: [customerId], references: [userId])
-  service         Service        @relation(fields: [serviceId], references: [id])
-  coupon          Coupon?         @relation(fields: [couponId], references: [id])
-  driver          Driver?         @relation(fields: [driverId], references: [userId])
-  couponUsage     CouponUsage[]
-  reviews         Review[]
-  
   @@map("bookings")
 }
 
-
 model Driver {
-  id              String         @id @default(auto()) @map("_id") @db.ObjectId
-  address         String?
-  joinDate        String
-  userId          String         @db.ObjectId @unique
-  adminId         String         @db.ObjectId
-  inOnline        Boolean        @default(false)
-  latitude        Float?
-  longitude       Float?
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  user            User           @relation(fields: [userId], references: [id])
-  admin           Admin          @relation(fields: [adminId], references: [userId])
-  cars            Car[]
-  bookings        Bookings[]
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  address   String?
+  joinDate  String
+  userId    String     @unique @db.ObjectId
+  adminId   String     @db.ObjectId
+  inOnline  Boolean    @default(false)
+  latitude  Float?
+  longitude Float?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  user      User       @relation(fields: [userId], references: [id])
+  admin     Admin      @relation(fields: [adminId], references: [userId])
+  cars      Car[]
+  bookings  Bookings[]
+
   @@map("drivers")
 }
 
 model Car {
-  id              String         @id @default(auto()) @map("_id") @db.ObjectId
-  userId          String         @db.ObjectId
-  carName         String
-  carNumber       String?
-  carModel        String?
-  carImage        String?
-  driverId        String         @db.ObjectId 
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  driver          Driver         @relation(fields: [driverId], references: [userId])
-  customer        Customer       @relation(fields: [userId], references: [userId])
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  carName   String
+  carNumber String?
+  carModel  String?
+  carImage  String?
+  driverId  String   @db.ObjectId
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  driver    Driver   @relation(fields: [driverId], references: [userId])
+  customer  Customer @relation(fields: [userId], references: [userId])
+
   @@map("cars")
 }
 
 model Review {
-  id              String         @id @default(auto()) @map("_id") @db.ObjectId
-  serviceId       String         @db.ObjectId
-  customerId      String         @db.ObjectId
-  bookingId       String?        @db.ObjectId
-  rating          Int
-  comment         String?
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  service         Service        @relation(fields: [serviceId], references: [id])
-  customer        Customer       @relation(fields: [customerId], references: [userId])
-  booking         Bookings?      @relation(fields: [bookingId], references: [id])
- 
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  serviceId  String    @db.ObjectId
+  customerId String    @db.ObjectId
+  bookingId  String?   @db.ObjectId
+  rating     Int
+  comment    String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  service    Service   @relation(fields: [serviceId], references: [id])
+  customer   Customer  @relation(fields: [customerId], references: [userId])
+  booking    Bookings? @relation(fields: [bookingId], references: [id])
+
   @@map("reviews")
 }
 
 model Payment {
-  id              String         @id @default(auto()) @map("_id") @db.ObjectId
-  paymentId       String
-  paymentAmount   Float
-  paymentDate     DateTime       @default(now())
-  customerId      String        
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  
+  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  paymentId     String
+  paymentAmount Float
+  paymentDate   DateTime @default(now())
+  customerId    String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@map("payments")
 }
 
-  model Coupon {
-    id              String         @id @default(auto()) @map("_id") @db.ObjectId
-    couponCode      String          @unique
-    percentage      Int
-    discount        Float?
-    firstTimeUser   Boolean?
-    expiryDate      DateTime
-    createdAt       DateTime       @default(now())
-    updatedAt       DateTime       @updatedAt
-    couponUsage     CouponUsage[]
-    booking         Bookings[]
-    @@map("coupons")
+model Coupon {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  couponCode    String        @unique
+  percentage    Int
+  discount      Float?
+  firstTimeUser Boolean?
+  expiryDate    DateTime
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  couponUsage   CouponUsage[]
+  booking       Bookings[]
+
+  @@map("coupons")
 }
 
 model CouponUsage {
-  id              String         @id @default(auto()) @map("_id") @db.ObjectId
-  couponId        String         @db.ObjectId
-  bookingId       String?         @db.ObjectId
-  customerId      String         @db.ObjectId
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
-  coupon          Coupon         @relation(fields: [couponId], references: [id])
-  booking         Bookings?       @relation(fields: [bookingId], references: [id])
-  customer        Customer       @relation(fields: [customerId], references: [userId])
-  
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  couponCode String    
+  bookingId  String?   @db.ObjectId
+  customerId String    @db.ObjectId
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  coupon     Coupon    @relation(fields: [couponCode], references: [couponCode])
+  booking    Bookings? @relation(fields: [bookingId], references: [id])
+  customer   Customer  @relation(fields: [customerId], references: [userId])
+
   @@map("coupon_usages")
 }
 
 model Offer {
-  id               String         @id @default(auto()) @map("_id") @db.ObjectId
+  id               String              @id @default(auto()) @map("_id") @db.ObjectId
   offerName        String
   offerImage       String?
   offerPrice       Float?
   offerDescription String
   offerStatus      ServiceActiveStatus @default(ACTIVE)
   offerExpiresAt   DateTime?
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
   @@map("offers")
 }
 
+model notification {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  body      String
+  message   String?
+  userId    String   @db.ObjectId
+  bookingId String?  @db.ObjectId
+  serviceId String?  @db.ObjectId
+  isRead    Boolean? @default(false)
+  isClicked Boolean?  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id])
+  booking   Bookings? @relation(fields: [bookingId], references: [id])
+  service   Service?  @relation(fields: [serviceId], references: [id])
+
+  @@map("notifications")
+}
 
 enum UserRoleEnum {
   CUSTOMER
   ADMIN
   SUPER_ADMIN
   DRIVER
-
 }
 
 enum UserStatus {

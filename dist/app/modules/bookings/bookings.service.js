@@ -27,15 +27,16 @@ const addBookingIntoDB = (userId, bookingData) => __awaiter(void 0, void 0, void
                 location: bookingData.location,
                 latitude: bookingData.latitude ? bookingData.latitude : null,
                 longitude: bookingData.longitude ? bookingData.longitude : null,
+                specificInstruction: bookingData.specificInstruction ? bookingData.specificInstruction : null,
                 serviceStatus: client_1.ServiceStatus.IN_PROGRESS,
                 serviceType: bookingData.serviceType,
-                serviceDate: bookingData.serviceDate,
+                serviceDate: new Date(bookingData.serviceDate),
                 bookingTime: bookingData.bookingTime,
                 bookingStatus: client_1.BookingStatus.PENDING,
                 totalAmount: bookingData.totalAmount,
                 serviceId: bookingData.serviceId,
                 paymentStatus: client_1.PaymentStatus.PENDING,
-                couponId: bookingData.couponId ? bookingData.couponId : null,
+                couponCode: bookingData.couponCode ? bookingData.couponCode : null,
             },
         });
         if (!createdBooking) {
@@ -44,7 +45,7 @@ const addBookingIntoDB = (userId, bookingData) => __awaiter(void 0, void 0, void
         if (bookingData.couponId) {
             const couponUsed = yield prisma.couponUsage.create({
                 data: {
-                    couponId: bookingData.couponId,
+                    couponCode: bookingData.couponId,
                     bookingId: createdBooking.id,
                     customerId: userId,
                 },
@@ -80,6 +81,7 @@ const getBookingByIdFromDB = (userId, bookingId) => __awaiter(void 0, void 0, vo
             location: true,
             latitude: true,
             longitude: true,
+            specificInstruction: true,
             serviceStatus: true,
             serviceId: true,
             estimatedTime: true,
@@ -107,6 +109,10 @@ const getBookingListFromDB = (userId) => __awaiter(void 0, void 0, void 0, funct
             service: {
                 select: {
                     serviceName: true,
+                    serviceImage: true,
+                    duration: true,
+                    smallCarPrice: true,
+                    largeCarPrice: true,
                 },
             },
         },
@@ -120,6 +126,10 @@ const getBookingListFromDB = (userId) => __awaiter(void 0, void 0, void 0, funct
             service: {
                 select: {
                     serviceName: true,
+                    serviceImage: true,
+                    duration: true,
+                    smallCarPrice: true,
+                    largeCarPrice: true,
                 },
             },
         },
@@ -133,6 +143,10 @@ const getBookingListFromDB = (userId) => __awaiter(void 0, void 0, void 0, funct
             service: {
                 select: {
                     serviceName: true,
+                    serviceImage: true,
+                    duration: true,
+                    smallCarPrice: true,
+                    largeCarPrice: true,
                 },
             },
         },
@@ -149,7 +163,9 @@ const updateBookingIntoDB = (userId, bookingId, data) => __awaiter(void 0, void 
             id: bookingId,
             customerId: userId,
         },
-        data: Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (data.bookingTime && { bookingTime: data.bookingTime })), (data.totalAmount && { totalAmount: data.totalAmount })), (data.ownerNumber && { ownerNumber: data.ownerNumber })), (data.carName && { carName: data.carName })), (data.location && { location: data.location })), (data.latitude && { latitude: data.latitude })), (data.longitude && { longitude: data.longitude })), (data.bookingStatus && { bookingStatus: data.bookingStatus })), (data.paymentStatus && { paymentStatus: data.paymentStatus })), (data.serviceStatus && { serviceStatus: data.serviceStatus })),
+        data: Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (data.bookingTime && { bookingTime: data.bookingTime })), (data.totalAmount && { totalAmount: data.totalAmount })), (data.ownerNumber && { ownerNumber: data.ownerNumber })), (data.carName && { carName: data.carName })), (data.location && { location: data.location })), (data.latitude && { latitude: data.latitude })), (data.longitude && { longitude: data.longitude })), (data.bookingStatus && { bookingStatus: data.bookingStatus })), (data.paymentStatus && { paymentStatus: data.paymentStatus })), (data.serviceStatus && { serviceStatus: data.serviceStatus })), (data.specificInstruction && {
+            specificInstruction: data.specificInstruction,
+        })),
     });
     return updatedBooking;
 });

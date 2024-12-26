@@ -13,6 +13,7 @@ const bookingSchema = z.object({
     longitude: z.number().optional(),
     estimatedTime: z.string().optional(),
     bookingTime: z.string(),
+    specificInstruction: z.string().optional(),
   }),
 });
 

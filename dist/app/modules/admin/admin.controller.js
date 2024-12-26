@@ -147,6 +147,15 @@ const getOfferList = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
         data: result,
     });
 }));
+const getDriverLiveLocation = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const driverId = req.params.driverId;
+    const location = yield admin_service_1.adminService.getDriverLiveLocation(driverId);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Driver live location retrieved successfully',
+        data: location,
+    });
+}));
 exports.adminController = {
     getUserList,
     getBookingList,
@@ -160,4 +169,5 @@ exports.adminController = {
     getPayment,
     addOffer,
     getOfferList,
+    getDriverLiveLocation,
 };

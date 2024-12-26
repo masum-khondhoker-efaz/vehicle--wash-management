@@ -6,7 +6,7 @@ const zod_1 = require("zod");
 const serviceSchema = zod_1.z.object({
     body: zod_1.z.object({
         serviceName: zod_1.z.string().min(1).max(255),
-        smallCarPrice: zod_1.z.number(),
+        smallCarPrice: zod_1.z.number().optional(),
         largeCarPrice: zod_1.z.number().optional(),
         duration: zod_1.z.string().optional(),
         availableTimes: zod_1.z.array(zod_1.z.string()).optional(),

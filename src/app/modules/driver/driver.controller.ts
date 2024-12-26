@@ -32,6 +32,7 @@ const addDriver = catchAsync(async (req, res) => {
     });
 });
 
+
 const getDriverList = catchAsync(async (req, res) => {
     const user = req.user as any;
     const drivers = await driverService.getDriverListFromDB(user.id);
@@ -42,6 +43,7 @@ const getDriverList = catchAsync(async (req, res) => {
     });
 });
 
+
 const getDriverById = catchAsync(async (req, res) => {
     const driverId = req.params.driverId;
     const driver = await driverService.getDriverByIdFromDB(driverId);
@@ -51,6 +53,7 @@ const getDriverById = catchAsync(async (req, res) => {
         data: driver,
     });
 });
+
 
 const updateDriver = catchAsync(async (req, res) => {
     const driverId = req.params.driverId;
@@ -77,6 +80,7 @@ const updateDriver = catchAsync(async (req, res) => {
     });
 });
 
+
 const deleteDriver = catchAsync(async (req, res) => {
     const driverId = req.params.driverId;
     const user = req.user as any;
@@ -90,6 +94,7 @@ const deleteDriver = catchAsync(async (req, res) => {
     });
 });
 
+
 const getBookings = catchAsync(async (req, res) => {
     const user = req.user as any;
     const latitude = parseFloat(req.params.latitude);
@@ -102,6 +107,7 @@ const getBookings = catchAsync(async (req, res) => {
     });
 });
 
+
 const getBookingById = catchAsync(async (req, res) => {
     const user = req.user as any;
     const bookingId = req.params.bookingId;
@@ -112,6 +118,7 @@ const getBookingById = catchAsync(async (req, res) => {
         data: booking,
     });
 });
+
 
 const updateOnlineStatus = catchAsync(async (req, res) => {
     const user = req.user as any;
@@ -125,6 +132,7 @@ const updateOnlineStatus = catchAsync(async (req, res) => {
     });
 });
 
+
 const getDriverLiveLocation = catchAsync(async (req, res) => {
   const driverId = req.params.driverId;
   const location = await driverService.getDriverLiveLocation(driverId);
@@ -134,6 +142,7 @@ const getDriverLiveLocation = catchAsync(async (req, res) => {
     data: location,
   });
 });
+
 
 export const driverController = {
     addDriver,

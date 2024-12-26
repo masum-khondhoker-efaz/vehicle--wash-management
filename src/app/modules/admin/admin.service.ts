@@ -239,6 +239,8 @@ const getBookingList = async (offset: number, limit: number) => {
         select: {
           fullName: true,
           email: true,
+          profileImage: true,
+          phoneNumber: true,
         },
       });
       return {
@@ -455,6 +457,9 @@ const addOfferIntoDB = async (data: any) => {
   const result = await prisma.offer.create({
     data,
   });
+
+
+
   return result;
 };
 

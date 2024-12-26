@@ -42,10 +42,12 @@ const config_1 = __importDefault(require("../../../config"));
 const AppError_1 = __importDefault(require("../../errors/AppError"));
 const generateToken_1 = require("../../utils/generateToken");
 const prisma_1 = __importDefault(require("../../utils/prisma"));
+const client_1 = require("@prisma/client");
 const loginUserFromDB = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     const userData = yield prisma_1.default.user.findUniqueOrThrow({
         where: {
             email: payload.email,
+            status: client_1.UserStatus.ACTIVE,
         },
     });
     if (!userData.fullName) {

@@ -17,6 +17,7 @@ const distance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c; // Distance in km
 };
+
 const estimateTime = (distance: number, speed: number = 40) => {
   // speed is in km/h, default is 40 km/h
   const time = distance / speed; // time in hours
@@ -24,7 +25,6 @@ const estimateTime = (distance: number, speed: number = 40) => {
   const minutes = Math.round((time - hours) * 60);
   return { hours, minutes };
 };
-
 
 
 const addDriverIntoDB = async (userId: string, driverData: any) => {
