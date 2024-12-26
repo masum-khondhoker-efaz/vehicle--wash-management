@@ -19,12 +19,12 @@ router.post(
   driverController.addDriver,
 );
 
-router.get('/', auth(), driverController.getDriverList);
 router.get(
-  '/get-bookings',
+  '/get-bookings/:latitude/:longitude',
   auth(UserRoleEnum.DRIVER),
   driverController.getBookings,
 );
+router.get('/', auth(), driverController.getDriverList);
 
 router.get(
   '/booking-details/:bookingId',
@@ -39,7 +39,7 @@ router.put(
   updateMulterUpload.single('driverImage'),
   parseBody,
   validateRequest(driverValidation.updateDriverSchema),
-  auth(UserRoleEnum.SUPER_ADMIN, UserRoleEnum.ADMIN),
+  auth(UserRoleEnum.SUPER_ADMIN, UserRoleEnum.ADMIN, UserRoleEnum.DRIVER),
   driverController.updateDriver,
 );
 
@@ -47,6 +47,18 @@ router.delete(
   '/:driverId',
   auth(UserRoleEnum.SUPER_ADMIN, UserRoleEnum.ADMIN),
   driverController.deleteDriver,
+);
+
+router.post(
+  '/online-status',
+  auth(UserRoleEnum.DRIVER),
+  driverController.updateOnlineStatus,
+);
+
+router.get(
+  '/get-driver-location/:driverId',
+  auth(),
+  driverController.getDriverLiveLocation,
 );
 
 export const driverRoutes = router;

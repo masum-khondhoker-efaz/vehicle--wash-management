@@ -123,7 +123,7 @@ const applyPromoCodeIntoDB = async (
         service.smallCarPrice -
         (service.smallCarPrice * (promo.percentage ?? 0)) / 100;
     } else {
-      throw new AppError(httpStatus.CONFLICT, 'Service premium price is null');
+      throw new AppError(httpStatus.NOT_FOUND, 'Service premium price is null');
     } 
   }
 
@@ -133,7 +133,7 @@ const applyPromoCodeIntoDB = async (
         service.largeCarPrice -
         (service.largeCarPrice * (promo.percentage ?? 0)) / 100;
     } else {
-      throw new AppError(httpStatus.CONFLICT, 'Service basic price is null');
+      throw new AppError(httpStatus.NOT_FOUND, 'Service basic price is null');
     }
   }
 
@@ -146,7 +146,7 @@ const applyPromoCodeIntoDB = async (
   });
 
   if (!couponUsed) {
-    throw new AppError(httpStatus.CONFLICT,'couponUsage is not created');
+    throw new AppError(httpStatus.BAD_REQUEST,'CouponUsage is not created');
   }
 
   return { Total_price: servicePrice };

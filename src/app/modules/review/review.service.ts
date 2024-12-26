@@ -7,8 +7,19 @@ const addReviewIntoDB = async (userId: string, reviewData: any) => {
         rating: reviewData.rating,
         customerId: userId,
         serviceId: reviewData.serviceId,
+        bookingId: reviewData.bookingId,
       },
     });
+
+    await prisma.bookings.update({
+      where: {
+        id: reviewData.bookingId,
+      },
+      data: {
+        isRated: true,
+      },
+    });
+
 
     return createdReview;
   });

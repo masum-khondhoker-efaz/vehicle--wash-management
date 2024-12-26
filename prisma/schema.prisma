@@ -139,10 +139,11 @@ model Bookings{
   driverId        String?        @db.ObjectId
   couponId        String?        @db.ObjectId
   serviceType     ServiceType    @default(BASIC)
-  serviceStatus   ServiceStatus  @default(IN_ROUTE)
+  serviceStatus   ServiceStatus?  @default(IN_ROUTE)
   paymentStatus   PaymentStatus  @default(PENDING)
   paymentId       String?        @db.ObjectId
   bookingTime     String
+  isRated         Boolean        @default(false)
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   customer        Customer       @relation(fields: [customerId], references: [userId])
@@ -150,6 +151,7 @@ model Bookings{
   coupon          Coupon?         @relation(fields: [couponId], references: [id])
   driver          Driver?         @relation(fields: [driverId], references: [userId])
   couponUsage     CouponUsage[]
+  reviews         Review[]
   
   @@map("bookings")
 }
@@ -160,7 +162,10 @@ model Driver {
   address         String?
   joinDate        String
   userId          String         @db.ObjectId @unique
-  adminId         String         @db.ObjectId 
+  adminId         String         @db.ObjectId
+  inOnline        Boolean        @default(false)
+  latitude        Float?
+  longitude       Float?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   user            User           @relation(fields: [userId], references: [id])
@@ -189,12 +194,14 @@ model Review {
   id              String         @id @default(auto()) @map("_id") @db.ObjectId
   serviceId       String         @db.ObjectId
   customerId      String         @db.ObjectId
+  bookingId       String?        @db.ObjectId
   rating          Int
   comment         String?
   createdAt       DateTime       @default(now())
   updatedAt       DateTime       @updatedAt
   service         Service        @relation(fields: [serviceId], references: [id])
   customer        Customer       @relation(fields: [customerId], references: [userId])
+  booking         Bookings?      @relation(fields: [bookingId], references: [id])
  
   @@map("reviews")
 }
@@ -270,8 +277,8 @@ enum UserStatus {
 
 enum BookingStatus {
   PENDING
-  ACCEPTED
-  REJECTED
+  IN_ROUTE
+  IN_PROGRESS
   COMPLETED
   CANCELLED
 }

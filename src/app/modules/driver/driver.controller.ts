@@ -92,7 +92,9 @@ const deleteDriver = catchAsync(async (req, res) => {
 
 const getBookings = catchAsync(async (req, res) => {
     const user = req.user as any;
-    const bookings = await driverService.getBookingsFromDB(user.id);
+    const latitude = parseFloat(req.params.latitude);
+    const longitude = parseFloat(req.params.longitude);
+    const bookings = await driverService.getBookingsFromDB(user.id, latitude, longitude);
     sendResponse(res, {
         statusCode: httpStatus.OK,
         message: 'Booking list',
@@ -111,6 +113,27 @@ const getBookingById = catchAsync(async (req, res) => {
     });
 });
 
+const updateOnlineStatus = catchAsync(async (req, res) => {
+    const user = req.user as any;
+    const data = req.body;
+    const result = await driverService.updateOnlineStatusIntoDB(user.id, data);
+
+    sendResponse(res, {
+        statusCode: httpStatus.OK,
+        message: 'Online status updated successfully',
+        data: result,
+    });
+});
+
+const getDriverLiveLocation = catchAsync(async (req, res) => {
+  const driverId = req.params.driverId;
+  const location = await driverService.getDriverLiveLocation(driverId);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: 'Driver live location retrieved successfully',
+    data: location,
+  });
+});
 
 export const driverController = {
     addDriver,
@@ -120,4 +143,6 @@ export const driverController = {
     deleteDriver,
     getBookings,
     getBookingById,
+    updateOnlineStatus,
+    getDriverLiveLocation,
 };

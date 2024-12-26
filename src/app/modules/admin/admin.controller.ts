@@ -161,6 +161,16 @@ const getOfferList = catchAsync(async (req, res) => {
 });
 
 
+const getDriverLiveLocation = catchAsync(async (req, res) => {
+  const driverId = req.params.driverId;
+  const location = await adminService.getDriverLiveLocation(driverId);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: 'Driver live location retrieved successfully',
+    data: location,
+  });
+});
+
 
 export const adminController = {
   getUserList,
@@ -175,4 +185,5 @@ export const adminController = {
   getPayment,
   addOffer,
   getOfferList,
+  getDriverLiveLocation,
 };

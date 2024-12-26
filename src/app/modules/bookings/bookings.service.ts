@@ -109,6 +109,10 @@ const getBookingListFromDB = async (userId: string) => {
       service: {
         select: {
           serviceName: true,
+          serviceImage: true,
+          duration: true,
+          smallCarPrice: true,
+          largeCarPrice: true,
         },
       },
     },
@@ -123,6 +127,10 @@ const getBookingListFromDB = async (userId: string) => {
       service: {
         select: {
           serviceName: true,
+          serviceImage: true,
+          duration: true,
+          smallCarPrice: true,
+          largeCarPrice: true,
         },
       },
     },
@@ -137,6 +145,10 @@ const getBookingListFromDB = async (userId: string) => {
       service: {
         select: {
           serviceName: true,
+          serviceImage: true,
+          duration: true,
+          smallCarPrice: true,
+          largeCarPrice: true,
         },
       },
     },

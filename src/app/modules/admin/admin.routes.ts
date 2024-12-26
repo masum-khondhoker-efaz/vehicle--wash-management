@@ -34,6 +34,13 @@ router.patch(
   adminController.assignDriver,
 );
 
+// change booking status
+// router.patch(
+//   '/bookings/:bookingId',
+//   auth(UserRoleEnum.ADMIN, UserRoleEnum.SUPER_ADMIN),
+//   adminController.changeBookingStatus,
+// );
+
 
 //get all bookings
 router.get(
@@ -41,6 +48,8 @@ router.get(
   auth(UserRoleEnum.ADMIN, UserRoleEnum.SUPER_ADMIN),
   adminController.getBookingList,
 );
+
+
 
 // get all services
 router.get(
@@ -89,5 +98,11 @@ router.get(
   '/offers',
   auth(),
   adminController.getOfferList
+);
+
+router.get(
+  '/live-location/:driverId',
+  auth(UserRoleEnum.ADMIN),
+  adminController.getDriverLiveLocation,
 );
 export const AdminRoutes = router;

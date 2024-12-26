@@ -78,7 +78,7 @@ const authorizedPaymentWithSaveCardFromStripe = async (payload: {
     const { customerId, paymentMethodId, amount, bookingId } = payload;
 
     if (!isValidAmount(amount)) {
-      throw new AppError(httpStatus.CONFLICT,
+      throw new AppError(httpStatus.BAD_REQUEST,
         `Amount '${amount}' is not a valid amount`,
       );
     }
@@ -86,7 +86,7 @@ const authorizedPaymentWithSaveCardFromStripe = async (payload: {
     // Create a PaymentIntent with the specified PaymentMethod
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amount * 100, // Convert to cents
-      currency: 'usd',
+      currency: 'aed',
       customer: customerId,
       payment_method: paymentMethodId,
       off_session: true,
@@ -110,14 +110,14 @@ const authorizedPaymentWithSaveCardFromStripe = async (payload: {
         data: {
           paymentId: payment.id,
           paymentStatus: PaymentStatus.COMPLETED,
-          bookingStatus: BookingStatus.ACCEPTED,
+          bookingStatus: BookingStatus.IN_PROGRESS,
           serviceDate: new Date(),
         },
       });
     }
     return paymentIntent;
   } catch (error: any) {
-    throw new AppError(httpStatus.CONFLICT, error.message);
+    throw new AppError(httpStatus.BAD_REQUEST, error.message);
   }
 };
 

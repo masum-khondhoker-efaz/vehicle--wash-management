@@ -106,6 +106,7 @@ const assignDriverIntoDB = async (driverId: string, bookingId: string) => {
     },
     data: {
       driverId: driverId,
+      bookingStatus: BookingStatus.IN_PROGRESS,
     },
   });
 
@@ -468,6 +469,24 @@ const getOfferListFromDB = async () => {
 };
 
 
+const getDriverLiveLocation = async (driverId: string) => {
+  try {
+    const driver = await prisma.driver.findUnique({
+      where: {
+        userId: driverId,
+      },
+      select: {
+        latitude: true,
+        longitude: true,
+      },
+    });
+    return driver;
+  } catch (error) {
+    console.error('Error fetching driver location:', error);
+    throw error;
+  }
+};
+
 export const adminService = {
   getUserList,
   getBookingList,
@@ -482,4 +501,5 @@ export const adminService = {
   getPaymentFromDB,
   addOfferIntoDB,
   getOfferListFromDB,
+  getDriverLiveLocation,
 };
