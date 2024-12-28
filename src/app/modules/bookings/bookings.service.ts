@@ -69,6 +69,7 @@ const getBookingByIdFromDB = async (userId: string, bookingId: string) => {
     where: {
       id: bookingId,
       customerId: userId,
+      paymentStatus: PaymentStatus.COMPLETED,
     },
     select: {
       id: true,
@@ -105,7 +106,8 @@ const getBookingListFromDB = async (userId: string) => {
   const pendingBookings = await prisma.bookings.findMany({
     where: {
       customerId: userId,
-      bookingStatus: BookingStatus.PENDING,
+      bookingStatus: BookingStatus.IN_PROGRESS,
+      paymentStatus: PaymentStatus.COMPLETED,
     },
     include: {
       service: {
@@ -117,6 +119,9 @@ const getBookingListFromDB = async (userId: string) => {
           largeCarPrice: true,
         },
       },
+    },
+    orderBy: {
+      serviceDate: 'desc',
     },
   });
 
@@ -124,6 +129,7 @@ const getBookingListFromDB = async (userId: string) => {
     where: {
       customerId: userId,
       bookingStatus: BookingStatus.COMPLETED,
+      paymentStatus: PaymentStatus.COMPLETED,
     },
     include: {
       service: {
@@ -135,6 +141,9 @@ const getBookingListFromDB = async (userId: string) => {
           largeCarPrice: true,
         },
       },
+    },
+    orderBy: {
+      serviceDate: 'desc',
     },
   });
 
@@ -153,6 +162,9 @@ const getBookingListFromDB = async (userId: string) => {
           largeCarPrice: true,
         },
       },
+    },
+    orderBy: {
+      serviceDate: 'desc',
     },
   });
 

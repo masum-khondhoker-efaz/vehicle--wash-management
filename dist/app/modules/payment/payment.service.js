@@ -20,7 +20,6 @@ const isValidAmount_1 = require("../../utils/isValidAmount");
 const prisma_1 = __importDefault(require("../../utils/prisma"));
 const client_1 = require("@prisma/client");
 const AppError_1 = __importDefault(require("../../errors/AppError"));
-const firebaseAdmin_1 = require("../../utils/firebaseAdmin");
 // Initialize Stripe with your secret API key
 const stripe = new stripe_1.default(config_1.default.stripe.stripe_secret_key, {
     apiVersion: '2024-11-20.acacia',
@@ -71,15 +70,47 @@ const saveCardWithCustomerInfoIntoStripe = (payload, userId) => __awaiter(void 0
 // Step 2: Authorize the Payment Using Saved Card
 const authorizedPaymentWithSaveCardFromStripe = (userId, payload) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const { customerId, paymentMethodId, amount, bookingId } = payload;
-        if (!(0, isValidAmount_1.isValidAmount)(amount)) {
-            throw new AppError_1.default(http_status_1.default.BAD_REQUEST, `Amount '${amount}' is not a valid amount`);
+        const { paymentMethodId, bookingId } = payload;
+        // Retrieve the Customer from the database
+        const customerDetails = yield prisma_1.default.user.findUnique({
+            where: {
+                id: userId,
+                role: client_1.UserRoleEnum.CUSTOMER,
+            },
+        });
+        if (!customerDetails) {
+            throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Customer not found');
+        }
+        const booking = yield prisma_1.default.bookings.findUnique({
+            where: {
+                id: bookingId,
+            },
+        });
+        if (!booking) {
+            throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Booking not found');
+        }
+        const customer = yield stripe.customers.create({
+            email: customerDetails.email,
+        });
+        if (!customer) {
+            throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Customer not found');
+        }
+        const updatedCustomer = yield prisma_1.default.customer.update({
+            where: {
+                userId: userId,
+            },
+            data: {
+                customerId: customer.id,
+            },
+        });
+        if (!updatedCustomer) {
+            throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Customer not found');
         }
         // Create a PaymentIntent with the specified PaymentMethod
         const paymentIntent = yield stripe.paymentIntents.create({
-            amount: amount * 100, // Convert to cents
+            amount: booking.totalAmount * 100, // Convert to cents
             currency: 'aed',
-            customer: customerId,
+            customer: customer.id,
             payment_method: paymentMethodId,
             off_session: true,
             confirm: true,
@@ -89,12 +120,12 @@ const authorizedPaymentWithSaveCardFromStripe = (userId, payload) => __awaiter(v
             const payment = yield prisma_1.default.payment.create({
                 data: {
                     paymentId: paymentIntent.id,
-                    customerId: customerId,
-                    paymentAmount: amount,
+                    customerId: customer.id,
+                    paymentAmount: booking.totalAmount,
                     paymentDate: new Date(),
                 },
             });
-            const booking = yield prisma_1.default.bookings.update({
+            const updatedBooking = yield prisma_1.default.bookings.update({
                 where: {
                     id: bookingId,
                 },
@@ -106,20 +137,20 @@ const authorizedPaymentWithSaveCardFromStripe = (userId, payload) => __awaiter(v
                 },
             });
         }
-        const fcmToken = yield prisma_1.default.user.findUnique({
-            where: {
-                id: userId,
-            },
-            select: {
-                fcmToken: true,
-            },
-        });
-        if (fcmToken === null || fcmToken === void 0 ? void 0 : fcmToken.fcmToken) {
-            yield (0, firebaseAdmin_1.sendNotification)(fcmToken.fcmToken, 'Payment Successful', 'Your payment has been successful');
-        }
-        if (fcmToken === null || fcmToken === void 0 ? void 0 : fcmToken.fcmToken) {
-            yield (0, firebaseAdmin_1.sendNotification)(fcmToken.fcmToken, 'Payment Successful', 'Your booking has been accepted successfully');
-        }
+        // const fcmToken = await prisma.user.findUnique({
+        //   where: {
+        //     id: userId,
+        //   },
+        //   select: {
+        //     fcmToken: true,
+        //   },
+        // });
+        // if (fcmToken?.fcmToken) {
+        //   await sendNotification(fcmToken.fcmToken, 'Payment Successful', 'Your payment has been successful');
+        // }
+        // if(fcmToken?.fcmToken){
+        //   await sendNotification(fcmToken.fcmToken, 'Payment Successful', 'Your booking has been accepted successfully');
+        // }
         return paymentIntent;
     }
     catch (error) {

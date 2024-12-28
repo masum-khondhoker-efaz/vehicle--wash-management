@@ -213,19 +213,22 @@ const changeDriverStatusIntoDB = async (driverId: string, status: string) => {
 };
 // get all bookings
 const getBookingList = async (offset: number, limit: number) => {
-  // Get the pending bookings with pagination
+  // Get the pending bookings with pagination in descending order
   const bookings = await prisma.bookings.findMany({
     skip: offset, // Skip the first `offset` records
     take: limit, // Limit the result to `limit` records
     where: {
-      bookingStatus: BookingStatus.PENDING,
+      bookingStatus: BookingStatus.IN_PROGRESS,
+    },
+    orderBy: {
+      createdAt: 'desc', // Order by creation date in descending order
     },
   });
 
   // Get the total count of pending bookings
   const totalPendingCount = await prisma.bookings.count({
     where: {
-      bookingStatus: BookingStatus.PENDING,
+      bookingStatus: BookingStatus.IN_PROGRESS,
     },
   });
 
@@ -255,27 +258,6 @@ const getBookingList = async (offset: number, limit: number) => {
     }),
   );
 
-  // Fetch user details for each cancelled booking
-  // const cancelBookingDetailsWithUser = await Promise.all(
-  //   cancelBookings.map(async booking => {
-  //     const user = await prisma.user.findUnique({
-  //       where: {
-  //         id: booking.customerId,
-  //       },
-  //       select: {
-  //         fullName: true,
-  //         profileImage: true,
-  //         email: true,
-  //         phoneNumber: true,
-  //       },
-  //     });
-  //     return {
-  //       ...booking,
-  //       user,
-  //     };
-  //   }),
-  // );
-
   // Get the total count of cancelled bookings
   const totalCancelledCount = await prisma.bookings.count({
     where: {
@@ -294,7 +276,6 @@ const getBookingList = async (offset: number, limit: number) => {
     total_pending_bookings: totalPendingCount,
     total_cancelled_bookings: totalCancelledCount,
     bookingDetailsWithUser,
-    // cancelBookingDetailsWithUser,
   };
 };
 
