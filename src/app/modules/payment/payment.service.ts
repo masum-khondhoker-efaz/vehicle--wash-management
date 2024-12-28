@@ -78,116 +78,113 @@ const authorizedPaymentWithSaveCardFromStripe = async (
     bookingId: string;
   },
 ) => {
-  try {
-    const { paymentMethodId, bookingId } = payload;
+  const { paymentMethodId, bookingId } = payload;
 
-    // Retrieve the Customer from the database
-    const customerDetails = await prisma.user.findUnique({
-      where: {
-        id: userId,
-        role: UserRoleEnum.CUSTOMER,
-      }
-    });
-
-    if (!customerDetails) {
-      throw new AppError(httpStatus.BAD_REQUEST, 'Customer not found');
-    }
-
-    const booking = await prisma.bookings.findUnique({
-      where: {
-        id: bookingId,
-        customerId: userId,
-        bookingStatus: BookingStatus.PENDING,
-      },
-    });
-
-    if (!booking) {
-      throw new AppError(httpStatus.BAD_REQUEST, 'Booking not found');
-    }
-
-    const stripeCustomer = await prisma.customer.findUnique({
-      where: {
-        userId: userId,
-      },
-    });
-
-    let customer;
-    if (stripeCustomer?.customerId) {
-      customer = await stripe.customers.create({
-        email: customerDetails.email,
-      });
-    }
-
-    if (!customer) {
-      throw new AppError(httpStatus.BAD_REQUEST, 'Customer not found');
-    }
-
-    const updatedCustomer = await prisma.customer.update({
-      where: {
-        userId: userId,
-      },
-      data: {
-        customerId: customer.id,
-      },
-    });
-    if (!updatedCustomer) {
-      throw new AppError(httpStatus.BAD_REQUEST, 'Customer not found');
-    }
-
-    // Create a PaymentIntent with the specified PaymentMethod
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: booking.totalAmount * 100, // Convert to cents
-      currency: 'aed',
-      customer: customer.id,
-      payment_method: paymentMethodId,
-      off_session: true,
-      confirm: true,
-      capture_method: 'automatic', // Authorize the payment with capturing
-    });
-
-    if (paymentIntent.status === 'succeeded') {
-      const payment: any = await prisma.payment.create({
-        data: {
-          paymentId: paymentIntent.id,
-          customerId: customer.id,
-          paymentAmount: booking.totalAmount,
-          paymentDate: new Date(),
+  // Retrieve the Customer from the database
+  const customerDetails = await prisma.user.findUnique({
+    where: {
+      id: userId,
+      role: UserRoleEnum.CUSTOMER,
+    },
+    include: {
+      customer: {
+        select: {
+          customerId: true,
         },
-      });
-      const updatedBooking = await prisma.bookings.update({
-        where: {
-          id: bookingId,
-        },
-        data: {
-          paymentId: payment.id,
-          paymentStatus: PaymentStatus.COMPLETED,
-          bookingStatus: BookingStatus.IN_PROGRESS,
-          serviceDate: new Date(),
-        },
-      });
-    }
+      },
+    },
+  });
 
-    // const fcmToken = await prisma.user.findUnique({
-    //   where: {
-    //     id: userId,
-    //   },
-    //   select: {
-    //     fcmToken: true,
-    //   },
-    // });
-
-    // if (fcmToken?.fcmToken) {
-    //   await sendNotification(fcmToken.fcmToken, 'Payment Successful', 'Your payment has been successful');
-    // }
-    // if(fcmToken?.fcmToken){
-    //   await sendNotification(fcmToken.fcmToken, 'Payment Successful', 'Your booking has been accepted successfully');
-    // }
-
-    return paymentIntent;
-  } catch (error: any) {
-    throw new AppError(httpStatus.BAD_REQUEST, error.message);
+  if (!customerDetails) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Customer not found');
   }
+
+  // Retrieve the booking details
+  const booking = await prisma.bookings.findUnique({
+    where: {
+      id: bookingId,
+      customerId: userId,
+      bookingStatus: BookingStatus.PENDING,
+      paymentStatus: PaymentStatus.PENDING,
+    },
+  });
+
+  if (!booking) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Booking not found');
+  }
+
+  let customerId = customerDetails.customer[0]?.customerId;
+
+  // If the customerId doesn't exist, create a new Stripe customer
+  if (!customerId) {
+    const stripeCustomer = await stripe.customers.create({
+      email: customerDetails.email ? customerDetails.email : (() => { throw new AppError(httpStatus.BAD_REQUEST, 'Email not found'); })(),
+    });
+
+    // Update the database with the new Stripe customer ID
+    await prisma.customer.update({
+      where: { userId: userId },
+      data: { customerId: stripeCustomer.id },
+    });
+
+    customerId = stripeCustomer.id; // Use the new customerId
+  }
+
+  // Create a PaymentIntent with the specified PaymentMethod
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: Math.round(booking.totalAmount * 100), // Convert to cents
+    currency: 'usd',
+    customer: customerId,
+    payment_method: paymentMethodId,
+    off_session: true,
+    confirm: true,
+    capture_method: 'automatic', // Authorize the payment with capturing
+  });
+
+  // Handle successful payment
+  if (paymentIntent.status === 'succeeded') {
+    // Save payment information to the database
+    const payment = await prisma.payment.create({
+      data: {
+        paymentId: paymentIntent.id,
+        customerId: customerId,
+        paymentAmount: booking.totalAmount,
+        paymentDate: new Date(),
+        booking: {
+          connect: { id: bookingId },
+        },
+      },
+    });
+
+    // Update the booking status
+    await prisma.bookings.update({
+      where: { id: bookingId },
+      data: {
+        paymentId: payment.id,
+        paymentStatus: PaymentStatus.COMPLETED,
+        bookingStatus: BookingStatus.PENDING,
+        serviceDate: new Date(),
+      },
+    });
+
+    // Optionally send a notification
+  //   const fcmToken = await prisma.user.findUnique({
+  //     where: { id: userId },
+  //     select: { fcmToken: true },
+  //   });
+
+  //   if (fcmToken?.fcmToken) {
+  //     await sendNotification(
+  //       fcmToken.fcmToken,
+  //       'Payment Successful',
+  //       'Your payment has been processed successfully.',
+  //     );
+  //   }
+   }
+
+  return paymentIntent;
 };
+
 
 // Step 3: Capture the Payment
 const capturePaymentRequestToStripe = async (payload: {

@@ -24,12 +24,13 @@ const saveCardWithCustomerInfo = catchAsync(async (req, res) => {
 // Authorize the customer with the amount and send payment request
 const authorizedPaymentWithSaveCard = catchAsync(async (req: any, res: any) => {
   const user = req.user as any;
+  console.log(user)
   const result = await StripeServices.authorizedPaymentWithSaveCardFromStripe(
     user.id, req.body,
   );
 
   sendResponse(res, {
-    statusCode: 200,
+    statusCode: httpStatus.OK,
     success: true,
     message: 'Authorized customer and payment request successfully',
     data: result,

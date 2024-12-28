@@ -27,6 +27,7 @@ router.post(
 // Authorize the customer with the amount and send payment request
 router.post(
   '/authorize-payment',
+  auth(),
   validateRequest(AuthorizedPaymentPayloadSchema),
   PaymentController.authorizedPaymentWithSaveCard,
 );

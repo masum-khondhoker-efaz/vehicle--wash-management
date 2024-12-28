@@ -81,10 +81,33 @@ const changePasswordSchema = z.object({
   }),
 });
 
+const socialLoginSchema = z.object({
+  body: z.object({
+    email: z
+      .string({
+        required_error: 'Email is required!',
+      })
+      .email({
+        message: 'Invalid email format!',
+      }).optional(),
+    fullName: z.string({
+      required_error: 'Name is required!',
+    }),
+    fcmToken: z.string({
+      required_error: 'Fcm token is required!',
+    }),
+    role: z.string({
+      required_error: 'Role is required!',
+    }),
+    
+  }),
+});
+
 export const UserValidations = {
   registerUser,
   updateProfileSchema,
   forgetPasswordSchema,
   verifyOtpSchema,
   changePasswordSchema,
+  socialLoginSchema,
 };

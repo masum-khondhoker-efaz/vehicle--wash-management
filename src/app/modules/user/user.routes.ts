@@ -4,12 +4,20 @@ import validateRequest from '../../middlewares/validateRequest';
 import { UserControllers } from '../user/user.controller';
 import { UserValidations } from '../user/user.validation';
 import { UserRoleEnum } from '@prisma/client';
+import { multerUpload } from '../../utils/multerUpload';
+import { parseBody } from '../../middlewares/parseBody';
 const router = express.Router();
 
 router.post(
   '/register',
   validateRequest(UserValidations.registerUser),
   UserControllers.registerUser,
+);
+
+router.post(
+  '/social-sign-up',
+  validateRequest(UserValidations.socialLoginSchema),
+  UserControllers.socialLogin,
 );
 
 router.get(
@@ -29,6 +37,13 @@ router.put(
   '/update-profile',
   auth(),
   UserControllers.updateMyProfile,
+);
+
+router.put(
+  '/update-profile-image',
+  multerUpload.single('profileImage'),
+  auth(),
+  UserControllers.updateProfileImage,
 );
 
 router.put(

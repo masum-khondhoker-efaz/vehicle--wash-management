@@ -1,6 +1,6 @@
 import * as bcrypt from 'bcrypt';
 import prisma from '../../utils/prisma';
-import { UserRoleEnum } from '@prisma/client';
+import { BookingStatus, UserRoleEnum } from '@prisma/client';
 
 
 const distance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
@@ -28,6 +28,7 @@ const estimateTime = (distance: number, speed: number = 40) => {
 
 
 const addDriverIntoDB = async (userId: string, driverData: any) => {
+
   const { data, driverImage } = driverData;
 
   const transaction = await prisma.$transaction(async prisma => {
@@ -174,7 +175,7 @@ const getBookingsFromDB = async (
   const pendingBookings = await prisma.bookings.findMany({
     where: {
       driverId: userId,
-      bookingStatus: 'PENDING',
+      bookingStatus: BookingStatus.IN_PROGRESS,
     },
     select: {
       id: true,
@@ -190,6 +191,7 @@ const getBookingsFromDB = async (
       longitude: true,
       totalAmount: true,
       paymentStatus: true,
+      driverId: true,
       service: {
         select: {
           serviceName: true,
@@ -206,7 +208,7 @@ const getBookingsFromDB = async (
   const completedBookings = await prisma.bookings.findMany({
     where: {
       driverId: userId,
-      bookingStatus: 'COMPLETED',
+      bookingStatus: BookingStatus.COMPLETED,
     },
     select: {
       id: true,
@@ -220,6 +222,7 @@ const getBookingsFromDB = async (
       location: true,
       totalAmount: true,
       paymentStatus: true,
+      driverId: true,
       service: {
         select: {
           serviceName: true,

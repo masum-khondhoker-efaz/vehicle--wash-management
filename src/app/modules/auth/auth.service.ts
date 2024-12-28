@@ -18,7 +18,20 @@ const loginUserFromDB = async (payload: {
       email: payload.email,
       status: UserStatus.ACTIVE,
     },
+    select: {
+      id: true,
+      email: true,
+      role: true,
+      fullName: true,
+      password: true,
+      phoneNumber: true,
+      profileImage: true,
+    },
   });
+
+  if (!userData.email) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Email not set for this user');
+  }
   if(!userData.fullName){
     throw new AppError(httpStatus.BAD_REQUEST, 'Full Name not set for this user');
   }

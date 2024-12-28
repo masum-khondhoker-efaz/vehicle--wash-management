@@ -103,10 +103,11 @@ const getBookingByIdFromDB = async (userId: string, bookingId: string) => {
 
 
 const getBookingListFromDB = async (userId: string) => {
+  console.log(userId)
   const pendingBookings = await prisma.bookings.findMany({
     where: {
       customerId: userId,
-      bookingStatus: BookingStatus.IN_PROGRESS,
+      bookingStatus: { in: [BookingStatus.IN_PROGRESS, BookingStatus.IN_ROUTE] },
       paymentStatus: PaymentStatus.COMPLETED,
     },
     include: {

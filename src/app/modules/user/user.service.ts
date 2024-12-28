@@ -5,6 +5,9 @@ import emailSender from '../../utils/emailSender';
 import { AuthServices } from '../auth/auth.service';
 import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
+import { generateToken } from '../../utils/generateToken';
+import { Secret } from 'jsonwebtoken';
+import config from '../../../config';
 
 interface UserWithOptionalPassword extends Omit<User, 'password'> {
   password?: string;
@@ -107,7 +110,7 @@ const registerUserIntoDB = async (payload: any) => {
 
   await emailSender(
     'Verify Your Email',
-    userData.email,
+    userData.email!,
 
     `<div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
     <table width="100%" style="border-collapse: collapse;">
@@ -310,6 +313,9 @@ const forgotPassword = async (payload: { email: string }) => {
       otpExpiresAt: otpExpiresAtString,
     },
   });
+  if (!userData.email) {
+    throw new AppError(httpStatus.CONFLICT, 'Email not set for this user');
+  }
 
   await emailSender(
     'Reset Your Password',
@@ -390,6 +396,10 @@ const verifyOtpInDB = async (bodyData: {
       },
     });
   }
+  if (!userData.email) {
+    throw new AppError(httpStatus.CONFLICT, 'Email not set for this user');
+  }
+
   if (userData) {
     const login = await AuthServices.loginUserFromDB({
       email: userData.email,
@@ -441,10 +451,8 @@ const verifyOtpForgotPasswordInDB = async (bodyData: {
       },
     });
   }
- 
 
-    return { message: 'OTP verified successfully!' };
-  
+  return { message: 'OTP verified successfully!' };
 };
 
 const updatePassword = async (payload: any) => {
@@ -469,7 +477,67 @@ const updatePassword = async (payload: any) => {
   };
 };
 
+const updateProfileImageIntoDB = async (
+  userId: string,
+  profileImageUrl: string,
+) => {
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      profileImage: profileImageUrl,
+    },
+  });
 
+  return updatedUser;
+};
+
+const socialLoginIntoDB = async (payload: any) => {
+  const user = await prisma.user.findUnique({
+    where: {
+      email: payload.email,
+    },
+  });
+
+
+  if (!user) {
+    const newUser = await prisma.user.create({
+      data: {
+        ...payload,
+        status: UserStatus.ACTIVE,
+      },
+    });
+    const accessToken = await generateToken(
+      {
+        id: newUser.id,
+        email: newUser.email,
+        role: newUser.role,
+      },
+      config.jwt.access_secret as Secret,
+      config.jwt.access_expires_in as string,
+    );
+    return {newUser, accessToken};
+  }
+  if(user){
+
+    const fcmUpdate = await prisma.user.update({
+      where: { email: payload.email },
+      data: {
+        fcmToken: payload.fcmToken,
+      },
+    });
+    const accessToken = await generateToken(
+      {
+        id: user.id,
+        email: user.email,
+        role: user.role,
+      },
+      config.jwt.access_secret as Secret,
+      config.jwt.access_expires_in as string,
+    );
+    return {user, accessToken};
+  }
+
+};
 
 export const UserServices = {
   registerUserIntoDB,
@@ -483,4 +551,6 @@ export const UserServices = {
   verifyOtpInDB,
   updatePassword,
   verifyOtpForgotPasswordInDB,
+  updateProfileImageIntoDB,
+  socialLoginIntoDB,
 };
