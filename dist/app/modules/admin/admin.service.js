@@ -199,18 +199,21 @@ const changeDriverStatusIntoDB = (driverId, status) => __awaiter(void 0, void 0,
 });
 // get all bookings
 const getBookingList = (offset, limit) => __awaiter(void 0, void 0, void 0, function* () {
-    // Get the pending bookings with pagination
+    // Get the pending bookings with pagination in descending order
     const bookings = yield prisma_1.default.bookings.findMany({
         skip: offset, // Skip the first `offset` records
         take: limit, // Limit the result to `limit` records
         where: {
-            bookingStatus: client_1.BookingStatus.PENDING,
+            bookingStatus: client_1.BookingStatus.IN_PROGRESS,
+        },
+        orderBy: {
+            createdAt: 'desc', // Order by creation date in descending order
         },
     });
     // Get the total count of pending bookings
     const totalPendingCount = yield prisma_1.default.bookings.count({
         where: {
-            bookingStatus: client_1.BookingStatus.PENDING,
+            bookingStatus: client_1.BookingStatus.IN_PROGRESS,
         },
     });
     // Fetch user details for each booking with selected fields
@@ -236,26 +239,6 @@ const getBookingList = (offset, limit) => __awaiter(void 0, void 0, void 0, func
             user,
         };
     })));
-    // Fetch user details for each cancelled booking
-    // const cancelBookingDetailsWithUser = await Promise.all(
-    //   cancelBookings.map(async booking => {
-    //     const user = await prisma.user.findUnique({
-    //       where: {
-    //         id: booking.customerId,
-    //       },
-    //       select: {
-    //         fullName: true,
-    //         profileImage: true,
-    //         email: true,
-    //         phoneNumber: true,
-    //       },
-    //     });
-    //     return {
-    //       ...booking,
-    //       user,
-    //     };
-    //   }),
-    // );
     // Get the total count of cancelled bookings
     const totalCancelledCount = yield prisma_1.default.bookings.count({
         where: {
@@ -272,7 +255,6 @@ const getBookingList = (offset, limit) => __awaiter(void 0, void 0, void 0, func
         total_pending_bookings: totalPendingCount,
         total_cancelled_bookings: totalCancelledCount,
         bookingDetailsWithUser,
-        // cancelBookingDetailsWithUser,
     };
 });
 // get all services

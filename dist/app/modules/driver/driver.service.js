@@ -182,7 +182,7 @@ const getBookingsFromDB = (userId, latitude, longitude) => __awaiter(void 0, voi
     const pendingBookings = yield prisma_1.default.bookings.findMany({
         where: {
             driverId: userId,
-            bookingStatus: 'PENDING',
+            bookingStatus: client_1.BookingStatus.IN_PROGRESS,
         },
         select: {
             id: true,
@@ -198,6 +198,7 @@ const getBookingsFromDB = (userId, latitude, longitude) => __awaiter(void 0, voi
             longitude: true,
             totalAmount: true,
             paymentStatus: true,
+            driverId: true,
             service: {
                 select: {
                     serviceName: true,
@@ -210,7 +211,7 @@ const getBookingsFromDB = (userId, latitude, longitude) => __awaiter(void 0, voi
     const completedBookings = yield prisma_1.default.bookings.findMany({
         where: {
             driverId: userId,
-            bookingStatus: 'COMPLETED',
+            bookingStatus: client_1.BookingStatus.COMPLETED,
         },
         select: {
             id: true,
@@ -224,6 +225,7 @@ const getBookingsFromDB = (userId, latitude, longitude) => __awaiter(void 0, voi
             location: true,
             totalAmount: true,
             paymentStatus: true,
+            driverId: true,
             service: {
                 select: {
                     serviceName: true,

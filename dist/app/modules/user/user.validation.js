@@ -81,10 +81,31 @@ const changePasswordSchema = zod_1.default.object({
         }),
     }),
 });
+const socialLoginSchema = zod_1.default.object({
+    body: zod_1.default.object({
+        email: zod_1.default
+            .string({
+            required_error: 'Email is required!',
+        })
+            .email({
+            message: 'Invalid email format!',
+        }).optional(),
+        fullName: zod_1.default.string({
+            required_error: 'Name is required!',
+        }),
+        fcmToken: zod_1.default.string({
+            required_error: 'Fcm token is required!',
+        }),
+        role: zod_1.default.string({
+            required_error: 'Role is required!',
+        }),
+    }),
+});
 exports.UserValidations = {
     registerUser,
     updateProfileSchema,
     forgetPasswordSchema,
     verifyOtpSchema,
     changePasswordSchema,
+    socialLoginSchema,
 };

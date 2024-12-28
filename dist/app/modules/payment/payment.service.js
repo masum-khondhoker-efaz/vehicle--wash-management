@@ -69,93 +69,98 @@ const saveCardWithCustomerInfoIntoStripe = (payload, userId) => __awaiter(void 0
 });
 // Step 2: Authorize the Payment Using Saved Card
 const authorizedPaymentWithSaveCardFromStripe = (userId, payload) => __awaiter(void 0, void 0, void 0, function* () {
-    try {
-        const { paymentMethodId, bookingId } = payload;
-        // Retrieve the Customer from the database
-        const customerDetails = yield prisma_1.default.user.findUnique({
-            where: {
-                id: userId,
-                role: client_1.UserRoleEnum.CUSTOMER,
+    var _a;
+    const { paymentMethodId, bookingId } = payload;
+    // Retrieve the Customer from the database
+    const customerDetails = yield prisma_1.default.user.findUnique({
+        where: {
+            id: userId,
+            role: client_1.UserRoleEnum.CUSTOMER,
+        },
+        include: {
+            customer: {
+                select: {
+                    customerId: true,
+                },
             },
+        },
+    });
+    if (!customerDetails) {
+        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Customer not found');
+    }
+    // Retrieve the booking details
+    const booking = yield prisma_1.default.bookings.findUnique({
+        where: {
+            id: bookingId,
+            customerId: userId,
+            bookingStatus: client_1.BookingStatus.PENDING,
+            paymentStatus: client_1.PaymentStatus.PENDING,
+        },
+    });
+    if (!booking) {
+        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Booking not found');
+    }
+    let customerId = (_a = customerDetails.customer[0]) === null || _a === void 0 ? void 0 : _a.customerId;
+    // If the customerId doesn't exist, create a new Stripe customer
+    if (!customerId) {
+        const stripeCustomer = yield stripe.customers.create({
+            email: customerDetails.email ? customerDetails.email : (() => { throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Email not found'); })(),
         });
-        if (!customerDetails) {
-            throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Customer not found');
-        }
-        const booking = yield prisma_1.default.bookings.findUnique({
-            where: {
-                id: bookingId,
-            },
+        // Update the database with the new Stripe customer ID
+        yield prisma_1.default.customer.update({
+            where: { userId: userId },
+            data: { customerId: stripeCustomer.id },
         });
-        if (!booking) {
-            throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Booking not found');
-        }
-        const customer = yield stripe.customers.create({
-            email: customerDetails.email,
-        });
-        if (!customer) {
-            throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Customer not found');
-        }
-        const updatedCustomer = yield prisma_1.default.customer.update({
-            where: {
-                userId: userId,
-            },
+        customerId = stripeCustomer.id; // Use the new customerId
+    }
+    // Create a PaymentIntent with the specified PaymentMethod
+    const paymentIntent = yield stripe.paymentIntents.create({
+        amount: Math.round(booking.totalAmount * 100), // Convert to cents
+        currency: 'usd',
+        customer: customerId,
+        payment_method: paymentMethodId,
+        off_session: true,
+        confirm: true,
+        capture_method: 'automatic', // Authorize the payment with capturing
+    });
+    // Handle successful payment
+    if (paymentIntent.status === 'succeeded') {
+        // Save payment information to the database
+        const payment = yield prisma_1.default.payment.create({
             data: {
-                customerId: customer.id,
+                paymentId: paymentIntent.id,
+                customerId: customerId,
+                paymentAmount: booking.totalAmount,
+                paymentDate: new Date(),
+                booking: {
+                    connect: { id: bookingId },
+                },
             },
         });
-        if (!updatedCustomer) {
-            throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Customer not found');
-        }
-        // Create a PaymentIntent with the specified PaymentMethod
-        const paymentIntent = yield stripe.paymentIntents.create({
-            amount: booking.totalAmount * 100, // Convert to cents
-            currency: 'aed',
-            customer: customer.id,
-            payment_method: paymentMethodId,
-            off_session: true,
-            confirm: true,
-            capture_method: 'automatic', // Authorize the payment with capturing
+        // Update the booking status
+        yield prisma_1.default.bookings.update({
+            where: { id: bookingId },
+            data: {
+                paymentId: payment.id,
+                paymentStatus: client_1.PaymentStatus.COMPLETED,
+                bookingStatus: client_1.BookingStatus.PENDING,
+                serviceDate: new Date(),
+            },
         });
-        if (paymentIntent.status === 'succeeded') {
-            const payment = yield prisma_1.default.payment.create({
-                data: {
-                    paymentId: paymentIntent.id,
-                    customerId: customer.id,
-                    paymentAmount: booking.totalAmount,
-                    paymentDate: new Date(),
-                },
-            });
-            const updatedBooking = yield prisma_1.default.bookings.update({
-                where: {
-                    id: bookingId,
-                },
-                data: {
-                    paymentId: payment.id,
-                    paymentStatus: client_1.PaymentStatus.COMPLETED,
-                    bookingStatus: client_1.BookingStatus.IN_PROGRESS,
-                    serviceDate: new Date(),
-                },
-            });
-        }
-        // const fcmToken = await prisma.user.findUnique({
-        //   where: {
-        //     id: userId,
-        //   },
-        //   select: {
-        //     fcmToken: true,
-        //   },
-        // });
-        // if (fcmToken?.fcmToken) {
-        //   await sendNotification(fcmToken.fcmToken, 'Payment Successful', 'Your payment has been successful');
-        // }
-        // if(fcmToken?.fcmToken){
-        //   await sendNotification(fcmToken.fcmToken, 'Payment Successful', 'Your booking has been accepted successfully');
-        // }
-        return paymentIntent;
+        // Optionally send a notification
+        //   const fcmToken = await prisma.user.findUnique({
+        //     where: { id: userId },
+        //     select: { fcmToken: true },
+        //   });
+        //   if (fcmToken?.fcmToken) {
+        //     await sendNotification(
+        //       fcmToken.fcmToken,
+        //       'Payment Successful',
+        //       'Your payment has been processed successfully.',
+        //     );
+        //   }
     }
-    catch (error) {
-        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, error.message);
-    }
+    return paymentIntent;
 });
 // Step 3: Capture the Payment
 const capturePaymentRequestToStripe = (payload) => __awaiter(void 0, void 0, void 0, function* () {

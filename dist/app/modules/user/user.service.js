@@ -43,6 +43,8 @@ const emailSender_1 = __importDefault(require("../../utils/emailSender"));
 const auth_service_1 = require("../auth/auth.service");
 const AppError_1 = __importDefault(require("../../errors/AppError"));
 const http_status_1 = __importDefault(require("http-status"));
+const generateToken_1 = require("../../utils/generateToken");
+const config_1 = __importDefault(require("../../../config"));
 const registerUserIntoDB = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     if (payload.email) {
         const existingUser = yield prisma_1.default.user.findUnique({
@@ -293,6 +295,9 @@ const forgotPassword = (payload) => __awaiter(void 0, void 0, void 0, function* 
             otpExpiresAt: otpExpiresAtString,
         },
     });
+    if (!userData.email) {
+        throw new AppError_1.default(http_status_1.default.CONFLICT, 'Email not set for this user');
+    }
     yield (0, emailSender_1.default)('Reset Your Password', userData.email, `<div style="font-family: Arial, sans-serif; color: #333; line-height: 1.6; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 10px;">
     <table width="100%" style="border-collapse: collapse;">
     <tr>
@@ -355,6 +360,9 @@ const verifyOtpInDB = (bodyData) => __awaiter(void 0, void 0, void 0, function* 
                 otpExpiresAt: null,
             },
         });
+    }
+    if (!userData.email) {
+        throw new AppError_1.default(http_status_1.default.CONFLICT, 'Email not set for this user');
     }
     if (userData) {
         const login = yield auth_service_1.AuthServices.loginUserFromDB({
@@ -420,6 +428,47 @@ const updatePassword = (payload) => __awaiter(void 0, void 0, void 0, function* 
         message: 'Password updated successfully!',
     };
 });
+const updateProfileImageIntoDB = (userId, profileImageUrl) => __awaiter(void 0, void 0, void 0, function* () {
+    const updatedUser = yield prisma_1.default.user.update({
+        where: { id: userId },
+        data: {
+            profileImage: profileImageUrl,
+        },
+    });
+    return updatedUser;
+});
+const socialLoginIntoDB = (payload) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = yield prisma_1.default.user.findUnique({
+        where: {
+            email: payload.email,
+        },
+    });
+    if (!user) {
+        const newUser = yield prisma_1.default.user.create({
+            data: Object.assign(Object.assign({}, payload), { status: client_1.UserStatus.ACTIVE }),
+        });
+        const accessToken = yield (0, generateToken_1.generateToken)({
+            id: newUser.id,
+            email: newUser.email,
+            role: newUser.role,
+        }, config_1.default.jwt.access_secret, config_1.default.jwt.access_expires_in);
+        return { newUser, accessToken };
+    }
+    if (user) {
+        const fcmUpdate = yield prisma_1.default.user.update({
+            where: { email: payload.email },
+            data: {
+                fcmToken: payload.fcmToken,
+            },
+        });
+        const accessToken = yield (0, generateToken_1.generateToken)({
+            id: user.id,
+            email: user.email,
+            role: user.role,
+        }, config_1.default.jwt.access_secret, config_1.default.jwt.access_expires_in);
+        return { user, accessToken };
+    }
+});
 exports.UserServices = {
     registerUserIntoDB,
     getAllUsersFromDB,
@@ -432,4 +481,6 @@ exports.UserServices = {
     verifyOtpInDB,
     updatePassword,
     verifyOtpForgotPasswordInDB,
+    updateProfileImageIntoDB,
+    socialLoginIntoDB,
 };

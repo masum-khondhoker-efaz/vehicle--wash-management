@@ -10,12 +10,15 @@ const validateRequest_1 = __importDefault(require("../../middlewares/validateReq
 const user_controller_1 = require("../user/user.controller");
 const user_validation_1 = require("../user/user.validation");
 const client_1 = require("@prisma/client");
+const multerUpload_1 = require("../../utils/multerUpload");
 const router = express_1.default.Router();
 router.post('/register', (0, validateRequest_1.default)(user_validation_1.UserValidations.registerUser), user_controller_1.UserControllers.registerUser);
+router.post('/social-sign-up', (0, validateRequest_1.default)(user_validation_1.UserValidations.socialLoginSchema), user_controller_1.UserControllers.socialLogin);
 router.get('/', (0, auth_1.default)(client_1.UserRoleEnum.SUPER_ADMIN, client_1.UserRoleEnum.ADMIN), user_controller_1.UserControllers.getAllUsers);
 router.get('/me', (0, auth_1.default)(), user_controller_1.UserControllers.getMyProfile);
 router.get('/:id', (0, auth_1.default)('ADMIN', 'SUPER_ADMIN'), user_controller_1.UserControllers.getUserDetails);
 router.put('/update-profile', (0, auth_1.default)(), user_controller_1.UserControllers.updateMyProfile);
+router.put('/update-profile-image', multerUpload_1.multerUpload.single('profileImage'), (0, auth_1.default)(), user_controller_1.UserControllers.updateProfileImage);
 router.put('/update-user/:id', (0, validateRequest_1.default)(user_validation_1.UserValidations.updateProfileSchema), (0, auth_1.default)(), user_controller_1.UserControllers.updateUserRoleStatus);
 router.put('/change-password', (0, auth_1.default)(), user_controller_1.UserControllers.changePassword);
 router.post('/forgot-password', (0, validateRequest_1.default)(user_validation_1.UserValidations.forgetPasswordSchema), user_controller_1.UserControllers.forgotPassword);

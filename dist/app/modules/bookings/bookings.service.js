@@ -71,6 +71,7 @@ const getBookingByIdFromDB = (userId, bookingId) => __awaiter(void 0, void 0, vo
         where: {
             id: bookingId,
             customerId: userId,
+            paymentStatus: client_1.PaymentStatus.COMPLETED,
         },
         select: {
             id: true,
@@ -100,10 +101,12 @@ const getBookingByIdFromDB = (userId, bookingId) => __awaiter(void 0, void 0, vo
     return bookings;
 });
 const getBookingListFromDB = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log(userId);
     const pendingBookings = yield prisma_1.default.bookings.findMany({
         where: {
             customerId: userId,
-            bookingStatus: client_1.BookingStatus.PENDING,
+            bookingStatus: { in: [client_1.BookingStatus.IN_PROGRESS, client_1.BookingStatus.IN_ROUTE] },
+            paymentStatus: client_1.PaymentStatus.COMPLETED,
         },
         include: {
             service: {
@@ -115,12 +118,16 @@ const getBookingListFromDB = (userId) => __awaiter(void 0, void 0, void 0, funct
                     largeCarPrice: true,
                 },
             },
+        },
+        orderBy: {
+            serviceDate: 'desc',
         },
     });
     const completedBookings = yield prisma_1.default.bookings.findMany({
         where: {
             customerId: userId,
             bookingStatus: client_1.BookingStatus.COMPLETED,
+            paymentStatus: client_1.PaymentStatus.COMPLETED,
         },
         include: {
             service: {
@@ -132,6 +139,9 @@ const getBookingListFromDB = (userId) => __awaiter(void 0, void 0, void 0, funct
                     largeCarPrice: true,
                 },
             },
+        },
+        orderBy: {
+            serviceDate: 'desc',
         },
     });
     const cancelledBookings = yield prisma_1.default.bookings.findMany({
@@ -149,6 +159,9 @@ const getBookingListFromDB = (userId) => __awaiter(void 0, void 0, void 0, funct
                     largeCarPrice: true,
                 },
             },
+        },
+        orderBy: {
+            serviceDate: 'desc',
         },
     });
     return {

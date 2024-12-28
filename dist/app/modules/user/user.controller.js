@@ -17,11 +17,21 @@ const http_status_1 = __importDefault(require("http-status"));
 const user_service_1 = require("./user.service");
 const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
+const AppError_1 = __importDefault(require("../../errors/AppError"));
+const multerUpload_1 = require("../../utils/multerUpload");
 const registerUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield user_service_1.UserServices.registerUserIntoDB(req.body);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.CREATED,
         message: 'User registered successfully',
+        data: result,
+    });
+}));
+const socialLogin = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield user_service_1.UserServices.socialLoginIntoDB(req.body);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'User logged in successfully',
         data: result,
     });
 }));
@@ -44,6 +54,23 @@ const getMyProfile = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
         message: 'Profile retrieved successfully',
+        data: result,
+    });
+}));
+const updateProfileImage = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const file = req.file;
+    if (!file) {
+        throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'file not found');
+    }
+    let fileUrl = '';
+    if (file) {
+        fileUrl = yield (0, multerUpload_1.uploadFileToSpace)(file, 'retire-professional');
+    }
+    const result = yield user_service_1.UserServices.updateProfileImageIntoDB(user.id, fileUrl);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Profile image updated successfully',
         data: result,
     });
 }));
@@ -130,4 +157,6 @@ exports.UserControllers = {
     verifyOtp,
     updatePassword,
     verifyOtpForgotPassword,
+    updateProfileImage,
+    socialLogin,
 };

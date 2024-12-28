@@ -14,7 +14,7 @@ const validateRequest_1 = __importDefault(require("../../middlewares/validateReq
 // create a new customer with card
 router.post('/save-card', (0, auth_1.default)(), (0, validateRequest_1.default)(payment_validation_1.TStripeSaveWithCustomerInfoPayloadSchema), payment_controller_1.PaymentController.saveCardWithCustomerInfo);
 // Authorize the customer with the amount and send payment request
-router.post('/authorize-payment', (0, validateRequest_1.default)(payment_validation_1.AuthorizedPaymentPayloadSchema), payment_controller_1.PaymentController.authorizedPaymentWithSaveCard);
+router.post('/authorize-payment', (0, auth_1.default)(), (0, validateRequest_1.default)(payment_validation_1.AuthorizedPaymentPayloadSchema), payment_controller_1.PaymentController.authorizedPaymentWithSaveCard);
 // Capture the payment request and deduct the amount
 router.post('/capture-payment', (0, validateRequest_1.default)(payment_validation_1.capturedPaymentPayloadSchema), payment_controller_1.PaymentController.capturePaymentRequest);
 // Save new card to existing customer

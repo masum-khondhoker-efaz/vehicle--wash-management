@@ -133,7 +133,7 @@ const authorizedPaymentWithSaveCardFromStripe = async (
   // Create a PaymentIntent with the specified PaymentMethod
   const paymentIntent = await stripe.paymentIntents.create({
     amount: Math.round(booking.totalAmount * 100), // Convert to cents
-    currency: 'usd',
+    currency: 'aed',
     customer: customerId,
     payment_method: paymentMethodId,
     off_session: true,

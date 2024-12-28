@@ -49,7 +49,19 @@ const loginUserFromDB = (payload) => __awaiter(void 0, void 0, void 0, function*
             email: payload.email,
             status: client_1.UserStatus.ACTIVE,
         },
+        select: {
+            id: true,
+            email: true,
+            role: true,
+            fullName: true,
+            password: true,
+            phoneNumber: true,
+            profileImage: true,
+        },
     });
+    if (!userData.email) {
+        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Email not set for this user');
+    }
     if (!userData.fullName) {
         throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Full Name not set for this user');
     }
