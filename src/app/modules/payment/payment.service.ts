@@ -11,7 +11,7 @@ import {
   UserRoleEnum,
 } from '@prisma/client';
 import AppError from '../../errors/AppError';
-import { sendNotification } from '../../utils/firebaseAdmin';
+import { notificationServices } from '../notification/notification.services';
 
 // Initialize Stripe with your secret API key
 const stripe = new Stripe(config.stripe.stripe_secret_key as string, {
@@ -49,7 +49,6 @@ const saveCardWithCustomerInfoIntoStripe = async (
       },
     });
 
-    console.log({ updateCustomer });
 
     // update profile with customerId
     await prisma.customer.update({
@@ -113,12 +112,43 @@ const authorizedPaymentWithSaveCardFromStripe = async (
     throw new AppError(httpStatus.BAD_REQUEST, 'Booking not found');
   }
 
-  let customerId = customerDetails.customer[0]?.customerId;
+ 
+  let customerId = customerDetails.customer[0].customerId;
+
+ 
+  if(customerId) {
+
+  const attach = await stripe.paymentMethods.attach(paymentMethodId, {
+    customer: customerId,
+  });
+
+  const updateCustomer = await stripe.customers.update(customerId, {
+    invoice_settings: {
+      default_payment_method: paymentMethodId,
+    },
+  });
+
+}
 
   // If the customerId doesn't exist, create a new Stripe customer
   if (!customerId) {
     const stripeCustomer = await stripe.customers.create({
-      email: customerDetails.email ? customerDetails.email : (() => { throw new AppError(httpStatus.BAD_REQUEST, 'Email not found'); })(),
+      email: customerDetails.email
+        ? customerDetails.email
+        : (() => {
+            throw new AppError(httpStatus.BAD_REQUEST, 'Email not found');
+          })(),
+    });
+
+    const attach = await stripe.paymentMethods.attach(paymentMethodId, {
+      customer: stripeCustomer.id,
+    });
+
+    // Set PaymentMethod as Default
+    const updateCustomer = await stripe.customers.update(stripeCustomer.id, {
+      invoice_settings: {
+        default_payment_method: paymentMethodId,
+      },
     });
 
     // Update the database with the new Stripe customer ID
@@ -162,24 +192,30 @@ const authorizedPaymentWithSaveCardFromStripe = async (
       data: {
         paymentId: payment.id,
         paymentStatus: PaymentStatus.COMPLETED,
-        bookingStatus: BookingStatus.PENDING,
-        serviceDate: new Date(),
       },
     });
 
     // Optionally send a notification
-  //   const fcmToken = await prisma.user.findUnique({
-  //     where: { id: userId },
-  //     select: { fcmToken: true },
-  //   });
+    const fcmToken = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { fcmToken: true },
+    });
 
-  //   if (fcmToken?.fcmToken) {
-  //     await sendNotification(
-  //       fcmToken.fcmToken,
-  //       'Payment Successful',
-  //       'Your payment has been processed successfully.',
-  //     );
-  //   }
+    const notification = {
+      title: 'Payment Successful',
+      body: 'Your payment has been processed successfully and your booking is confirmed',
+    }
+
+    if (fcmToken?.fcmToken) {
+      const sendNotification = await notificationServices.sendSingleNotification(
+        userId,
+        notification
+      );
+
+      if (!sendNotification) {
+        throw new AppError(httpStatus.CONFLICT, 'Failed to send notification');
+      } 
+    }
    }
 
   return paymentIntent;

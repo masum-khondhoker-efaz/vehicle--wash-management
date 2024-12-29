@@ -105,4 +105,12 @@ router.get(
   auth(UserRoleEnum.ADMIN),
   adminController.getDriverLiveLocation,
 );
+
+router.get(
+  '/get-feedback',
+  auth(UserRoleEnum.SUPER_ADMIN, UserRoleEnum.ADMIN),
+  adminController.getFeedback,
+);
+
+
 export const AdminRoutes = router;

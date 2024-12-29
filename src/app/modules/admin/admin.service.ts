@@ -212,13 +212,27 @@ const changeDriverStatusIntoDB = async (driverId: string, status: string) => {
   return data;
 };
 // get all bookings
-const getBookingList = async (offset: number, limit: number) => {
-  // Get the pending bookings with pagination in descending order
+const getBookingList = async (
+  offset: number,
+  limit: number,
+  bookingStatus?: BookingStatus[],
+  paymentStatus?: PaymentStatus[],
+) => {
+  // Get the bookings with optional filters and pagination in descending order
   const bookings = await prisma.bookings.findMany({
     skip: offset, // Skip the first `offset` records
     take: limit, // Limit the result to `limit` records
     where: {
-      bookingStatus: BookingStatus.IN_PROGRESS,
+      ...(bookingStatus && {
+        bookingStatus: {
+          in: bookingStatus,
+        },
+      }),
+      ...(paymentStatus && {
+        paymentStatus: {
+          in: paymentStatus,
+        },
+      }),
     },
     orderBy: {
       createdAt: 'desc', // Order by creation date in descending order
@@ -249,10 +263,10 @@ const getBookingList = async (offset: number, limit: number) => {
       return {
         id: booking.id,
         bookingStatus: booking.bookingStatus,
-        serviceStatus: booking.serviceStatus,
         serviceDate: booking.serviceDate,
         bookingTime: booking.bookingTime,
         location: booking.location,
+        paymentStatus: booking.paymentStatus,
         user,
       };
     }),
@@ -278,6 +292,7 @@ const getBookingList = async (offset: number, limit: number) => {
     bookingDetailsWithUser,
   };
 };
+
 
 // get all services
 const getServiceListFromDB = async (offset: number, limit: number) => {
@@ -473,6 +488,14 @@ const getDriverLiveLocation = async (driverId: string) => {
   }
 };
 
+
+const getFeedbackFromDB = async (userId: string) => {
+  const feedback = await prisma.driverFeedback.findMany();
+
+  return feedback;
+};
+
+
 export const adminService = {
   getUserList,
   getBookingList,
@@ -488,4 +511,5 @@ export const adminService = {
   addOfferIntoDB,
   getOfferListFromDB,
   getDriverLiveLocation,
+  getFeedbackFromDB,
 };

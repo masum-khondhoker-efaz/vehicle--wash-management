@@ -116,7 +116,7 @@ const authorizedPaymentWithSaveCardFromStripe = (userId, payload) => __awaiter(v
     // Create a PaymentIntent with the specified PaymentMethod
     const paymentIntent = yield stripe.paymentIntents.create({
         amount: Math.round(booking.totalAmount * 100), // Convert to cents
-        currency: 'usd',
+        currency: 'aed',
         customer: customerId,
         payment_method: paymentMethodId,
         off_session: true,

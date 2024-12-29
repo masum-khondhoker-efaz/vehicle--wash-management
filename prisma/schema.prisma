@@ -65,6 +65,7 @@ model Customer {
   reviews     Review[]
   cars        Car[]
   couponUsage CouponUsage[]
+  driverFeedback DriverFeedback[]
 
   @@map("customers")
 }
@@ -156,6 +157,7 @@ model Bookings {
   reviews             Review[]
   notification        notification[]
   payment             Payment[]
+  driverFeedback      DriverFeedback[]
 
   @@map("bookings")
 }
@@ -175,6 +177,7 @@ model Driver {
   admin     Admin      @relation(fields: [adminId], references: [userId])
   cars      Car[]
   bookings  Bookings[]
+  feedback  DriverFeedback[]
 
   @@map("drivers")
 }
@@ -287,6 +290,22 @@ model notification {
   @@map("notifications")
 }
 
+model DriverFeedback {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  driverId   String   @db.ObjectId
+  bookingId  String?  @db.ObjectId
+  customerId String   @db.ObjectId
+  title      String
+  feedback   String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  driver     Driver   @relation(fields: [driverId], references: [userId])
+  customer   Customer @relation(fields: [customerId], references: [userId])
+  booking    Bookings? @relation(fields: [bookingId], references: [id])
+
+  @@map("driver_feedbacks")
+}
+
 enum UserRoleEnum {
   CUSTOMER
   ADMIN
@@ -316,6 +335,7 @@ enum ServiceStatus {
 
 enum PaymentStatus {
   PENDING
+  CASH
   COMPLETED
   CANCELLED
 }

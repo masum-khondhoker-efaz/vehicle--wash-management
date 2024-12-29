@@ -1,6 +1,9 @@
 import * as bcrypt from 'bcrypt';
 import prisma from '../../utils/prisma';
 import { BookingStatus, UserRoleEnum } from '@prisma/client';
+import { setDefaultAutoSelectFamily } from 'net';
+import AppError from '../../errors/AppError';
+import httpStatus from 'http-status';
 
 
 const distance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
@@ -249,7 +252,7 @@ const getBookingsFromDB = async (
 };
 
 const getBookingByIdFromDB = async (userId: string, bookingId: string) => {
-  const driver = await prisma.bookings.findUnique({
+  const booking = await prisma.bookings.findUnique({
     where: {
       driverId: userId,
       id: bookingId,
@@ -261,41 +264,72 @@ const getBookingByIdFromDB = async (userId: string, bookingId: string) => {
       serviceStatus: true,
       serviceType: true,
       serviceId: true,
+      specificInstruction: true,
       carName: true,
       ownerNumber: true,
       location: true,
+      latitude: true,
+      longitude: true,
       totalAmount: true,
       paymentStatus: true,
       service: {
         select: {
           serviceName: true,
+          serviceImage: true,
+          duration: true,
+          smallCarPrice: true,
+          largeCarPrice: true,
         },
       },
     },
   });
 
-  return driver;
+  if (!booking) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Booking not found');
+  }
+
+  const driverLocation = await prisma.driver.findFirst({
+    where: {
+      userId: userId,
+    },
+    select: {
+      latitude: true,
+      longitude: true,
+    },
+  });
+  if (!driverLocation) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Driver not found');
+  }
+
+  if (booking.latitude !== null && booking.longitude !== null) {
+    const dist = distance(
+      driverLocation.latitude ? driverLocation.latitude : 0,
+      driverLocation.longitude ? driverLocation.longitude : 0,
+      booking.latitude,
+      booking.longitude,
+    );
+    const time = estimateTime(dist);
+    return { ...booking, distance: `${dist.toFixed(2)} km`, time };
+  }
+
 };
 
 const updateOnlineStatusIntoDB = async (
-userId: string, data: { status: boolean; latitude: number; longitude: number; },
+  userId: string,
+  data: { inOnline: boolean; latitude: number; longitude: number },
 ) => {
-  try {
-    const updatedDriver = await prisma.driver.update({
-      where: {
-        userId: userId,
-      },
-      data: {
-        inOnline: data.status,
-        latitude: data.latitude || 0,
-        longitude: data.longitude || 0,
-      },
-    });
-    return updatedDriver;
-  } catch (error) {
-    console.error('Error updating driver status:', error);
-    throw error;
-  }
+  console.log(data);
+  const updatedDriver = await prisma.driver.update({
+    where: {
+      userId: userId,
+    },
+    data: {
+      inOnline: data.inOnline,
+      latitude: data.latitude || 0,
+      longitude: data.longitude || 0,
+    },
+  });
+  return updatedDriver;
 };
 
 const getDriverLiveLocation = async (driverId: string) => {
@@ -317,6 +351,55 @@ const getDriverLiveLocation = async (driverId: string) => {
 };
 
 
+const updateBookingStatusIntoDB = async (
+  userId: string,
+  bookingId: string,
+  data: any,
+) => {
+  const updatedBooking = await prisma.bookings.update({
+    where: {
+      id: bookingId,
+      driverId: userId,
+    },
+    data: {
+      bookingStatus: data.bookingStatus as BookingStatus,
+    },
+  });
+
+  return updatedBooking;
+};
+
+
+const addUserFeedbackIntoDB = async (userId: string, data: any) => {
+  const feedback = await prisma.driverFeedback.create({
+    data: {
+      driverId: userId,
+      bookingId: data.bookingId,
+      customerId: data.customerId,
+      title: data.title,
+      feedback: data.feedback,
+    },
+  });
+
+  if(!feedback) {
+    throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to add feedback');
+  }
+
+  return feedback;
+}
+
+
+const getFeedbackFromDB = async (userId: string) => {
+  const feedback = await prisma.driverFeedback.findMany({
+    where: {
+      driverId: userId,
+    },
+  });
+
+  return feedback;
+};
+
+
 export const driverService = {
   addDriverIntoDB,
   getDriverListFromDB,
@@ -327,4 +410,7 @@ export const driverService = {
   getBookingByIdFromDB,
   updateOnlineStatusIntoDB,
   getDriverLiveLocation,
+  updateBookingStatusIntoDB,
+  addUserFeedbackIntoDB,
+  getFeedbackFromDB,
 };

@@ -164,6 +164,7 @@ const getAllUsersFromDB = async (searchTerm?: string) => {
       email: true,
       role: true,
       status: true,
+      fcmToken: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -186,6 +187,7 @@ const getMyProfileFromDB = async (id: string) => {
       profileImage: true,
       email: true,
       role: true,
+      fcmToken: true,
       createdAt: true,
       updatedAt: true,
     },
@@ -358,6 +360,7 @@ const forgotPassword = async (payload: { email: string }) => {
 const verifyOtpInDB = async (bodyData: {
   email: string;
   password: string;
+  fcmToken: string;
   otp: number;
 }) => {
   const userData = await prisma.user.findUnique({
@@ -404,6 +407,7 @@ const verifyOtpInDB = async (bodyData: {
     const login = await AuthServices.loginUserFromDB({
       email: userData.email,
       password: bodyData.password,
+      fcmToken: bodyData.fcmToken,
     });
 
     return { message: 'OTP verified successfully!', login };

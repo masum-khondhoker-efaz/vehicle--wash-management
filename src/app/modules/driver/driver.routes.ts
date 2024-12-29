@@ -32,22 +32,12 @@ router.get(
   driverController.getBookingById,
 );
 
-router.get('/:driverId', auth(), driverController.getDriverById);
-
 router.put(
-  '/:driverId',
-  updateMulterUpload.single('driverImage'),
-  parseBody,
-  validateRequest(driverValidation.updateDriverSchema),
-  auth(UserRoleEnum.SUPER_ADMIN, UserRoleEnum.ADMIN, UserRoleEnum.DRIVER),
-  driverController.updateDriver,
+  '/update-booking-status/:bookingId',
+  auth(UserRoleEnum.DRIVER),
+  driverController.updateBookingStatus,
 );
 
-router.delete(
-  '/:driverId',
-  auth(UserRoleEnum.SUPER_ADMIN, UserRoleEnum.ADMIN),
-  driverController.deleteDriver,
-);
 
 router.post(
   '/online-status',
@@ -60,5 +50,37 @@ router.get(
   auth(),
   driverController.getDriverLiveLocation,
 );
+
+router.post(
+  '/user-feedback',
+  auth(UserRoleEnum.DRIVER),
+  driverController.addUserFeedback,
+);
+
+router.get(
+  '/get-feedback',
+  auth(UserRoleEnum.DRIVER), 
+  driverController.getFeedback,
+);
+
+router.get('/:driverId', auth(), driverController.getDriverById);
+
+
+router.put(
+  '/:driverId',
+  updateMulterUpload.single('driverImage'),
+  parseBody,
+  validateRequest(driverValidation.updateDriverSchema),
+  auth(UserRoleEnum.SUPER_ADMIN, UserRoleEnum.ADMIN, UserRoleEnum.DRIVER),
+  driverController.updateDriver,
+);
+
+
+router.delete(
+  '/:driverId',
+  auth(UserRoleEnum.SUPER_ADMIN, UserRoleEnum.ADMIN),
+  driverController.deleteDriver,
+);
+
 
 export const driverRoutes = router;

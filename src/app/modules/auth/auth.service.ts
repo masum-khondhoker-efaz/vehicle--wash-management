@@ -12,6 +12,7 @@ import { UserStatus } from '@prisma/client';
 const loginUserFromDB = async (payload: {
   email: string;
   password: string;
+  fcmToken: string;
 }) => {
   const userData = await prisma.user.findUniqueOrThrow({
     where: {
@@ -49,6 +50,15 @@ const loginUserFromDB = async (payload: {
     throw new AppError(httpStatus.BAD_REQUEST, 'Password incorrect');
   }
 
+  const user = await prisma.user.update({
+    where: {
+      id: userData.id,
+    },
+    data: {
+      fcmToken: payload.fcmToken,
+    },
+  });
+
   const accessToken = await generateToken(
     {
       id: userData.id,
@@ -65,6 +75,7 @@ const loginUserFromDB = async (payload: {
     role: userData.role,
     phoneNumber: userData.phoneNumber,
     profileImage: userData.profileImage,
+    fcmToken: user.fcmToken,
     accessToken: accessToken,
   };
 };

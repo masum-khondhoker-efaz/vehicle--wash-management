@@ -14,6 +14,8 @@ const broadcastStatusUpdate = (
     payload: { userId, inOnline, latitude, longitude },
   });
 
+  console.log(message)
+
   connections.forEach(connection => {
     connection.ws.send(message);
   });
@@ -47,7 +49,7 @@ export function setupWebSocket(server: any): void {
         if (data.event === 'updateStatus') {
           const { userId, inOnline, latitude, longitude } = data.payload;
           connections.set(userId, { ws, inOnline, latitude, longitude });
-          await driverService.updateOnlineStatusIntoDB(userId, data.payload);
+          await driverService.updateOnlineStatusIntoDB(userId,  data.payload) ;
           broadcastStatusUpdate(userId, inOnline, latitude, longitude);
         }
 
