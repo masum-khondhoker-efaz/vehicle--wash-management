@@ -171,6 +171,7 @@ const getAllUsersFromDB = (searchTerm) => __awaiter(void 0, void 0, void 0, func
             email: true,
             role: true,
             status: true,
+            fcmToken: true,
             createdAt: true,
             updatedAt: true,
         },
@@ -191,6 +192,7 @@ const getMyProfileFromDB = (id) => __awaiter(void 0, void 0, void 0, function* (
             profileImage: true,
             email: true,
             role: true,
+            fcmToken: true,
             createdAt: true,
             updatedAt: true,
         },
@@ -368,6 +370,7 @@ const verifyOtpInDB = (bodyData) => __awaiter(void 0, void 0, void 0, function* 
         const login = yield auth_service_1.AuthServices.loginUserFromDB({
             email: userData.email,
             password: bodyData.password,
+            fcmToken: bodyData.fcmToken,
         });
         return { message: 'OTP verified successfully!', login };
     }

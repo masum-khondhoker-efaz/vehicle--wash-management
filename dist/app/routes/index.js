@@ -15,6 +15,7 @@ const payment_routes_1 = require("../modules/payment/payment.routes");
 const admin_routes_1 = require("../modules/admin/admin.routes");
 const service_routes_1 = require("../modules/service/service.routes");
 const coupon_routes_1 = require("../modules/coupon/coupon.routes");
+const notification_route_1 = require("../modules/notification/notification.route");
 // import { notificationsRoute } from '../modules/notification/notification.route';
 const router = express_1.default.Router();
 const moduleRoutes = [
@@ -66,10 +67,10 @@ const moduleRoutes = [
         path: '/admin',
         route: admin_routes_1.AdminRoutes,
     },
-    // {
-    //   path: '/notifications',
-    //   route: notificationsRoute,
-    // },
+    {
+        path: '/notifications',
+        route: notification_route_1.notificationsRoute,
+    },
 ];
 moduleRoutes.forEach(route => router.use(route.path, route.route));
 exports.default = router;

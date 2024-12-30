@@ -8,6 +8,7 @@ import {
   ServiceType,
   UserRoleEnum,
 } from '@prisma/client';
+import { notificationServices } from '../notification/notification.services';
 
 
 const distance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
@@ -119,6 +120,19 @@ const getBookingByIdFromDB = async (userId: string, bookingId: string) => {
           largeCarPrice: true,
         },
       },
+      driver: {
+        select: {
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              phoneNumber: true,
+              profileImage: true,
+            },
+          },
+        },
+      },
     }
   });
   
@@ -172,6 +186,19 @@ const getBookingListFromDB = async (userId: string) => {
           largeCarPrice: true,
         },
       },
+      driver: {
+        select: {
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              phoneNumber: true,
+              profileImage: true,
+            },
+          },
+        },
+      }, 
     },
     orderBy: {
       serviceDate: 'desc',
@@ -192,6 +219,19 @@ const getBookingListFromDB = async (userId: string) => {
           duration: true,
           smallCarPrice: true,
           largeCarPrice: true,
+        },
+      },
+      driver: {
+        select: {
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              phoneNumber: true,
+              profileImage: true,
+            },
+          },
         },
       },
     },
@@ -256,6 +296,41 @@ const updateBookingIntoDB = async (
     },
   });
 
+  if (data.paymentStatus) {
+  if (updatedBooking.paymentStatus === data.paymentStatus) {
+    const notification = {
+      title: 'Booking confirmed successful',
+      body: `Your booking is confirmed successfully in ${updatedBooking.location} at ${updatedBooking.bookingTime} on ${updatedBooking.serviceDate}.`,
+    };
+
+    // if (fcmToken?.fcmToken) {
+    const sendNotification = await notificationServices.sendSingleNotification(
+      userId,
+      notification,
+    );
+
+    if (!sendNotification) {
+      throw new AppError(httpStatus.CONFLICT, 'Failed to send notification');
+    }
+  }
+  return updatedBooking;
+}
+
+  const notification = {
+    title: 'Booking updated successful',
+    body: 'Your booking is updated successfully.',
+  };
+
+  // if (fcmToken?.fcmToken) {
+  const sendNotification = await notificationServices.sendSingleNotification(
+    userId,
+    notification,
+  );
+
+  if (!sendNotification) {
+    throw new AppError(httpStatus.CONFLICT, 'Failed to send notification');
+  }
+
   return updatedBooking;
 };
 
@@ -269,6 +344,21 @@ const cancelBookingIntoDB = async (userId: string, bookingId: string) => {
       bookingStatus: BookingStatus.CANCELLED,
     },
   });
+
+   const notification = {
+     title: 'Booking cancel successful',
+     body: 'Your booking is cancelled successfully.',
+   };
+
+   // if (fcmToken?.fcmToken) {
+   const sendNotification = await notificationServices.sendSingleNotification(
+     userId,
+     notification,
+   );
+
+   if (!sendNotification) {
+     throw new AppError(httpStatus.CONFLICT, 'Failed to send notification');
+   }
 
   return cancelledBooking;
 };

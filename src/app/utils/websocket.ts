@@ -1,5 +1,7 @@
 import WebSocket, { WebSocketServer } from 'ws';
 import { driverService } from '../modules/driver/driver.service';
+import admin from './firebaseAdmin';
+import { adminService } from '../modules/admin/admin.service';
 
 const connections = new Map();
 
@@ -14,20 +16,52 @@ const broadcastStatusUpdate = (
     payload: { userId, inOnline, latitude, longitude },
   });
 
-  console.log(message)
+  console.log(message);
 
   connections.forEach(connection => {
     connection.ws.send(message);
   });
 };
 
-const broadcastLocationUpdate = (
-  userId: string,
-  location: { latitude: number; longitude: number },
-) => {
+const getDriverList = async () => {
+  const drivers = await adminService.getDriverList(0, 100); // Fetch first 100 drivers for simplicity
+  const onlineDrivers = drivers.formattedDrivers.map(driver => ({
+    id: driver.id,
+    fullName: driver.fullName,
+    email: driver.email,
+    phoneNumber: driver.phoneNumber,
+    joinDate: driver.joinDate,
+    profileImage: driver.profileImage,
+    status: driver.status,
+    role: driver.role,
+    totalBookingsCompleted: driver.totalBookingsCompleted,
+    inOnline: connections.has(driver.id),
+    latitude: connections.get(driver.id)?.latitude || null,
+    longitude: connections.get(driver.id)?.longitude || null,
+  }));
+
+  return onlineDrivers;
+};
+
+const broadcastGetDriverList = async () => {
+  const driverList = await getDriverList();
+  const message = JSON.stringify({
+    event: 'driverList',
+    payload: driverList,
+  });
+
+  connections.forEach(connection => {
+    connection.ws.send(message);
+  });
+};
+
+const broadcastLocationUpdate = (location: {
+  latitude: number;
+  longitude: number;
+}) => {
   const message = JSON.stringify({
     event: 'locationUpdate',
-    payload: { userId, location },
+    payload: { location },
   });
 
   connections.forEach(connection => {
@@ -49,19 +83,33 @@ export function setupWebSocket(server: any): void {
         if (data.event === 'updateStatus') {
           const { userId, inOnline, latitude, longitude } = data.payload;
           connections.set(userId, { ws, inOnline, latitude, longitude });
-          await driverService.updateOnlineStatusIntoDB(userId,  data.payload) ;
+          await driverService.updateOnlineStatusIntoDB(userId, data.payload);
           broadcastStatusUpdate(userId, inOnline, latitude, longitude);
         }
 
         // Handle location updates
         if (data.event === 'locationUpdate') {
-          const { userId, location } = data.payload;
-          connections.set(userId, { ws, location });
-          await driverService.updateOnlineStatusIntoDB(userId, {
-            status: true,
-            ...location,
-          });
-          broadcastLocationUpdate(userId, location);
+          const { userId, latitude, longitude } = data.payload;
+          connections.set(userId, { ws });
+          const getLocation = await driverService.getDriverLiveLocation(userId);
+          if (getLocation.latitude !== null && getLocation.longitude !== null) {
+            broadcastLocationUpdate({
+              latitude: getLocation.latitude!,
+              longitude: getLocation.longitude!,
+            });
+            // Broadcast status update to all clients
+            const inOnline = connections.has(userId);
+            broadcastStatusUpdate(userId, inOnline, latitude, longitude);
+          } else {
+            console.error('Invalid location data:', getLocation);
+          }
+        }
+
+        // Handle get driver list
+        if (data.event === 'getDriverList') {
+          const { userId } = data.payload;
+          connections.set(userId, { ws });
+          await broadcastGetDriverList();
         }
       } catch (error) {
         console.error('Invalid WebSocket message:', message);

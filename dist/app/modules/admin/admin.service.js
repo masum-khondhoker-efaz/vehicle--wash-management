@@ -198,14 +198,20 @@ const changeDriverStatusIntoDB = (driverId, status) => __awaiter(void 0, void 0,
     return data;
 });
 // get all bookings
-const getBookingList = (offset, limit) => __awaiter(void 0, void 0, void 0, function* () {
-    // Get the pending bookings with pagination in descending order
+const getBookingList = (offset, limit, bookingStatus, paymentStatus) => __awaiter(void 0, void 0, void 0, function* () {
+    // Get the bookings with optional filters and pagination in descending order
     const bookings = yield prisma_1.default.bookings.findMany({
         skip: offset, // Skip the first `offset` records
         take: limit, // Limit the result to `limit` records
-        where: {
-            bookingStatus: client_1.BookingStatus.IN_PROGRESS,
-        },
+        where: Object.assign(Object.assign({}, (bookingStatus && {
+            bookingStatus: {
+                in: bookingStatus,
+            },
+        })), (paymentStatus && {
+            paymentStatus: {
+                in: paymentStatus,
+            },
+        })),
         orderBy: {
             createdAt: 'desc', // Order by creation date in descending order
         },
@@ -232,10 +238,10 @@ const getBookingList = (offset, limit) => __awaiter(void 0, void 0, void 0, func
         return {
             id: booking.id,
             bookingStatus: booking.bookingStatus,
-            serviceStatus: booking.serviceStatus,
             serviceDate: booking.serviceDate,
             bookingTime: booking.bookingTime,
             location: booking.location,
+            paymentStatus: booking.paymentStatus,
             user,
         };
     })));
@@ -411,6 +417,10 @@ const getDriverLiveLocation = (driverId) => __awaiter(void 0, void 0, void 0, fu
         throw error;
     }
 });
+const getFeedbackFromDB = (userId) => __awaiter(void 0, void 0, void 0, function* () {
+    const feedback = yield prisma_1.default.driverFeedback.findMany();
+    return feedback;
+});
 exports.adminService = {
     getUserList,
     getBookingList,
@@ -426,4 +436,5 @@ exports.adminService = {
     addOfferIntoDB,
     getOfferListFromDB,
     getDriverLiveLocation,
+    getFeedbackFromDB,
 };

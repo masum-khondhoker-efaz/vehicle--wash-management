@@ -77,8 +77,8 @@ const changeServiceStatus = (0, catchAsync_1.default)((req, res) => __awaiter(vo
 }));
 // get all bookings
 const getBookingList = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 10;
+    const page = parseInt(req.query.page) || 1; // Default to page 1
+    const limit = parseInt(req.query.limit) || 50; // Default to 50 items per page
     const offset = (page - 1) * limit;
     const result = yield admin_service_1.adminService.getBookingList(offset, limit);
     (0, sendResponse_1.default)(res, {
@@ -156,6 +156,15 @@ const getDriverLiveLocation = (0, catchAsync_1.default)((req, res) => __awaiter(
         data: location,
     });
 }));
+const getFeedback = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const feedback = yield admin_service_1.adminService.getFeedbackFromDB(user.id);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Feedback list',
+        data: feedback,
+    });
+}));
 exports.adminController = {
     getUserList,
     getBookingList,
@@ -170,4 +179,5 @@ exports.adminController = {
     addOffer,
     getOfferList,
     getDriverLiveLocation,
+    getFeedback
 };

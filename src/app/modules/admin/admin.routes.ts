@@ -113,4 +113,16 @@ router.get(
 );
 
 
+router.post(
+  '/add-privacy-policy',
+  auth(UserRoleEnum.ADMIN, UserRoleEnum.SUPER_ADMIN),
+  adminController.addPrivacyPolicy,
+);
+
+router.get(
+  '/get-privacy-policy',
+  auth(),
+  adminController.getPrivacyPolicy,
+);
+
 export const AdminRoutes = router;

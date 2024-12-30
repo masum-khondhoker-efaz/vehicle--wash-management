@@ -10,6 +10,9 @@ import {
   UserStatus,
 } from '@prisma/client';
 import { profile } from 'console';
+import { notificationServices } from '../notification/notification.services';
+import AppError from '../../errors/AppError';
+import httpStatus from 'http-status';
 
 // get all users
 const getUserList = async (offset: number, limit: number) => {
@@ -110,8 +113,24 @@ const assignDriverIntoDB = async (driverId: string, bookingId: string) => {
     },
   });
 
+  const notification = {
+    title: 'New Booking Assigned',
+    body: `You have assigned to a new booking in ${data.location} at ${data.bookingTime} on ${data.serviceDate} .`,
+  };
+
+  // if (fcmToken?.fcmToken) {
+  if (data.driverId) {
+    const sendNotification = await notificationServices.sendSingleNotification(
+      driverId,
+      notification,
+    );
+
+    if (!sendNotification) {
+      throw new AppError(httpStatus.CONFLICT, 'Failed to send notification');
+    }
+  }
   return data;
-}
+};
 
 // get all drivers
 const getDriverList = async (offset: number, limit: number) => {
@@ -180,7 +199,6 @@ const getDriverList = async (offset: number, limit: number) => {
   };
 };
 
-
 //service status change
 const changeServiceStatusIntoDB = async (serviceId: string, status: string) => {
   // Update the service status
@@ -195,7 +213,6 @@ const changeServiceStatusIntoDB = async (serviceId: string, status: string) => {
 
   return data;
 };
-
 
 // change driver status
 const changeDriverStatusIntoDB = async (driverId: string, status: string) => {
@@ -293,7 +310,6 @@ const getBookingList = async (
   };
 };
 
-
 // get all services
 const getServiceListFromDB = async (offset: number, limit: number) => {
   const services = await prisma.service.findMany({
@@ -341,8 +357,7 @@ const getServiceListFromDB = async (offset: number, limit: number) => {
     totalPages,
     services,
   };
-}
-
+};
 
 // get payment in total
 const getPaymentFromDB = async () => {
@@ -391,7 +406,6 @@ const getPaymentFromDB = async () => {
     dayWiseTotal,
   };
 };
-
 
 // get all garages
 const getGarageList = async (offset: number, limit: number) => {
@@ -454,8 +468,6 @@ const addOfferIntoDB = async (data: any) => {
     data,
   });
 
-
-
   return result;
 };
 
@@ -464,11 +476,8 @@ const getOfferListFromDB = async () => {
 
   // const totalOffers = await prisma.offer.count();
 
-
-  return offers
-  
+  return offers;
 };
-
 
 const getDriverLiveLocation = async (driverId: string) => {
   try {
@@ -488,13 +497,36 @@ const getDriverLiveLocation = async (driverId: string) => {
   }
 };
 
-
 const getFeedbackFromDB = async (userId: string) => {
   const feedback = await prisma.driverFeedback.findMany();
 
   return feedback;
 };
 
+
+const addPrivacyPolicyIntoDB = async (userId: string, data: any) => {
+  const result = await prisma.privacyPolicy.create({
+    data: {
+      content: data.content,
+      userId: userId,
+    },
+  });
+
+  if (!result) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Privacy policy not found');
+  }
+
+  return result;
+}
+
+const getPrivacyPolicyFromDB = async () => {
+  const result = await prisma.privacyPolicy.findMany();
+
+  if (!result) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Privacy policy not found');
+  }
+  return result;
+}
 
 export const adminService = {
   getUserList,
@@ -512,4 +544,6 @@ export const adminService = {
   getOfferListFromDB,
   getDriverLiveLocation,
   getFeedbackFromDB,
+  addPrivacyPolicyIntoDB,
+  getPrivacyPolicyFromDB,
 };

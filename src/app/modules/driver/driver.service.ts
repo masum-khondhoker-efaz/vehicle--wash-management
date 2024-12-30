@@ -4,7 +4,7 @@ import { BookingStatus, UserRoleEnum } from '@prisma/client';
 import { setDefaultAutoSelectFamily } from 'net';
 import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
-
+import { notificationServices } from '../notification/notification.services';
 
 const distance = (lat1: number, lon1: number, lat2: number, lon2: number) => {
   const toRad = (value: number) => (value * Math.PI) / 180;
@@ -29,9 +29,7 @@ const estimateTime = (distance: number, speed: number = 40) => {
   return { hours, minutes };
 };
 
-
 const addDriverIntoDB = async (userId: string, driverData: any) => {
-
   const { data, driverImage } = driverData;
 
   const transaction = await prisma.$transaction(async prisma => {
@@ -184,6 +182,7 @@ const getBookingsFromDB = async (
       id: true,
       bookingTime: true,
       bookingStatus: true,
+      customerId: true,
       serviceStatus: true,
       serviceType: true,
       serviceId: true,
@@ -205,9 +204,6 @@ const getBookingsFromDB = async (
     },
   });
 
-  
-
-
   const completedBookings = await prisma.bookings.findMany({
     where: {
       driverId: userId,
@@ -216,6 +212,7 @@ const getBookingsFromDB = async (
     select: {
       id: true,
       bookingTime: true,
+      customerId: true,
       bookingStatus: true,
       serviceStatus: true,
       serviceType: true,
@@ -238,16 +235,21 @@ const getBookingsFromDB = async (
 
   const pendingBookingsWithDistance = pendingBookings.map(booking => {
     if (booking.latitude !== null && booking.longitude !== null) {
-      const dist = distance(latitude, longitude, booking.latitude, booking.longitude);
+      const dist = distance(
+        latitude,
+        longitude,
+        booking.latitude,
+        booking.longitude,
+      );
       const time = estimateTime(dist);
       return { ...booking, distance: `${dist.toFixed(2)} km`, time };
     }
     return { ...booking, distance: null };
   });
 
-  return { 
-    pendingBookings: pendingBookingsWithDistance, 
-    completedBookings 
+  return {
+    pendingBookings: pendingBookingsWithDistance,
+    completedBookings,
   };
 };
 
@@ -281,6 +283,19 @@ const getBookingByIdFromDB = async (userId: string, bookingId: string) => {
           largeCarPrice: true,
         },
       },
+      driver: {
+        select: {
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              phoneNumber: true,
+              profileImage: true,
+            },
+          },
+        },
+      },
     },
   });
 
@@ -311,7 +326,6 @@ const getBookingByIdFromDB = async (userId: string, bookingId: string) => {
     const time = estimateTime(dist);
     return { ...booking, distance: `${dist.toFixed(2)} km`, time };
   }
-
 };
 
 const updateOnlineStatusIntoDB = async (
@@ -333,23 +347,20 @@ const updateOnlineStatusIntoDB = async (
 };
 
 const getDriverLiveLocation = async (driverId: string) => {
-  try {
-    const driver = await prisma.driver.findUnique({
-      where: {
-        userId: driverId,
-      },
-      select: {
-        latitude: true,
-        longitude: true,
-      },
-    });
-    return driver;
-  } catch (error) {
-    console.error('Error fetching driver location:', error);
-    throw error;
+  const driver = await prisma.driver.findUnique({
+    where: {
+      userId: driverId,
+    },
+    select: {
+      latitude: true,
+      longitude: true,
+    },
+  });
+  if (!driver) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Driver not found');
   }
+  return driver;
 };
-
 
 const updateBookingStatusIntoDB = async (
   userId: string,
@@ -366,9 +377,41 @@ const updateBookingStatusIntoDB = async (
     },
   });
 
+  const notification = {
+    title: 'Your Booking is completed',
+    body: `Your recent booking just completed in ${data.location} on ${data.serviceDate} .`,
+  };
+
+  const notification2 = {
+    title: 'Driver is on the way',
+    body: `Driver is on the way to complete your service ${data.location} on ${data.serviceDate} .`,
+  };
+
+  // if (fcmToken?.fcmToken) {
+  if (data.bookingStatus === BookingStatus.COMPLETED) {
+    const sendNotification = await notificationServices.sendSingleNotification(
+      data.customerId,
+      notification,
+  );
+
+    if (!sendNotification) {
+      throw new AppError(httpStatus.CONFLICT, 'Failed to send notification');
+    }
+  }
+
+  if(data.bookingStatus === BookingStatus.IN_PROGRESS){
+    const sendNotification = await notificationServices.sendSingleNotification(
+      data.customerId,
+      notification2,
+  );
+
+  if (!sendNotification) {
+    throw new AppError(httpStatus.CONFLICT, 'Failed to send notification');
+  }
+}
+
   return updatedBooking;
 };
-
 
 const addUserFeedbackIntoDB = async (userId: string, data: any) => {
   const feedback = await prisma.driverFeedback.create({
@@ -381,13 +424,15 @@ const addUserFeedbackIntoDB = async (userId: string, data: any) => {
     },
   });
 
-  if(!feedback) {
-    throw new AppError(httpStatus.INTERNAL_SERVER_ERROR, 'Failed to add feedback');
+  if (!feedback) {
+    throw new AppError(
+      httpStatus.INTERNAL_SERVER_ERROR,
+      'Failed to add feedback',
+    );
   }
 
   return feedback;
-}
-
+};
 
 const getFeedbackFromDB = async (userId: string) => {
   const feedback = await prisma.driverFeedback.findMany({
@@ -398,7 +443,6 @@ const getFeedbackFromDB = async (userId: string) => {
 
   return feedback;
 };
-
 
 export const driverService = {
   addDriverIntoDB,

@@ -18,9 +18,12 @@ router.post('/', multerUpload_1.multerUpload.single('driverImage'), parseBody_1.
 router.get('/get-bookings/:latitude/:longitude', (0, auth_1.default)(client_1.UserRoleEnum.DRIVER), driver_controller_1.driverController.getBookings);
 router.get('/', (0, auth_1.default)(), driver_controller_1.driverController.getDriverList);
 router.get('/booking-details/:bookingId', (0, auth_1.default)(client_1.UserRoleEnum.DRIVER), driver_controller_1.driverController.getBookingById);
+router.put('/update-booking-status/:bookingId', (0, auth_1.default)(client_1.UserRoleEnum.DRIVER), driver_controller_1.driverController.updateBookingStatus);
+router.post('/online-status', (0, auth_1.default)(client_1.UserRoleEnum.DRIVER), driver_controller_1.driverController.updateOnlineStatus);
+router.get('/get-driver-location/:driverId', (0, auth_1.default)(), driver_controller_1.driverController.getDriverLiveLocation);
+router.post('/user-feedback', (0, auth_1.default)(client_1.UserRoleEnum.DRIVER), driver_controller_1.driverController.addUserFeedback);
+router.get('/get-feedback', (0, auth_1.default)(client_1.UserRoleEnum.DRIVER), driver_controller_1.driverController.getFeedback);
 router.get('/:driverId', (0, auth_1.default)(), driver_controller_1.driverController.getDriverById);
 router.put('/:driverId', updateMulterUpload_1.updateMulterUpload.single('driverImage'), parseBody_1.parseBody, (0, validateRequest_1.default)(driver_validation_1.driverValidation.updateDriverSchema), (0, auth_1.default)(client_1.UserRoleEnum.SUPER_ADMIN, client_1.UserRoleEnum.ADMIN, client_1.UserRoleEnum.DRIVER), driver_controller_1.driverController.updateDriver);
 router.delete('/:driverId', (0, auth_1.default)(client_1.UserRoleEnum.SUPER_ADMIN, client_1.UserRoleEnum.ADMIN), driver_controller_1.driverController.deleteDriver);
-router.post('/online-status', (0, auth_1.default)(client_1.UserRoleEnum.DRIVER), driver_controller_1.driverController.updateOnlineStatus);
-router.get('/get-driver-location/:driverId', (0, auth_1.default)(), driver_controller_1.driverController.getDriverLiveLocation);
 exports.driverRoutes = router;

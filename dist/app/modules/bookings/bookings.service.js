@@ -17,6 +17,26 @@ const http_status_1 = __importDefault(require("http-status"));
 const AppError_1 = __importDefault(require("../../errors/AppError"));
 const prisma_1 = __importDefault(require("../../utils/prisma"));
 const client_1 = require("@prisma/client");
+const distance = (lat1, lon1, lat2, lon2) => {
+    const toRad = (value) => (value * Math.PI) / 180;
+    const R = 6371; // Radius of the Earth in km
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) *
+            Math.cos(toRad(lat2)) *
+            Math.sin(dLon / 2) *
+            Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c; // Distance in km
+};
+const estimateTime = (distance, speed = 40) => {
+    // speed is in km/h, default is 40 km/h
+    const time = distance / speed; // time in hours
+    const hours = Math.floor(time);
+    const minutes = Math.round((time - hours) * 60);
+    return { hours, minutes };
+};
 const addBookingIntoDB = (userId, bookingData) => __awaiter(void 0, void 0, void 0, function* () {
     const transaction = yield prisma_1.default.$transaction((prisma) => __awaiter(void 0, void 0, void 0, function* () {
         const createdBooking = yield prisma.bookings.create({
@@ -40,12 +60,12 @@ const addBookingIntoDB = (userId, bookingData) => __awaiter(void 0, void 0, void
             },
         });
         if (!createdBooking) {
-            throw new AppError_1.default(http_status_1.default.CONFLICT, 'Booking not created');
+            throw new AppError_1.default(http_status_1.default.CONFLICT, 'Booking is not created');
         }
-        if (bookingData.couponId) {
+        if (bookingData.couponCode) {
             const couponUsed = yield prisma.couponUsage.create({
                 data: {
-                    couponCode: bookingData.couponId,
+                    couponCode: bookingData.couponCode,
                     bookingId: createdBooking.id,
                     customerId: userId,
                 },
@@ -67,11 +87,10 @@ const addBookingIntoDB = (userId, bookingData) => __awaiter(void 0, void 0, void
 //   return bookings;
 // };
 const getBookingByIdFromDB = (userId, bookingId) => __awaiter(void 0, void 0, void 0, function* () {
-    const bookings = yield prisma_1.default.bookings.findMany({
+    const booking = yield prisma_1.default.bookings.findUnique({
         where: {
             id: bookingId,
             customerId: userId,
-            paymentStatus: client_1.PaymentStatus.COMPLETED,
         },
         select: {
             id: true,
@@ -85,27 +104,47 @@ const getBookingByIdFromDB = (userId, bookingId) => __awaiter(void 0, void 0, vo
             specificInstruction: true,
             serviceStatus: true,
             serviceId: true,
-            estimatedTime: true,
+            paymentStatus: true,
             createdAt: true,
             updatedAt: true,
-        },
+            driverId: true,
+            service: {
+                select: {
+                    serviceName: true,
+                    serviceImage: true,
+                    duration: true,
+                    smallCarPrice: true,
+                    largeCarPrice: true,
+                },
+            },
+        }
     });
-    const services = yield prisma_1.default.service.findFirst({
+    if (!booking) {
+        throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'Booking not found');
+    }
+    const driverLocation = yield prisma_1.default.driver.findUnique({
         where: {
-            id: bookings[0].serviceId,
+            userId: booking.driverId ? booking.driverId : '',
         },
         select: {
-            serviceName: true,
+            latitude: true,
+            longitude: true,
         },
     });
-    return bookings;
+    if (!driverLocation) {
+        throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'Driver not found');
+    }
+    if (booking.latitude !== null && booking.longitude !== null) {
+        const dist = distance(driverLocation.latitude ? driverLocation.latitude : 0, driverLocation.longitude ? driverLocation.longitude : 0, booking.latitude, booking.longitude);
+        const time = estimateTime(dist);
+        return Object.assign(Object.assign({}, booking), { distance: `${dist.toFixed(2)} km`, time });
+    }
 });
 const getBookingListFromDB = (userId) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log(userId);
     const pendingBookings = yield prisma_1.default.bookings.findMany({
         where: {
             customerId: userId,
-            bookingStatus: { in: [client_1.BookingStatus.IN_PROGRESS, client_1.BookingStatus.IN_ROUTE] },
+            bookingStatus: { in: [client_1.BookingStatus.IN_PROGRESS, client_1.BookingStatus.IN_ROUTE, client_1.BookingStatus.PENDING] },
             paymentStatus: client_1.PaymentStatus.COMPLETED,
         },
         include: {
@@ -116,6 +155,19 @@ const getBookingListFromDB = (userId) => __awaiter(void 0, void 0, void 0, funct
                     duration: true,
                     smallCarPrice: true,
                     largeCarPrice: true,
+                },
+            },
+            driver: {
+                select: {
+                    user: {
+                        select: {
+                            id: true,
+                            fullName: true,
+                            email: true,
+                            phoneNumber: true,
+                            profileImage: true,
+                        },
+                    },
                 },
             },
         },
@@ -137,6 +189,19 @@ const getBookingListFromDB = (userId) => __awaiter(void 0, void 0, void 0, funct
                     duration: true,
                     smallCarPrice: true,
                     largeCarPrice: true,
+                },
+            },
+            driver: {
+                select: {
+                    user: {
+                        select: {
+                            id: true,
+                            fullName: true,
+                            email: true,
+                            phoneNumber: true,
+                            profileImage: true,
+                        },
+                    },
                 },
             },
         },
@@ -176,9 +241,7 @@ const updateBookingIntoDB = (userId, bookingId, data) => __awaiter(void 0, void 
             id: bookingId,
             customerId: userId,
         },
-        data: Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (data.bookingTime && { bookingTime: data.bookingTime })), (data.totalAmount && { totalAmount: data.totalAmount })), (data.ownerNumber && { ownerNumber: data.ownerNumber })), (data.carName && { carName: data.carName })), (data.location && { location: data.location })), (data.latitude && { latitude: data.latitude })), (data.longitude && { longitude: data.longitude })), (data.bookingStatus && { bookingStatus: data.bookingStatus })), (data.paymentStatus && { paymentStatus: data.paymentStatus })), (data.serviceStatus && { serviceStatus: data.serviceStatus })), (data.specificInstruction && {
-            specificInstruction: data.specificInstruction,
-        })),
+        data: Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (data.bookingTime && { bookingTime: data.bookingTime })), (data.totalAmount && { totalAmount: data.totalAmount })), (data.ownerNumber && { ownerNumber: data.ownerNumber })), (data.carName && { carName: data.carName })), (data.location && { location: data.location })), (data.latitude && { latitude: data.latitude })), (data.longitude && { longitude: data.longitude })), (data.bookingStatus && { bookingStatus: data.bookingStatus })), (data.paymentStatus && { paymentStatus: data.paymentStatus })), (data.serviceStatus && { serviceStatus: data.serviceStatus })), (data.specificInstruction && Object.assign({ specificInstruction: data.specificInstruction }, (data.paymentStatus && { paymentStatus: data.paymentStatus })))),
     });
     return updatedBooking;
 });

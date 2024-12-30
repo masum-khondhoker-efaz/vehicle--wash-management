@@ -124,6 +124,36 @@ const getDriverLiveLocation = (0, catchAsync_1.default)((req, res) => __awaiter(
         data: location,
     });
 }));
+const updateBookingStatus = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const bookingId = req.params.bookingId;
+    const data = req.body;
+    const result = yield driver_service_1.driverService.updateBookingStatusIntoDB(user.id, bookingId, data);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Booking updated successfully',
+        data: result,
+    });
+}));
+const addUserFeedback = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const data = req.body;
+    const result = yield driver_service_1.driverService.addUserFeedbackIntoDB(user.id, data);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Feedback added successfully',
+        data: result,
+    });
+}));
+const getFeedback = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const feedback = yield driver_service_1.driverService.getFeedbackFromDB(user.id);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Feedback list',
+        data: feedback,
+    });
+}));
 exports.driverController = {
     addDriver,
     getDriverList,
@@ -134,4 +164,7 @@ exports.driverController = {
     getBookingById,
     updateOnlineStatus,
     getDriverLiveLocation,
+    updateBookingStatus,
+    addUserFeedback,
+    getFeedback,
 };

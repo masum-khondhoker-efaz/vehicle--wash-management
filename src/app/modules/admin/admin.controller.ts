@@ -181,6 +181,26 @@ const getFeedback = catchAsync(async (req, res) => {
   });
 });
 
+const addPrivacyPolicy = catchAsync(async (req, res) => {
+  const user = req.user as any;
+  const data = req.body;
+  const result = await adminService.addPrivacyPolicyIntoDB(user.id, data);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: 'Privacy policy added successfully',
+    data: result,
+  });
+});
+
+const getPrivacyPolicy = catchAsync(async (req, res) => {
+  const result = await adminService.getPrivacyPolicyFromDB();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: 'Privacy policy retrieved successfully',
+    data: result,
+  });
+});
+
 
 export const adminController = {
   getUserList,
@@ -196,5 +216,7 @@ export const adminController = {
   addOffer,
   getOfferList,
   getDriverLiveLocation,
-  getFeedback
+  getFeedback,
+  addPrivacyPolicy,
+  getPrivacyPolicy,
 };

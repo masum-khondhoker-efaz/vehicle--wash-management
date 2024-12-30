@@ -18,14 +18,15 @@ const broadcastStatusUpdate = (userId, inOnline, latitude, longitude) => {
         event: 'statusUpdate',
         payload: { userId, inOnline, latitude, longitude },
     });
+    console.log(message);
     connections.forEach(connection => {
         connection.ws.send(message);
     });
 };
-const broadcastLocationUpdate = (userId, location) => {
+const broadcastLocationUpdate = (location) => {
     const message = JSON.stringify({
         event: 'locationUpdate',
-        payload: { userId, location },
+        payload: { location },
     });
     connections.forEach(connection => {
         connection.ws.send(message);
@@ -47,10 +48,18 @@ function setupWebSocket(server) {
                 }
                 // Handle location updates
                 if (data.event === 'locationUpdate') {
-                    const { userId, location } = data.payload;
-                    connections.set(userId, { ws, location });
-                    yield driver_service_1.driverService.updateOnlineStatusIntoDB(userId, Object.assign({ status: true }, location));
-                    broadcastLocationUpdate(userId, location);
+                    const { userId } = data.payload;
+                    connections.set(userId, { ws });
+                    const getLocation = yield driver_service_1.driverService.getDriverLiveLocation(userId);
+                    if (getLocation.latitude !== null && getLocation.longitude !== null) {
+                        broadcastLocationUpdate({
+                            latitude: getLocation.latitude,
+                            longitude: getLocation.longitude
+                        });
+                    }
+                    else {
+                        console.error('Invalid location data:', getLocation);
+                    }
                 }
             }
             catch (error) {

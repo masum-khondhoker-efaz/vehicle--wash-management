@@ -20,6 +20,7 @@ const isValidAmount_1 = require("../../utils/isValidAmount");
 const prisma_1 = __importDefault(require("../../utils/prisma"));
 const client_1 = require("@prisma/client");
 const AppError_1 = __importDefault(require("../../errors/AppError"));
+const notification_services_1 = require("../notification/notification.services");
 // Initialize Stripe with your secret API key
 const stripe = new stripe_1.default(config_1.default.stripe.stripe_secret_key, {
     apiVersion: '2024-11-20.acacia',
@@ -48,7 +49,6 @@ const saveCardWithCustomerInfoIntoStripe = (payload, userId) => __awaiter(void 0
                 default_payment_method: paymentMethodId,
             },
         });
-        console.log({ updateCustomer });
         // update profile with customerId
         yield prisma_1.default.customer.update({
             where: {
@@ -69,7 +69,6 @@ const saveCardWithCustomerInfoIntoStripe = (payload, userId) => __awaiter(void 0
 });
 // Step 2: Authorize the Payment Using Saved Card
 const authorizedPaymentWithSaveCardFromStripe = (userId, payload) => __awaiter(void 0, void 0, void 0, function* () {
-    var _a;
     const { paymentMethodId, bookingId } = payload;
     // Retrieve the Customer from the database
     const customerDetails = yield prisma_1.default.user.findUnique({
@@ -100,11 +99,34 @@ const authorizedPaymentWithSaveCardFromStripe = (userId, payload) => __awaiter(v
     if (!booking) {
         throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Booking not found');
     }
-    let customerId = (_a = customerDetails.customer[0]) === null || _a === void 0 ? void 0 : _a.customerId;
+    let customerId = customerDetails.customer[0].customerId;
+    if (customerId) {
+        const attach = yield stripe.paymentMethods.attach(paymentMethodId, {
+            customer: customerId,
+        });
+        const updateCustomer = yield stripe.customers.update(customerId, {
+            invoice_settings: {
+                default_payment_method: paymentMethodId,
+            },
+        });
+    }
     // If the customerId doesn't exist, create a new Stripe customer
     if (!customerId) {
         const stripeCustomer = yield stripe.customers.create({
-            email: customerDetails.email ? customerDetails.email : (() => { throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Email not found'); })(),
+            email: customerDetails.email
+                ? customerDetails.email
+                : (() => {
+                    throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Email not found');
+                })(),
+        });
+        const attach = yield stripe.paymentMethods.attach(paymentMethodId, {
+            customer: stripeCustomer.id,
+        });
+        // Set PaymentMethod as Default
+        const updateCustomer = yield stripe.customers.update(stripeCustomer.id, {
+            invoice_settings: {
+                default_payment_method: paymentMethodId,
+            },
         });
         // Update the database with the new Stripe customer ID
         yield prisma_1.default.customer.update({
@@ -143,22 +165,23 @@ const authorizedPaymentWithSaveCardFromStripe = (userId, payload) => __awaiter(v
             data: {
                 paymentId: payment.id,
                 paymentStatus: client_1.PaymentStatus.COMPLETED,
-                bookingStatus: client_1.BookingStatus.PENDING,
-                serviceDate: new Date(),
             },
         });
         // Optionally send a notification
-        //   const fcmToken = await prisma.user.findUnique({
-        //     where: { id: userId },
-        //     select: { fcmToken: true },
-        //   });
-        //   if (fcmToken?.fcmToken) {
-        //     await sendNotification(
-        //       fcmToken.fcmToken,
-        //       'Payment Successful',
-        //       'Your payment has been processed successfully.',
-        //     );
-        //   }
+        const fcmToken = yield prisma_1.default.user.findUnique({
+            where: { id: userId },
+            select: { fcmToken: true },
+        });
+        const notification = {
+            title: 'Payment Successful',
+            body: 'Your payment has been processed successfully and your booking is confirmed',
+        };
+        if (fcmToken === null || fcmToken === void 0 ? void 0 : fcmToken.fcmToken) {
+            const sendNotification = yield notification_services_1.notificationServices.sendSingleNotification(userId, notification);
+            if (!sendNotification) {
+                throw new AppError_1.default(http_status_1.default.CONFLICT, 'Failed to send notification');
+            }
+        }
     }
     return paymentIntent;
 });

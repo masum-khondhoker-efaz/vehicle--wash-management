@@ -12,16 +12,16 @@ const sendSingleNotification = async (userId: string, body: { title: string, bod
     },
   });
 
-  if (!user?.fcmToken) {
-    throw new AppError(httpStatus.NOT_FOUND, 'User not found with FCM token');
-  }
+  // if (!user?.fcmToken) {
+  //   throw new AppError(httpStatus.NOT_FOUND, 'User not found with FCM token');
+  // }
 
   const message = {
     notification: {
       title: body.title,
       body: body.body,
     },
-    token: user.fcmToken,
+    // token: user.fcmToken,
   };
 
   // Attempt to send the notification first, then store in DB if successful
@@ -29,8 +29,8 @@ const sendSingleNotification = async (userId: string, body: { title: string, bod
     // console.log(req.params.userId);
     // console.log(user.fcmToken);
 
-    const response = await admin.messaging().send(message);
-    console.log('object');
+    // const response = await admin.messaging().send(message);
+    // console.log('object');
     // If the notification is sent successfully, save it to the database
     const notification = await prisma.notification.create({
       data: {
@@ -47,7 +47,7 @@ const sendSingleNotification = async (userId: string, body: { title: string, bod
         throw new AppError(httpStatus.NOT_FOUND, 'Notification not found');
         }
 
-    return response; // Return the response from FCM
+    return notification; // Return the response from FCM
  
 };
 
