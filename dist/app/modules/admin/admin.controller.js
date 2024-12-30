@@ -165,6 +165,24 @@ const getFeedback = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, vo
         data: feedback,
     });
 }));
+const addPrivacyPolicy = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const user = req.user;
+    const data = req.body;
+    const result = yield admin_service_1.adminService.addPrivacyPolicyIntoDB(user.id, data);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Privacy policy added successfully',
+        data: result,
+    });
+}));
+const getPrivacyPolicy = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield admin_service_1.adminService.getPrivacyPolicyFromDB();
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Privacy policy retrieved successfully',
+        data: result,
+    });
+}));
 exports.adminController = {
     getUserList,
     getBookingList,
@@ -179,5 +197,7 @@ exports.adminController = {
     addOffer,
     getOfferList,
     getDriverLiveLocation,
-    getFeedback
+    getFeedback,
+    addPrivacyPolicy,
+    getPrivacyPolicy,
 };

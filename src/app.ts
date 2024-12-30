@@ -15,9 +15,13 @@ const app: Application = express();
 
 
 export const corsOptions = {
-  origin: ["http://localhost:3001", "http://localhost:3000"],
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  origin: [
+    'http://localhost:3001',
+    'http://localhost:3000',
+    'https://car-wash-dashboard-next.vercel.app/',
+  ],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true,
 };
 

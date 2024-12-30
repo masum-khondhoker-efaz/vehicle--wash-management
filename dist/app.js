@@ -17,9 +17,13 @@ const socialLogin_route_1 = require("./app/modules/SocialLogin/socialLogin.route
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 exports.corsOptions = {
-    origin: ["http://localhost:3001", "http://localhost:3000"],
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    origin: [
+        'http://localhost:3001',
+        'http://localhost:3000',
+        'https://car-wash-dashboard-next.vercel.app/',
+    ],
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
 };
 // Middleware setup

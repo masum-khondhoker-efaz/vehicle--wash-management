@@ -15,6 +15,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.adminService = void 0;
 const prisma_1 = __importDefault(require("../../utils/prisma"));
 const client_1 = require("@prisma/client");
+const notification_services_1 = require("../notification/notification.services");
+const AppError_1 = __importDefault(require("../../errors/AppError"));
+const http_status_1 = __importDefault(require("http-status"));
 // get all users
 const getUserList = (offset, limit) => __awaiter(void 0, void 0, void 0, function* () {
     // Fetch paginated user data with location
@@ -107,6 +110,17 @@ const assignDriverIntoDB = (driverId, bookingId) => __awaiter(void 0, void 0, vo
             bookingStatus: client_1.BookingStatus.IN_PROGRESS,
         },
     });
+    const notification = {
+        title: 'New Booking Assigned',
+        body: `You have assigned to a new booking in ${data.location} at ${data.bookingTime} on ${data.serviceDate} .`,
+    };
+    // if (fcmToken?.fcmToken) {
+    if (data.driverId) {
+        const sendNotification = yield notification_services_1.notificationServices.sendSingleNotification(driverId, notification);
+        if (!sendNotification) {
+            throw new AppError_1.default(http_status_1.default.CONFLICT, 'Failed to send notification');
+        }
+    }
     return data;
 });
 // get all drivers
@@ -421,6 +435,25 @@ const getFeedbackFromDB = (userId) => __awaiter(void 0, void 0, void 0, function
     const feedback = yield prisma_1.default.driverFeedback.findMany();
     return feedback;
 });
+const addPrivacyPolicyIntoDB = (userId, data) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield prisma_1.default.privacyPolicy.create({
+        data: {
+            content: data.content,
+            userId: userId,
+        },
+    });
+    if (!result) {
+        throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'Privacy policy not found');
+    }
+    return result;
+});
+const getPrivacyPolicyFromDB = () => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield prisma_1.default.privacyPolicy.findMany();
+    if (!result) {
+        throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'Privacy policy not found');
+    }
+    return result;
+});
 exports.adminService = {
     getUserList,
     getBookingList,
@@ -437,4 +470,6 @@ exports.adminService = {
     getOfferListFromDB,
     getDriverLiveLocation,
     getFeedbackFromDB,
+    addPrivacyPolicyIntoDB,
+    getPrivacyPolicyFromDB,
 };

@@ -41,6 +41,7 @@ const prisma_1 = __importDefault(require("../../utils/prisma"));
 const client_1 = require("@prisma/client");
 const AppError_1 = __importDefault(require("../../errors/AppError"));
 const http_status_1 = __importDefault(require("http-status"));
+const notification_services_1 = require("../notification/notification.services");
 const distance = (lat1, lon1, lat2, lon2) => {
     const toRad = (value) => (value * Math.PI) / 180;
     const R = 6371; // Radius of the Earth in km
@@ -249,7 +250,7 @@ const getBookingsFromDB = (userId, latitude, longitude) => __awaiter(void 0, voi
     });
     return {
         pendingBookings: pendingBookingsWithDistance,
-        completedBookings
+        completedBookings,
     };
 });
 const getBookingByIdFromDB = (userId, bookingId) => __awaiter(void 0, void 0, void 0, function* () {
@@ -280,6 +281,19 @@ const getBookingByIdFromDB = (userId, bookingId) => __awaiter(void 0, void 0, vo
                     duration: true,
                     smallCarPrice: true,
                     largeCarPrice: true,
+                },
+            },
+            driver: {
+                select: {
+                    user: {
+                        select: {
+                            id: true,
+                            fullName: true,
+                            email: true,
+                            phoneNumber: true,
+                            profileImage: true,
+                        },
+                    },
                 },
             },
         },
@@ -344,6 +358,27 @@ const updateBookingStatusIntoDB = (userId, bookingId, data) => __awaiter(void 0,
             bookingStatus: data.bookingStatus,
         },
     });
+    const notification = {
+        title: 'Your Booking is completed',
+        body: `Your recent booking just completed in ${data.location} on ${data.serviceDate} .`,
+    };
+    const notification2 = {
+        title: 'Driver is on the way',
+        body: `Driver is on the way to complete your service ${data.location} on ${data.serviceDate} .`,
+    };
+    // if (fcmToken?.fcmToken) {
+    if (data.bookingStatus === client_1.BookingStatus.COMPLETED) {
+        const sendNotification = yield notification_services_1.notificationServices.sendSingleNotification(data.customerId, notification);
+        if (!sendNotification) {
+            throw new AppError_1.default(http_status_1.default.CONFLICT, 'Failed to send notification');
+        }
+    }
+    if (data.bookingStatus === client_1.BookingStatus.IN_PROGRESS) {
+        const sendNotification = yield notification_services_1.notificationServices.sendSingleNotification(data.customerId, notification2);
+        if (!sendNotification) {
+            throw new AppError_1.default(http_status_1.default.CONFLICT, 'Failed to send notification');
+        }
+    }
     return updatedBooking;
 });
 const addUserFeedbackIntoDB = (userId, data) => __awaiter(void 0, void 0, void 0, function* () {

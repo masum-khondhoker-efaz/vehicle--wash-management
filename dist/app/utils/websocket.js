@@ -12,6 +12,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.setupWebSocket = void 0;
 const ws_1 = require("ws");
 const driver_service_1 = require("../modules/driver/driver.service");
+const admin_service_1 = require("../modules/admin/admin.service");
 const connections = new Map();
 const broadcastStatusUpdate = (userId, inOnline, latitude, longitude) => {
     const message = JSON.stringify({
@@ -23,6 +24,38 @@ const broadcastStatusUpdate = (userId, inOnline, latitude, longitude) => {
         connection.ws.send(message);
     });
 };
+const getDriverList = () => __awaiter(void 0, void 0, void 0, function* () {
+    const drivers = yield admin_service_1.adminService.getDriverList(0, 100); // Fetch first 100 drivers for simplicity
+    const onlineDrivers = drivers.formattedDrivers.map(driver => {
+        var _a, _b;
+        return ({
+            id: driver.id,
+            fullName: driver.fullName,
+            email: driver.email,
+            phoneNumber: driver.phoneNumber,
+            joinDate: driver.joinDate,
+            profileImage: driver.profileImage,
+            status: driver.status,
+            role: driver.role,
+            totalBookingsCompleted: driver.totalBookingsCompleted,
+            inOnline: connections.has(driver.id),
+            latitude: ((_a = connections.get(driver.id)) === null || _a === void 0 ? void 0 : _a.latitude) || null,
+            longitude: ((_b = connections.get(driver.id)) === null || _b === void 0 ? void 0 : _b.longitude) || null,
+        });
+    });
+    return onlineDrivers;
+});
+const broadcastGetDriverList = () => __awaiter(void 0, void 0, void 0, function* () {
+    const driverList = yield getDriverList();
+    const message = JSON.stringify({
+        event: 'driverList',
+        payload: driverList,
+    });
+    console.log(message);
+    connections.forEach(connection => {
+        connection.ws.send(message);
+    });
+});
 const broadcastLocationUpdate = (location) => {
     const message = JSON.stringify({
         event: 'locationUpdate',
@@ -54,12 +87,18 @@ function setupWebSocket(server) {
                     if (getLocation.latitude !== null && getLocation.longitude !== null) {
                         broadcastLocationUpdate({
                             latitude: getLocation.latitude,
-                            longitude: getLocation.longitude
+                            longitude: getLocation.longitude,
                         });
                     }
                     else {
                         console.error('Invalid location data:', getLocation);
                     }
+                }
+                // Handle get driver list
+                if (data.event === 'getDriverList') {
+                    const { userId } = data.payload;
+                    connections.set(userId, { ws });
+                    yield broadcastGetDriverList();
                 }
             }
             catch (error) {

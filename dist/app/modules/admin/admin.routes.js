@@ -41,4 +41,6 @@ router.post('/offers', (0, auth_1.default)(client_1.UserRoleEnum.ADMIN, client_1
 router.get('/offers', (0, auth_1.default)(), admin_controller_1.adminController.getOfferList);
 router.get('/live-location/:driverId', (0, auth_1.default)(client_1.UserRoleEnum.ADMIN), admin_controller_1.adminController.getDriverLiveLocation);
 router.get('/get-feedback', (0, auth_1.default)(client_1.UserRoleEnum.SUPER_ADMIN, client_1.UserRoleEnum.ADMIN), admin_controller_1.adminController.getFeedback);
+router.post('/add-privacy-policy', (0, auth_1.default)(client_1.UserRoleEnum.ADMIN, client_1.UserRoleEnum.SUPER_ADMIN), admin_controller_1.adminController.addPrivacyPolicy);
+router.get('/get-privacy-policy', (0, auth_1.default)(), admin_controller_1.adminController.getPrivacyPolicy);
 exports.AdminRoutes = router;

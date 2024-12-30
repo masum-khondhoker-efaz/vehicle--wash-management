@@ -85,6 +85,7 @@ export function setupWebSocket(server: any): void {
           connections.set(userId, { ws, inOnline, latitude, longitude });
           await driverService.updateOnlineStatusIntoDB(userId, data.payload);
           broadcastStatusUpdate(userId, inOnline, latitude, longitude);
+          
         }
 
         // Handle location updates
@@ -97,9 +98,7 @@ export function setupWebSocket(server: any): void {
               latitude: getLocation.latitude!,
               longitude: getLocation.longitude!,
             });
-            // Broadcast status update to all clients
-            const inOnline = connections.has(userId);
-            broadcastStatusUpdate(userId, inOnline, latitude, longitude);
+            
           } else {
             console.error('Invalid location data:', getLocation);
           }
@@ -109,6 +108,7 @@ export function setupWebSocket(server: any): void {
         if (data.event === 'getDriverList') {
           const { userId } = data.payload;
           connections.set(userId, { ws });
+          
           await broadcastGetDriverList();
         }
       } catch (error) {

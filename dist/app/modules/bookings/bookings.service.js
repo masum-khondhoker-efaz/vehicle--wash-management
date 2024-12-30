@@ -17,6 +17,7 @@ const http_status_1 = __importDefault(require("http-status"));
 const AppError_1 = __importDefault(require("../../errors/AppError"));
 const prisma_1 = __importDefault(require("../../utils/prisma"));
 const client_1 = require("@prisma/client");
+const notification_services_1 = require("../notification/notification.services");
 const distance = (lat1, lon1, lat2, lon2) => {
     const toRad = (value) => (value * Math.PI) / 180;
     const R = 6371; // Radius of the Earth in km
@@ -115,6 +116,19 @@ const getBookingByIdFromDB = (userId, bookingId) => __awaiter(void 0, void 0, vo
                     duration: true,
                     smallCarPrice: true,
                     largeCarPrice: true,
+                },
+            },
+            driver: {
+                select: {
+                    user: {
+                        select: {
+                            id: true,
+                            fullName: true,
+                            email: true,
+                            phoneNumber: true,
+                            profileImage: true,
+                        },
+                    },
                 },
             },
         }
@@ -243,6 +257,29 @@ const updateBookingIntoDB = (userId, bookingId, data) => __awaiter(void 0, void 
         },
         data: Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign(Object.assign({}, (data.bookingTime && { bookingTime: data.bookingTime })), (data.totalAmount && { totalAmount: data.totalAmount })), (data.ownerNumber && { ownerNumber: data.ownerNumber })), (data.carName && { carName: data.carName })), (data.location && { location: data.location })), (data.latitude && { latitude: data.latitude })), (data.longitude && { longitude: data.longitude })), (data.bookingStatus && { bookingStatus: data.bookingStatus })), (data.paymentStatus && { paymentStatus: data.paymentStatus })), (data.serviceStatus && { serviceStatus: data.serviceStatus })), (data.specificInstruction && Object.assign({ specificInstruction: data.specificInstruction }, (data.paymentStatus && { paymentStatus: data.paymentStatus })))),
     });
+    if (data.paymentStatus) {
+        if (updatedBooking.paymentStatus === data.paymentStatus) {
+            const notification = {
+                title: 'Booking confirmed successful',
+                body: `Your booking is confirmed successfully in ${updatedBooking.location} at ${updatedBooking.bookingTime} on ${updatedBooking.serviceDate}.`,
+            };
+            // if (fcmToken?.fcmToken) {
+            const sendNotification = yield notification_services_1.notificationServices.sendSingleNotification(userId, notification);
+            if (!sendNotification) {
+                throw new AppError_1.default(http_status_1.default.CONFLICT, 'Failed to send notification');
+            }
+        }
+        return updatedBooking;
+    }
+    const notification = {
+        title: 'Booking updated successful',
+        body: 'Your booking is updated successfully.',
+    };
+    // if (fcmToken?.fcmToken) {
+    const sendNotification = yield notification_services_1.notificationServices.sendSingleNotification(userId, notification);
+    if (!sendNotification) {
+        throw new AppError_1.default(http_status_1.default.CONFLICT, 'Failed to send notification');
+    }
     return updatedBooking;
 });
 const cancelBookingIntoDB = (userId, bookingId) => __awaiter(void 0, void 0, void 0, function* () {
@@ -255,6 +292,15 @@ const cancelBookingIntoDB = (userId, bookingId) => __awaiter(void 0, void 0, voi
             bookingStatus: client_1.BookingStatus.CANCELLED,
         },
     });
+    const notification = {
+        title: 'Booking cancel successful',
+        body: 'Your booking is cancelled successfully.',
+    };
+    // if (fcmToken?.fcmToken) {
+    const sendNotification = yield notification_services_1.notificationServices.sendSingleNotification(userId, notification);
+    if (!sendNotification) {
+        throw new AppError_1.default(http_status_1.default.CONFLICT, 'Failed to send notification');
+    }
     return cancelledBooking;
 });
 const deleteBookingFromDB = (userId, bookingId) => __awaiter(void 0, void 0, void 0, function* () {

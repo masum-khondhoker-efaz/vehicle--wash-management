@@ -47,21 +47,21 @@ const sendSingleNotification = (userId, body) => __awaiter(void 0, void 0, void 
             id: userId,
         },
     });
-    if (!(user === null || user === void 0 ? void 0 : user.fcmToken)) {
-        throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'User not found with FCM token');
-    }
+    // if (!user?.fcmToken) {
+    //   throw new AppError(httpStatus.NOT_FOUND, 'User not found with FCM token');
+    // }
     const message = {
         notification: {
             title: body.title,
             body: body.body,
         },
-        token: user.fcmToken,
+        // token: user.fcmToken,
     };
     // Attempt to send the notification first, then store in DB if successful
     // console.log(req.params.userId);
     // console.log(user.fcmToken);
-    const response = yield firebaseAdmin_1.default.messaging().send(message);
-    console.log('object');
+    // const response = await admin.messaging().send(message);
+    // console.log('object');
     // If the notification is sent successfully, save it to the database
     const notification = yield prisma_1.default.notification.create({
         data: {
@@ -75,7 +75,7 @@ const sendSingleNotification = (userId, body) => __awaiter(void 0, void 0, void 
     if (!notification) {
         throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'Notification not found');
     }
-    return response; // Return the response from FCM
+    return notification; // Return the response from FCM
 });
 // Send notifications to all users with valid FCM tokens
 const sendNotifications1 = (req) => __awaiter(void 0, void 0, void 0, function* () {

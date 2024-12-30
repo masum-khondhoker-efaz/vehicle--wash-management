@@ -168,20 +168,20 @@ const authorizedPaymentWithSaveCardFromStripe = (userId, payload) => __awaiter(v
             },
         });
         // Optionally send a notification
-        const fcmToken = yield prisma_1.default.user.findUnique({
-            where: { id: userId },
-            select: { fcmToken: true },
-        });
+        // const fcmToken = await prisma.user.findUnique({
+        //   where: { id: userId },
+        //   select: { fcmToken: true },
+        // });
         const notification = {
             title: 'Payment Successful',
             body: 'Your payment has been processed successfully and your booking is confirmed',
         };
-        if (fcmToken === null || fcmToken === void 0 ? void 0 : fcmToken.fcmToken) {
-            const sendNotification = yield notification_services_1.notificationServices.sendSingleNotification(userId, notification);
-            if (!sendNotification) {
-                throw new AppError_1.default(http_status_1.default.CONFLICT, 'Failed to send notification');
-            }
+        // if (fcmToken?.fcmToken) {
+        const sendNotification = yield notification_services_1.notificationServices.sendSingleNotification(userId, notification);
+        if (!sendNotification) {
+            throw new AppError_1.default(http_status_1.default.CONFLICT, 'Failed to send notification');
         }
+        // }
     }
     return paymentIntent;
 });
