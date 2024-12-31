@@ -192,9 +192,15 @@ const getMyProfileFromDB = (id) => __awaiter(void 0, void 0, void 0, function* (
             profileImage: true,
             email: true,
             role: true,
+            status: true,
             fcmToken: true,
             createdAt: true,
             updatedAt: true,
+            customer: {
+                select: {
+                    location: true,
+                },
+            }
         },
     });
     if (!Profile) {

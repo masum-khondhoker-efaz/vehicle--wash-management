@@ -226,8 +226,25 @@ const getBookingList = (offset, limit, bookingStatus, paymentStatus) => __awaite
                 in: paymentStatus,
             },
         })),
+        select: {
+            id: true,
+            bookingStatus: true,
+            serviceDate: true,
+            bookingTime: true,
+            location: true,
+            latitude: true,
+            longitude: true,
+            carName: true,
+            ownerNumber: true,
+            totalAmount: true,
+            paymentStatus: true,
+            customerId: true,
+            createdAt: true,
+            driverId: true,
+            serviceId: true,
+        },
         orderBy: {
-            createdAt: 'desc', // Order by creation date in descending order
+            createdAt: 'desc',
         },
     });
     // Get the total count of pending bookings
@@ -247,16 +264,56 @@ const getBookingList = (offset, limit, bookingStatus, paymentStatus) => __awaite
                 email: true,
                 profileImage: true,
                 phoneNumber: true,
+                customer: {
+                    select: {
+                        location: true,
+                        latitude: true,
+                        longitude: true,
+                    }
+                },
             },
         });
+        const driver = booking.driverId
+            ? yield prisma_1.default.user.findUnique({
+                where: {
+                    id: booking.driverId,
+                },
+                select: {
+                    fullName: true,
+                    email: true,
+                    phoneNumber: true,
+                },
+            })
+            : null;
+        const service = booking.serviceId
+            ? yield prisma_1.default.service.findUnique({
+                where: {
+                    id: booking.serviceId,
+                },
+                select: {
+                    serviceName: true,
+                    duration: true,
+                    largeCarPrice: true,
+                    smallCarPrice: true,
+                },
+            })
+            : null;
         return {
             id: booking.id,
             bookingStatus: booking.bookingStatus,
             serviceDate: booking.serviceDate,
             bookingTime: booking.bookingTime,
             location: booking.location,
+            latitude: booking.latitude,
+            longitude: booking.longitude,
+            carName: booking.carName,
+            ownerNumber: booking.ownerNumber,
+            totalAmount: booking.totalAmount,
             paymentStatus: booking.paymentStatus,
+            createdAt: booking.createdAt,
             user,
+            driver,
+            service,
         };
     })));
     // Get the total count of cancelled bookings

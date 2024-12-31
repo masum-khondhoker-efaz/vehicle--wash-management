@@ -1,6 +1,6 @@
 import * as bcrypt from 'bcrypt';
 import prisma from '../../utils/prisma';
-import { BookingStatus, UserRoleEnum } from '@prisma/client';
+import { BookingStatus, UserRoleEnum, UserStatus } from '@prisma/client';
 import { setDefaultAutoSelectFamily } from 'net';
 import AppError from '../../errors/AppError';
 import httpStatus from 'http-status';
@@ -42,6 +42,7 @@ const addDriverIntoDB = async (userId: string, driverData: any) => {
         password: await bcrypt.hash(data.password, 12),
         phoneNumber: data.phoneNumber,
         role: UserRoleEnum.DRIVER,
+        status: UserStatus.ACTIVE,
       },
     });
 

@@ -265,6 +265,8 @@ const getBookingList = async (
       paymentStatus: true,
       customerId: true,
       createdAt: true,
+      driverId: true,
+      serviceId: true,
     },
     orderBy: {
       createdAt: 'desc',
@@ -298,16 +300,51 @@ const getBookingList = async (
             }
           },
         },
-        
       });
+
+      const driver = booking.driverId
+        ? await prisma.user.findUnique({
+            where: {
+              id: booking.driverId,
+            },
+            select: {
+              fullName: true,
+              email: true,
+              phoneNumber: true,
+            },
+          })
+        : null;
+
+      const service = booking.serviceId
+        ? await prisma.service.findUnique({
+            where: {
+              id: booking.serviceId,
+            },
+            select: {
+              serviceName: true,
+              duration: true,
+              largeCarPrice: true,
+              smallCarPrice: true,
+            },
+          })
+        : null;
+
       return {
         id: booking.id,
         bookingStatus: booking.bookingStatus,
         serviceDate: booking.serviceDate,
         bookingTime: booking.bookingTime,
         location: booking.location,
+        latitude: booking.latitude,
+        longitude: booking.longitude,
+        carName: booking.carName,
+        ownerNumber: booking.ownerNumber,
+        totalAmount: booking.totalAmount,
         paymentStatus: booking.paymentStatus,
+        createdAt: booking.createdAt,
         user,
+        driver,
+        service,
       };
     }),
   );

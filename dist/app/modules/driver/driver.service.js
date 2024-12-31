@@ -74,6 +74,7 @@ const addDriverIntoDB = (userId, driverData) => __awaiter(void 0, void 0, void 0
                 password: yield bcrypt.hash(data.password, 12),
                 phoneNumber: data.phoneNumber,
                 role: client_1.UserRoleEnum.DRIVER,
+                status: client_1.UserStatus.ACTIVE,
             },
         });
         yield prisma.driver.create({
@@ -274,6 +275,19 @@ const getBookingByIdFromDB = (userId, bookingId) => __awaiter(void 0, void 0, vo
             longitude: true,
             totalAmount: true,
             paymentStatus: true,
+            customer: {
+                select: {
+                    user: {
+                        select: {
+                            id: true,
+                            fullName: true,
+                            email: true,
+                            phoneNumber: true,
+                            profileImage: true,
+                        },
+                    },
+                },
+            },
             service: {
                 select: {
                     serviceName: true,
