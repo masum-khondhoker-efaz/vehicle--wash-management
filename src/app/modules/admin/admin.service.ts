@@ -251,8 +251,23 @@ const getBookingList = async (
         },
       }),
     },
+    select: {
+      id: true,
+      bookingStatus: true,
+      serviceDate: true,
+      bookingTime: true,
+      location: true,
+      latitude: true,
+      longitude: true,
+      carName: true,
+      ownerNumber: true,
+      totalAmount: true,
+      paymentStatus: true,
+      customerId: true,
+      createdAt: true,
+    },
     orderBy: {
-      createdAt: 'desc', // Order by creation date in descending order
+      createdAt: 'desc',
     },
   });
 
@@ -275,7 +290,15 @@ const getBookingList = async (
           email: true,
           profileImage: true,
           phoneNumber: true,
+          customer: {
+            select: {
+              location: true,
+              latitude: true,
+              longitude: true,
+            }
+          },
         },
+        
       });
       return {
         id: booking.id,

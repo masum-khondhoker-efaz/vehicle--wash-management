@@ -30,7 +30,7 @@ router.get('/me', auth(), UserControllers.getMyProfile);
 
 router.get(
   '/:id',
-  auth('ADMIN', 'SUPER_ADMIN'),
+  auth(),
   UserControllers.getUserDetails,
 );
 router.put(

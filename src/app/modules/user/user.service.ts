@@ -187,9 +187,15 @@ const getMyProfileFromDB = async (id: string) => {
       profileImage: true,
       email: true,
       role: true,
+      status: true,
       fcmToken: true,
       createdAt: true,
       updatedAt: true,
+      customer: {
+        select: {
+          location: true,
+        },
+      }
     },
   });
   if (!Profile) {

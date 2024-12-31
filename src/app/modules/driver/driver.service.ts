@@ -274,6 +274,19 @@ const getBookingByIdFromDB = async (userId: string, bookingId: string) => {
       longitude: true,
       totalAmount: true,
       paymentStatus: true,
+      customer: {
+        select: {
+          user: {
+            select: {
+              id: true,
+              fullName: true,
+              email: true,
+              phoneNumber: true,
+              profileImage: true,
+            },
+          },
+        },
+        },
       service: {
         select: {
           serviceName: true,
