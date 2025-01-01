@@ -202,6 +202,18 @@ const getBookingsFromDB = async (
           duration: true,
         },
       },
+      driver: {
+        select: {
+          user: {
+            select: {
+              fullName: true,
+              email: true,
+              phoneNumber: true,
+              profileImage: true,
+            },
+          },
+        },
+      },
     },
   });
 
