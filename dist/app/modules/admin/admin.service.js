@@ -279,6 +279,7 @@ const getBookingList = (offset, limit, bookingStatus, paymentStatus) => __awaite
                     id: booking.driverId,
                 },
                 select: {
+                    id: true,
                     fullName: true,
                     email: true,
                     phoneNumber: true,

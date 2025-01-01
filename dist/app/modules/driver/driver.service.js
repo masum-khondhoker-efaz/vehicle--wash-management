@@ -211,6 +211,18 @@ const getBookingsFromDB = (userId, latitude, longitude) => __awaiter(void 0, voi
                     duration: true,
                 },
             },
+            driver: {
+                select: {
+                    user: {
+                        select: {
+                            fullName: true,
+                            email: true,
+                            phoneNumber: true,
+                            profileImage: true,
+                        },
+                    },
+                },
+            },
         },
     });
     const completedBookings = yield prisma_1.default.bookings.findMany({
