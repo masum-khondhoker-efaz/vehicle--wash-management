@@ -210,7 +210,7 @@ const getMyProfileFromDB = (id) => __awaiter(void 0, void 0, void 0, function* (
 });
 const getUserDetailsFromDB = (id) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield prisma_1.default.user.findUniqueOrThrow({
-        where: { id },
+        where: { id: id },
         select: {
             id: true,
             fullName: true,

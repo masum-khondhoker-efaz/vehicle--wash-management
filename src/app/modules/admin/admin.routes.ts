@@ -49,7 +49,29 @@ router.get(
   adminController.getBookingList,
 );
 
+router.post(
+  '/car-model',
+  auth(UserRoleEnum.ADMIN, UserRoleEnum.SUPER_ADMIN),
+  adminController.carModelAdd,
+);
 
+router.get(
+  '/car-model',
+  auth(),
+  adminController.carModelList,
+);
+
+router.put(
+  '/car-model/:carModelId',
+  auth(UserRoleEnum.ADMIN, UserRoleEnum.SUPER_ADMIN),
+  adminController.carModelUpdate,
+);
+
+router.delete(
+  '/car-model/:carModelId',
+  auth(UserRoleEnum.ADMIN, UserRoleEnum.SUPER_ADMIN),
+  adminController.carModelDelete,
+);
 
 // get all services
 router.get(

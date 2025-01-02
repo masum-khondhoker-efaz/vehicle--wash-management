@@ -91,7 +91,7 @@ const getBookingByIdFromDB = (userId, bookingId) => __awaiter(void 0, void 0, vo
     const booking = yield prisma_1.default.bookings.findUnique({
         where: {
             id: bookingId,
-            customerId: userId,
+            customerId: userId
         },
         select: {
             id: true,
@@ -108,6 +108,7 @@ const getBookingByIdFromDB = (userId, bookingId) => __awaiter(void 0, void 0, vo
             paymentStatus: true,
             createdAt: true,
             updatedAt: true,
+            customerId: true,
             driverId: true,
             service: {
                 select: {
@@ -153,6 +154,17 @@ const getBookingByIdFromDB = (userId, bookingId) => __awaiter(void 0, void 0, vo
         const time = estimateTime(dist);
         return Object.assign(Object.assign({}, booking), { distance: `${dist.toFixed(2)} km`, time });
     }
+});
+const getBookingByIdFromDB2 = (bookingId) => __awaiter(void 0, void 0, void 0, function* () {
+    const booking = yield prisma_1.default.bookings.findUnique({
+        where: {
+            id: bookingId
+        }
+    });
+    if (!booking) {
+        throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'Booking not found');
+    }
+    return booking;
 });
 const getBookingListFromDB = (userId) => __awaiter(void 0, void 0, void 0, function* () {
     const pendingBookings = yield prisma_1.default.bookings.findMany({
@@ -320,4 +332,5 @@ exports.bookingService = {
     cancelBookingIntoDB,
     updateBookingIntoDB,
     deleteBookingFromDB,
+    getBookingByIdFromDB2,
 };

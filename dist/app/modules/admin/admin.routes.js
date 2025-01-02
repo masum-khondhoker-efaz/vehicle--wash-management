@@ -25,6 +25,10 @@ router.patch('/drivers/:driverId/:bookingId', (0, auth_1.default)(client_1.UserR
 // );
 //get all bookings
 router.get('/bookings', (0, auth_1.default)(client_1.UserRoleEnum.ADMIN, client_1.UserRoleEnum.SUPER_ADMIN), admin_controller_1.adminController.getBookingList);
+router.post('/car-model', (0, auth_1.default)(client_1.UserRoleEnum.ADMIN, client_1.UserRoleEnum.SUPER_ADMIN), admin_controller_1.adminController.carModelAdd);
+router.get('/car-model', (0, auth_1.default)(), admin_controller_1.adminController.carModelList);
+router.put('/car-model/:carModelId', (0, auth_1.default)(client_1.UserRoleEnum.ADMIN, client_1.UserRoleEnum.SUPER_ADMIN), admin_controller_1.adminController.carModelUpdate);
+router.delete('/car-model/:carModelId', (0, auth_1.default)(client_1.UserRoleEnum.ADMIN, client_1.UserRoleEnum.SUPER_ADMIN), admin_controller_1.adminController.carModelDelete);
 // get all services
 router.get('/services', (0, auth_1.default)(client_1.UserRoleEnum.ADMIN, client_1.UserRoleEnum.SUPER_ADMIN), admin_controller_1.adminController.getServiceList);
 //service status change

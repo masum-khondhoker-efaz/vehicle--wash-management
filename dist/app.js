@@ -20,7 +20,6 @@ exports.corsOptions = {
     origin: [
         'http://localhost:3001',
         'http://localhost:3000',
-        'http://localhost:3030',
         'https://car-wash-dashboard-next.vercel.app',
     ],
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],

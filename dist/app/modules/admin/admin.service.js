@@ -512,6 +512,47 @@ const getPrivacyPolicyFromDB = () => __awaiter(void 0, void 0, void 0, function*
     }
     return result;
 });
+const carModelAddIntoDb = (data) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield prisma_1.default.carModel.create({
+        data,
+    });
+    if (!result) {
+        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Car model not created');
+    }
+    return result;
+});
+const carModelListFromDb = () => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield prisma_1.default.carModel.findMany();
+    if (!result) {
+        throw new AppError_1.default(http_status_1.default.NOT_FOUND, 'Car model not found');
+    }
+    return result;
+});
+const carModelUpdateIntoDb = (carModelId, data) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield prisma_1.default.carModel.update({
+        where: {
+            id: carModelId,
+        },
+        data: {
+            modelName: data.modelName,
+        },
+    });
+    if (!result) {
+        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Car model not updated');
+    }
+    return result;
+});
+const carModelDeleteFromDb = (carModelId) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield prisma_1.default.carModel.delete({
+        where: {
+            id: carModelId,
+        },
+    });
+    if (!result) {
+        throw new AppError_1.default(http_status_1.default.BAD_REQUEST, 'Car model not deleted');
+    }
+    return result;
+});
 exports.adminService = {
     getUserList,
     getBookingList,
@@ -530,4 +571,8 @@ exports.adminService = {
     getFeedbackFromDB,
     addPrivacyPolicyIntoDB,
     getPrivacyPolicyFromDB,
+    carModelAddIntoDb,
+    carModelListFromDb,
+    carModelUpdateIntoDb,
+    carModelDeleteFromDb,
 };

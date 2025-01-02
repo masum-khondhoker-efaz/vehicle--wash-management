@@ -589,6 +589,59 @@ const getPrivacyPolicyFromDB = async () => {
   return result;
 }
 
+const carModelAddIntoDb = async (data: any) => {
+  const result = await prisma.carModel.create({
+    data,
+  });
+  if (!result) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Car model not created');
+  }
+
+  return result;
+};
+
+
+const carModelListFromDb = async () => {
+  const result = await prisma.carModel.findMany();
+
+  if (!result) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Car model not found');
+  }
+
+  return result;
+};
+
+const carModelUpdateIntoDb = async (carModelId: string, data: any) => {
+  const result = await prisma.carModel.update({
+    where: {
+      id: carModelId,
+    },
+    data: {
+      modelName: data.modelName,
+    },
+  });
+
+  if (!result) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Car model not updated');
+  }
+
+  return result;
+};
+
+const carModelDeleteFromDb = async (carModelId: string) => {
+  const result = await prisma.carModel.delete({
+    where: {
+      id: carModelId,
+    },
+  });
+
+  if (!result) {
+    throw new AppError(httpStatus.BAD_REQUEST, 'Car model not deleted');
+  }
+
+  return result;
+};
+
 export const adminService = {
   getUserList,
   getBookingList,
@@ -607,4 +660,8 @@ export const adminService = {
   getFeedbackFromDB,
   addPrivacyPolicyIntoDB,
   getPrivacyPolicyFromDB,
+  carModelAddIntoDb,
+  carModelListFromDb,
+  carModelUpdateIntoDb,
+  carModelDeleteFromDb,
 };

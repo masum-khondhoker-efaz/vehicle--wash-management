@@ -207,7 +207,7 @@ const getMyProfileFromDB = async (id: string) => {
 
 const getUserDetailsFromDB = async (id: string) => {
   const user = await prisma.user.findUniqueOrThrow({
-    where: { id },
+    where: { id: id },
     select: {
       id: true,
       fullName: true,

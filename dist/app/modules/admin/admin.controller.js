@@ -183,6 +183,42 @@ const getPrivacyPolicy = (0, catchAsync_1.default)((req, res) => __awaiter(void 
         data: result,
     });
 }));
+const carModelAdd = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const data = req.body;
+    const result = yield admin_service_1.adminService.carModelAddIntoDb(data);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Car Model added successfully',
+        data: result,
+    });
+}));
+const carModelList = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield admin_service_1.adminService.carModelListFromDb();
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Car Model list retrieved successfully',
+        data: result,
+    });
+}));
+const carModelUpdate = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const carModelId = req.params.carModelId;
+    const data = req.body;
+    const result = yield admin_service_1.adminService.carModelUpdateIntoDb(carModelId, data);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Car Model updated successfully',
+        data: result,
+    });
+}));
+const carModelDelete = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const carModelId = req.params.carModelId;
+    const result = yield admin_service_1.adminService.carModelDeleteFromDb(carModelId);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_1.default.OK,
+        message: 'Car Model deleted successfully',
+        data: result,
+    });
+}));
 exports.adminController = {
     getUserList,
     getBookingList,
@@ -200,4 +236,8 @@ exports.adminController = {
     getFeedback,
     addPrivacyPolicy,
     getPrivacyPolicy,
+    carModelAdd,
+    carModelList,
+    carModelUpdate,
+    carModelDelete,
 };

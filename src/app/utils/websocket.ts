@@ -1,64 +1,32 @@
 import WebSocket, { WebSocketServer } from 'ws';
-import { driverService } from '../modules/driver/driver.service';
-import AppError from '../errors/AppError';
-import httpStatus from 'http-status';
-import { bookingService } from '../modules/bookings/bookings.service';
 import { UserServices } from '../modules/user/user.service';
+import { bookingService } from '../modules/bookings/bookings.service';
 
 const connections = new Map<
   string,
   { ws: WebSocket; roomId: string; latitude?: number; longitude?: number }
 >();
 
-// const broadcastStatusUpdate = (
-//   userId: string,
-//   inOnline: boolean,
-//   latitude: number,
-//   longitude: number,
-// ) => {
-//   const message = JSON.stringify({
-//     event: 'statusUpdate',
-//     payload: { userId, inOnline, latitude, longitude },
-//   });
+function broadcastConnectedUsers() {
+  console.log('Broadcasting connectedUsers event'); // Debugging log
 
-//   console.log(message);
+  const connectedUserIds = Array.from(connections.entries()).map(
+    ([userId, connection]) => ({
+      userId,
+      latitude: connection.latitude,
+      longitude: connection.longitude,
+    }),
+  );
 
-//   connections.forEach(connection => {
-//     connection.ws.send(message);
-//   });
-// };
+  const message = JSON.stringify({
+    event: 'connectedUsers',
+    payload: { connectedUserIds },
+  });
 
-// const getDriverList = async () => {
-//   const drivers = await adminService.getDriverList(0, 100); // Fetch first 100 drivers for simplicity
-//   const onlineDrivers = drivers.formattedDrivers.map(driver => ({
-//     id: driver.id,
-//     fullName: driver.fullName,
-//     email: driver.email,
-//     phoneNumber: driver.phoneNumber,
-//     joinDate: driver.joinDate,
-//     profileImage: driver.profileImage,
-//     status: driver.status,
-//     role: driver.role,
-//     totalBookingsCompleted: driver.totalBookingsCompleted,
-//     inOnline: connections.has(driver.id),
-//     latitude: connections.get(driver.id)?.latitude || null,
-//     longitude: connections.get(driver.id)?.longitude || null,
-//   }));
-
-//   return onlineDrivers;
-// };
-
-// const broadcastGetDriverList = async () => {
-//   const driverList = await getDriverList();
-//   const message = JSON.stringify({
-//     event: 'driverList',
-//     payload: driverList,
-//   });
-
-//   connections.forEach(connection => {
-//     connection.ws.send(message);
-//   });
-// };
+  for (const { ws } of connections.values()) {
+    ws.send(message);
+  }
+}
 
 export function setupWebSocket(server: any): void {
   const wss = new WebSocketServer({ server });
@@ -85,33 +53,47 @@ export function setupWebSocket(server: any): void {
 
       switch (type) {
         case 'joinRoom':
-          if (!connections.has(userId)) {
-            connections.set(userId, { ws, roomId, latitude, longitude });
+          if (connections.has(userId)) {
+            const connection = connections.get(userId);
+            if (connection) {
+              connection.roomId = roomId;
+            }
+          } else {
+            connections.set(userId, {
+              ws,
+              roomId,
+              latitude: connections.get(userId)?.latitude || undefined,
+              longitude: connections.get(userId)?.longitude || undefined,
+            });
           }
-          // Broadcast the updated list of connected users after joining
-          broadcastConnectedUsers();
 
+          console.log(`Driver ${userId} joined room ${roomId}`);
+          
           ws.send(
             JSON.stringify({
               event: 'joinedRoom',
-              payload: { roomId, userId },
+              payload: { roomId },
             }),
           );
-          console.log(`Driver ${userId} joined room ${roomId}`);
+          
+          broadcastConnectedUsers();
+          // Ensure broadcastConnectedUsers is called after a user joins the room
+          console.log('Calling broadcastConnectedUsers from joinRoom');
           break;
 
         case 'leaveRoom':
           if (connections.has(userId)) {
             connections.delete(userId);
-            broadcastConnectedUsers(); // Notify all clients
+            console.log('Calling broadcastConnectedUsers from leaveRoom');
+            broadcastConnectedUsers();
 
             ws.send(
               JSON.stringify({
                 event: 'leftRoom',
-                payload: { roomId: data.roomId },
+                payload: { roomId },
               }),
             );
-            console.log(`Driver ${userId} left room ${data.roomId}`);
+            console.log(`Driver ${userId} left room ${roomId}`);
           } else {
             ws.send(
               JSON.stringify({
@@ -124,14 +106,19 @@ export function setupWebSocket(server: any): void {
 
         case 'updateLocation':
           if (connections.has(userId)) {
-            // Update driver's location in the connections map
             const connection = connections.get(userId);
             if (connection) {
               connection.latitude = data.latitude;
               connection.longitude = data.longitude;
             }
 
-            broadcastConnected(userId, data.latitude, data.longitude);
+            console.log(
+              'Calling broadcastConnectedUsers from updateLocation for:',
+              userId,
+            );
+
+            // Ensure broadcastConnectedUsers is called after updating location
+            broadcastConnectedUsers();
 
             ws.send(
               JSON.stringify({
@@ -153,74 +140,58 @@ export function setupWebSocket(server: any): void {
           }
           break;
 
-        // case 'getDriverLiveLocation':
-        //   if (connections.has(userId)) {
-        //     const connection = connections.get(userId);
-        //     broadcastGetDriverLiveLocation({
-        //       userId,
-        //       latitude: connection?.latitude ?? 0,
-        //       longitude: connection?.longitude ?? 0,
-        //     });
-        //     ws.send(
-        //       JSON.stringify({
-        //         event: 'driverLiveLocation',
-        //         payload: {
-        //           userId: userId,
-        //           latitude: connection?.latitude || null,
-        //           longitude: connection?.longitude || null,
-        //         },
-        //       }),
-        //     );
-        //   } else {
-        //     ws.send(
-        //       JSON.stringify({
-        //         event: 'error',
-        //         message: 'Driver not in any room',
-        //       }),
-        //     );
-        //   }
-        //   break;
+        case 'uniqueRoomCreated':
+          
+            const bookingId = roomId;
+            const booking = await bookingService.getBookingByIdFromDB2( bookingId);
 
-        case 'uniqueRoom':
-          if (!connections.has(userId)) {
-            connections.set(userId, { ws, roomId });
-          }
-          let validRoomId;
-          if (connections.has(roomId)) {
-            validRoomId = await bookingService.getBookingByIdFromDB(
-              userId,
-              roomId,
+            if (!booking) {
+            ws.send(
+              JSON.stringify({
+              event: 'error',
+              message: 'Booking not found',
+              }),
             );
-            if (!validRoomId) {
-              ws.send(
-                JSON.stringify({
-                  event: 'error',
-                  message: 'This room does not exist',
-                }),
-              );
-              return;
+            return;
             }
-          }
 
-          ws.send(
+            const customerId = booking.customerId;
+            const driverId = booking.driverId;
+
+            if (userId !== customerId && userId !== driverId) {
+            ws.send(
+              JSON.stringify({
+              event: 'error',
+              message: 'User not authorized for this booking',
+              }),
+            );
+            return;
+            }
+
+            connections.set(userId, {
+            ws,
+            roomId,
+            latitude: connections.get(userId)?.latitude || undefined,
+            longitude: connections.get(userId)?.longitude || undefined,
+            });
+
+            console.log(`User ${userId} joined unique room ${roomId}`);
+
+            ws.send(
             JSON.stringify({
-              event: 'personalRoom',
-              payload: {
-                userId: userId,
-                roomId: roomId,
-              },
+              event: 'uniqueRoomCreated',
+              payload: { roomId },
             }),
-          );
+            );
 
-          // } else {
-          //   ws.send(
-          //     JSON.stringify({
-          //       event: 'error',
-          //       message: 'Driver not in any room',
-          //     }),
-          //   );
-          // }
-          break;
+            // Ensure broadcastConnectedUsers is called after a user joins the room
+            console.log('Calling broadcastConnectedUsers from uniqueRoomCreated');
+            broadcastSpecificUsers();
+            break;
+
+
+
+
 
         default:
           ws.send(
@@ -232,61 +203,13 @@ export function setupWebSocket(server: any): void {
       }
     });
 
-    // Function to broadcast the updated list of connected users
-    function broadcastConnectedUsers() {
-      const connectedUserIds = Array.from(connections.entries()).map(
-        ([userId, connection]) => ({
-          userId,
-          latitude: connection.latitude,
-          longitude: connection.longitude,
-        }),
-      );
-      const message = JSON.stringify({
-        event: 'connectedUsers',
-        payload: { connectedUserIds },
-      });
-
-      for (const { ws } of connections.values()) {
-        ws.send(message);
-      }
-    }
-
-    function broadcastConnected(
-      userId: string,
-      latitude: number,
-      longitude: number,
-    ) {
-      const message = JSON.stringify({
-        event: 'driverLiveLocation',
-        payload: { userId, latitude, longitude },
-      });
-
-      for (const { ws } of connections.values()) {
-        ws.send(message);
-      }
-    }
-
-    // function broadcastGetDriverLiveLocation(location: {
-    //   userId: string;
-    //   latitude: number;
-    //   longitude: number;
-    // }) {
-    //   const message = JSON.stringify({
-    //     event: 'driverLiveLocation',
-    //     payload: { location },
-    //   });
-
-    //   for (const { ws } of connections.values()) {
-    //     ws.send(message);
-    //   }
-    // }
-
     ws.on('close', () => {
       console.log('WebSocket connection closed');
       connections.forEach((connection, userId) => {
         if (connection.ws === ws) {
           connections.delete(userId);
-          broadcastConnectedUsers(); // Notify all clients of updated list
+          console.log('Calling broadcastConnectedUsers from close');
+          broadcastConnectedUsers();
         }
       });
     });
@@ -295,7 +218,28 @@ export function setupWebSocket(server: any): void {
       console.error('WebSocket error:', error);
     });
 
-    // Do not send connected user IDs when WebSocket connection is established
     ws.send('WebSocket connection established');
   });
 }
+function broadcastSpecificUsers() {
+  console.log('Broadcasting specificUsers event'); // Debugging log
+
+  const specificUserIds = Array.from(connections.entries()).map(
+    ([userId, connection]) => ({
+      userId,
+      latitude: connection.latitude,
+      longitude: connection.longitude,
+    }),
+  );
+
+  const message = JSON.stringify({
+    event: 'specificUsers',
+    payload: { specificUserIds },
+  });
+
+  for (const { ws } of connections.values()) {
+    ws.send(message);
+  }
+}
+
+

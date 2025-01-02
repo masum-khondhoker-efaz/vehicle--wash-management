@@ -320,6 +320,15 @@ model PrivacyPolicy {
 }
 
 
+model CarModel {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  modelName String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("car_models")
+}
+
 enum UserRoleEnum {
   CUSTOMER
   ADMIN

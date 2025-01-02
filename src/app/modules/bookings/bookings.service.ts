@@ -93,7 +93,7 @@ const getBookingByIdFromDB = async (userId: string, bookingId: string) => {
   const booking = await prisma.bookings.findUnique({
     where: {
       id: bookingId,
-      customerId: userId,
+      customerId: userId 
     },
     select: {
       id: true,
@@ -110,6 +110,7 @@ const getBookingByIdFromDB = async (userId: string, bookingId: string) => {
       paymentStatus: true,
       createdAt: true,
       updatedAt: true,
+      customerId: true,
       driverId: true,
       service: {
         select: {
@@ -168,6 +169,17 @@ const getBookingByIdFromDB = async (userId: string, bookingId: string) => {
   
 };
 
+const getBookingByIdFromDB2 = async (bookingId: string) => {
+  const booking = await prisma.bookings.findUnique({
+    where:{
+      id: bookingId
+    }
+  });
+  if (!booking) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Booking not found');
+  }
+  return booking;
+}
 
 const getBookingListFromDB = async (userId: string) => {
   const pendingBookings = await prisma.bookings.findMany({
@@ -381,4 +393,5 @@ export const bookingService = {
   cancelBookingIntoDB,
   updateBookingIntoDB,
   deleteBookingFromDB,
+  getBookingByIdFromDB2,
 };

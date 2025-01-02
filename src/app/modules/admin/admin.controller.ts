@@ -201,6 +201,47 @@ const getPrivacyPolicy = catchAsync(async (req, res) => {
   });
 });
 
+const carModelAdd = catchAsync(async (req, res) => {
+  const data = req.body;
+  const result = await adminService.carModelAddIntoDb(data);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: 'Car Model added successfully',
+    data: result,
+  });
+});
+
+const carModelList = catchAsync(async (req, res) => {
+  const result = await adminService.carModelListFromDb();
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: 'Car Model list retrieved successfully',
+    data: result,
+  });
+});
+
+
+const carModelUpdate = catchAsync(async (req, res) => {
+  const carModelId = req.params.carModelId;
+  const data = req.body;
+  const result = await adminService.carModelUpdateIntoDb(carModelId, data);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: 'Car Model updated successfully',
+    data: result,
+  });
+});
+
+const carModelDelete = catchAsync(async (req, res) => {
+  const carModelId = req.params.carModelId;
+  const result = await adminService.carModelDeleteFromDb(carModelId);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    message: 'Car Model deleted successfully',
+    data: result,
+  });
+});
+
 
 export const adminController = {
   getUserList,
@@ -219,4 +260,8 @@ export const adminController = {
   getFeedback,
   addPrivacyPolicy,
   getPrivacyPolicy,
+  carModelAdd,
+  carModelList,
+  carModelUpdate,
+  carModelDelete,
 };
