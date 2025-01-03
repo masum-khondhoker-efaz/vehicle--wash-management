@@ -1,6 +1,6 @@
 node_modules
 # Keep environment variables out of version control
-
-
+.idea
+.env
 .vercel
 generate-module.ts
