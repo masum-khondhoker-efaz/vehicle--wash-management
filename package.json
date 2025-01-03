@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node ./dist/server.js -p 3007",
-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts -p 3007",
-    "build": "tsc",
+    "start": "node init && node ./dist/server.js -p 3007",
+    "dev": "node init && ts-node-dev --respawn --transpile-only src/server.ts -p 3007",
+    "build": "node init && tsc",
     "generate": "ts-node src/generate-module.ts",
     "postinstall": "prisma generate",
     "test": "echo \"Error: no test specified\" && exit 1"
