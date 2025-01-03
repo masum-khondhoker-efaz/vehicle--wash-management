@@ -31,20 +31,3 @@
 ### Run build project
 
     npm run start:prod
-
-## Technology used
-
----
-
-- PostgreSQL (Database)
-- Prisma ORM
-- Express
-- Typescript
-- Zod (Validation)
-- JWT-token
-- Bcrypt (Hashing)
-- Moment (Date formatting)
-
----
-
-Happy Coding - Developeremdad 🧑‍💻
